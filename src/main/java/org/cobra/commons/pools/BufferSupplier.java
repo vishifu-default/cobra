@@ -7,19 +7,20 @@ public interface BufferSupplier extends AutoCloseable {
     BufferSupplier NON_CACHING = new BufferSupplier() {
 
         @Override
-        public void close() {
-            // nop
-        }
-
-        @Override
         public ByteBuffer get(int capacity) {
-            throw new UnsupportedOperationException();
+            return ByteBuffer.allocate(capacity);
         }
 
         @Override
         public void release(ByteBuffer buffer) {
-            throw new UnsupportedOperationException();
+            // nop
         }
+
+        @Override
+        public void close() {
+            // nop
+        }
+
     };
 
     static BufferSupplier create() {

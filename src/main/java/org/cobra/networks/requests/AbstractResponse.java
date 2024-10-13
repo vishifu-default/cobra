@@ -25,7 +25,7 @@ public abstract class AbstractResponse implements ApiData {
     private static AbstractResponse doParsePayload(Apikey apikey, ByteBuffer buffer) {
         return switch (apikey) {
             case SAMPLE_REQUEST -> SampleResponse.doParse(buffer);
-            case null -> throw new UnsupportedOperationException("Null apikey");
+            case null -> throw new IllegalArgumentException("Null apikey");
         };
     }
 
