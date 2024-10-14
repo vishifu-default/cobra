@@ -1,20 +1,20 @@
 package org.cobra.networks.mocks;
 
-import org.cobra.networks.SocketNode;
+import org.cobra.networks.ChannelNode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClusterSample {
 
-    public static List<SocketNode> singletonCluster() {
+    public static List<ChannelNode> singletonCluster() {
         return clusterWith(1);
     }
 
-    public static List<SocketNode> clusterWith(final int nodeNums) {
-        final List<SocketNode> nodes = new ArrayList<>(nodeNums);
+    public static List<ChannelNode> clusterWith(final int nodeNums) {
+        final List<ChannelNode> nodes = new ArrayList<>(nodeNums);
         for (int i = 0; i < nodeNums; i++) {
-            nodes.add(new SocketNode(i, 9002, "localhost"));
+            nodes.add(new ChannelNode("localhost", 9002));
         }
 
         return nodes;

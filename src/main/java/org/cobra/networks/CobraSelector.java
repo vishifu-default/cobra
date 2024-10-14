@@ -130,12 +130,12 @@ public class CobraSelector implements Selectable {
                 new LinkedHashMap<>() : null;
     }
 
-    public CobraChannel channel(String node) {
-        return channelMap.get(node);
+    public CobraChannel channel(String channelId) {
+        return channelMap.get(channelId);
     }
 
-    public CobraChannel closingChannel(String node) {
-        return closingChannelMap.get(node);
+    public CobraChannel closingChannel(String channelId) {
+        return closingChannelMap.get(channelId);
     }
 
     public Collection<CobraChannel> allChannels() {
@@ -159,7 +159,7 @@ public class CobraSelector implements Selectable {
     }
 
     @Override
-    public void connect(String channelId, InetSocketAddress address, int sendBufferSize, int rcvBufferSize) throws IOException {
+    public SocketChannel connect(String channelId, InetSocketAddress address, int sendBufferSize, int rcvBufferSize) throws IOException {
         ensureNotDuplicateId(channelId);
         SocketChannel socketChannel = SocketChannel.open();
         SelectionKey key = null;
@@ -182,6 +182,8 @@ public class CobraSelector implements Selectable {
             socketChannel.close();
             throw e;
         }
+
+        return socketChannel;
     }
 
     public void register(String channelId, SocketChannel socketChannel) throws IOException {

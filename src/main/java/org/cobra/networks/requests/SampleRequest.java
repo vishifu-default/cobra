@@ -22,7 +22,7 @@ public class SampleRequest extends AbstractRequest {
     }
 
     @Override
-    public AbstractResponse toErrorResponse() {
+    public AbstractResponse toErrorResponse(Throwable cause) {
         return null;
     }
 

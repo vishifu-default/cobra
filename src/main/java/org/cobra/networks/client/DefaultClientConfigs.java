@@ -7,7 +7,7 @@ import java.time.Duration;
 public class DefaultClientConfigs {
 
     public static final String CONNECTION_MAX_IDLE_MILLIS_CONF = "connection.max.idle.millis";
-    public static final long CONNECTION_MAX_IDLE_MILLIS_DEFAULT = Duration.ofMillis(10).toMillis();
+    public static final long CONNECTION_MAX_IDLE_MILLIS_DEFAULT = Duration.ofSeconds(600).toMillis();
 
     public static final String CONNECTION_RECONNECT_BACKOFF_CONF = "connection.reconnect.backoff";
     public static final long CONNECTION_RECONNECT_BACKOFF_DEFAULT = 50L;

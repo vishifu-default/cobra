@@ -16,7 +16,7 @@ public class ConnectionStateControl {
     private ConnectionState connectionState;
     private AuthenticationException authException;
 
-    long lastAttemptConnectAtMs = Jvm.INF_TIME_MS;
+    long lastAttemptConnectAtMs = Jvm.INF_TIMESTAMP;
     long reconnectBackoffMs = 0;
     long connectionSetupTimeoutMs = 0;
     int failAttempts = 0;

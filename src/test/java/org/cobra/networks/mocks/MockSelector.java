@@ -9,6 +9,7 @@ import org.cobra.networks.SendNetwork;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -35,11 +36,13 @@ public class MockSelector implements Selectable {
     }
 
     @Override
-    public void connect(String node, InetSocketAddress address, int sendBufferSize, int receiveBufferSize) throws IOException {
+    public SocketChannel connect(String node, InetSocketAddress address, int sendBufferSize, int receiveBufferSize) throws IOException {
         if (this.canConnect == null || this.canConnect.test(address)) {
             this.connectedNodes.add(node);
             this.readyNodes.add(node);
         }
+
+        return null;
     }
 
     @Override

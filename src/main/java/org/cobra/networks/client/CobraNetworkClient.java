@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,22 +26,23 @@ public class CobraNetworkClient implements NetworkClient {
     private static final Logger log = LoggerFactory.getLogger(CobraNetworkClient.class);
 
     private final Selectable selector;
-    private final SocketNode socketNode;
+    private final ChannelNode channelNode;
     private final InflightRequestTopic inflightRequestTopic;
     private final Clock clock;
     private final AtomicReference<State> atomicState;
     private final ConnectionStateControl connectionStateControl;
-    private final String clientId;
+    private Optional<String> clientId;
     private final int socketSendBufferSize;
     private final int socketReceiveBufferSize;
     private final AtomicLong correlation;
     private final long defaultRequestTimeoutMillis;
 
+    private SocketChannel underlyingConnectedChannel;
+
     public CobraNetworkClient(
             Selectable selectable,
             Clock clock,
-            SocketNode socketNode,
-            String clientId,
+            ChannelNode channelNode,
             int socketSendBufferSize,
             int socketReceiveBufferSize,
             int maxInflightRequestPerConnection,
@@ -52,8 +54,7 @@ public class CobraNetworkClient implements NetworkClient {
     ) {
         this.selector = selectable;
         this.clock = clock;
-        this.socketNode = socketNode;
-        this.clientId = clientId;
+        this.channelNode = channelNode;
         this.socketSendBufferSize = socketSendBufferSize;
         this.socketReceiveBufferSize = socketReceiveBufferSize;
         this.defaultRequestTimeoutMillis = defaultRequestTimeoutMillis;
@@ -80,13 +81,15 @@ public class CobraNetworkClient implements NetworkClient {
         try {
             /* mark control to CONNECTING state */
             connectionStateControl.connecting(nowMs);
-            InetSocketAddress socketAddress = new InetSocketAddress(socketNode.host(), socketNode.port());
+            InetSocketAddress socketAddress = new InetSocketAddress(channelNode.host(), channelNode.port());
 
             /* connect to node via selector */
-            selector.connect(socketNode.source(), socketAddress, socketSendBufferSize, socketReceiveBufferSize);
-            log.info("initiating connection to {}; client_id: {}", socketNode, clientId);
+            underlyingConnectedChannel = selector.connect(channelNode.id(), socketAddress, socketSendBufferSize,
+                    socketReceiveBufferSize);
+            log.info("initiating connection to {}; client_id: {}", channelNode, clientId);
+
         } catch (IOException e) {
-            log.warn("error while initiating connection {}; client_id: {}", socketNode, clientId, e);
+            log.warn("error while initiating connection {}; client_id: {}", channelNode, clientId, e);
             connectionStateControl.disconnected(nowMs);
         }
     }
@@ -97,9 +100,22 @@ public class CobraNetworkClient implements NetworkClient {
     }
 
     private boolean canSendRequest() {
+        if (underlyingConnectedChannel == null)
+            return false;
+
+        try {
+            if (underlyingConnectedChannel.getLocalAddress() != null) {
+                clientId =
+                        Optional.of(CobraChannelIdentifier.identifier((InetSocketAddress) underlyingConnectedChannel.getLocalAddress()));
+            }
+        } catch (IOException e) {
+            return false;
+        }
+
         return connectionStateControl.isReady()
-                && selector.isReadyChannel(socketNode.source())
-                && inflightRequestTopic.canSendMore();
+                && selector.isReadyChannel(channelNode.id())
+                && inflightRequestTopic.canSendMore()
+                && clientId.isPresent();
     }
 
     @Override
@@ -134,8 +150,8 @@ public class CobraNetworkClient implements NetworkClient {
         if (!canSendRequest())
             throw new IllegalStateException("Client can not send request now");
 
-        if (!clientRequest.getDestination().equals(socketNode.source()))
-            throw new IllegalStateException("Mismatched destination; expected: " + socketNode.source() +
+        if (!clientRequest.getDestination().equals(channelNode.id()))
+            throw new IllegalStateException("Mismatched destination; expected: " + channelNode.id() +
                     ", actual: " + clientRequest.getDestination());
 
         final String destination = clientRequest.getDestination();
@@ -180,13 +196,13 @@ public class CobraNetworkClient implements NetworkClient {
     public void disconnect() {
         if (connectionStateControl.isDisconnected()) {
             log.debug("client requested disconnection from {}, which was already disconnected; client_id: {}",
-                    socketNode, clientId);
+                    channelNode, clientId);
             return;
         }
 
-        selector.close(socketNode.source());
+        selector.close(channelNode.id());
         connectionStateControl.disconnected(clock.milliseconds());
-        log.info("client requested disconnection from {}; client_id: {}", socketNode, clientId);
+        log.info("client requested disconnection from {}; client_id: {}", channelNode, clientId);
     }
 
     @Override
@@ -201,8 +217,10 @@ public class CobraNetworkClient implements NetworkClient {
 
     @Override
     public ClientRequest createClientRequest(AbstractRequest.Builder<?> requestBuilder,
-                                             long creationMs, long timeoutMs, RequestCompletionCallback callback) {
-        return new ClientRequest(socketNode.source(), clientId, nextCorrelationId(),
+                                             long creationMs,
+                                             long timeoutMs,
+                                             RequestCompletionCallback callback) {
+        return new ClientRequest(channelNode.id(), clientId.get(), nextCorrelationId(),
                 timeoutMs, creationMs, requestBuilder, callback);
     }
 
@@ -284,20 +302,20 @@ public class CobraNetworkClient implements NetworkClient {
 
     private void handleTimeoutConnection(List<ClientResponse> responses, long nowMs) {
         if (connectionStateControl.isConnectionSetupTimeout(nowMs)) {
-            selector.close(socketNode.source());
+            selector.close(channelNode.id());
             doDisconnect(responses, ChannelState.LOCAL_CLOSE, nowMs, true);
 
             log.info("disconnect from node {} due to socket connection setup timeout; timeout: {}",
-                    socketNode, connectionStateControl.connectionSetupTimeoutMs);
+                    channelNode, connectionStateControl.connectionSetupTimeoutMs);
         }
     }
 
     private void handleTimeoutRequest(List<ClientResponse> responses, long nowMs) {
         if (inflightRequestTopic.anyExpiredRequest(nowMs)) {
-            selector.close(socketNode.source());
+            selector.close(channelNode.id());
             doDisconnect(responses, ChannelState.LOCAL_CLOSE, nowMs, true);
 
-            log.info("disconnect from node {} due to request timeout;", socketNode);
+            log.info("disconnect from node {} due to request timeout;", channelNode);
         }
     }
 
@@ -323,17 +341,16 @@ public class CobraNetworkClient implements NetworkClient {
             case FAILED_AUTHENTICATION -> {
                 AuthenticationException authException = channelState.getAuthException();
                 connectionStateControl.authFailed(nowMs, authException);
-                log.warn("connect to node {} failed; due to {}", socketNode, authException.getMessage());
+                log.warn("connect to node {} failed; due to {}", channelNode, authException.getMessage());
             }
 
             case AUTHENTICATED ->
                     log.warn("connect to node {} was interrupted, this maybe any related network issues; remote: {}",
-                            socketNode, channelState.getRemoteAddress());
+                            channelNode, channelState.getRemoteAddress());
 
             case NOT_CONNECTED -> log.warn("error while establishing connection; remote: {}",
                     channelState.getRemoteAddress());
 
-            default -> throw new IllegalStateException("Unexpected value: " + channelState);
         }
 
         /* handle inflight-request canceling */
@@ -350,7 +367,7 @@ public class CobraNetworkClient implements NetworkClient {
                                 "timeout: {}ms): \n {}",
                         inflightRequest.headerRequest.apikey(),
                         inflightRequest.headerRequest.correlationId(),
-                        socketNode,
+                        channelNode,
                         inflightRequest.getElapsedMs(nowMs),
                         inflightRequest.getElapsedMsFromSend(nowMs),
                         inflightRequest.getTimeoutMs(),
@@ -361,7 +378,7 @@ public class CobraNetworkClient implements NetworkClient {
                                 "elapsed time since send: {}ms, " +
                                 "timeout: {}ms)",
                         inflightRequest.headerRequest.apikey(),
-                        inflightRequest.headerRequest.correlationId(), socketNode,
+                        inflightRequest.headerRequest.correlationId(), channelNode,
                         inflightRequest.getElapsedMs(nowMs),
                         inflightRequest.getElapsedMsFromSend(nowMs),
                         inflightRequest.getTimeoutMs());

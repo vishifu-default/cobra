@@ -6,40 +6,25 @@ import org.cobra.commons.pools.MemoryAlloc;
 import org.cobra.networks.*;
 import org.cobra.networks.auth.SecurityProtocol;
 
-import java.util.UUID;
-
 public class CobraNetworkClientFactory {
 
     public static CobraNetworkClient createClientNetwork(
-            SocketNode destinationNode,
-            ConfigDef configDef,
-            Clock clock,
-            MemoryAlloc memoryAlloc,
-            int maxInflightRequestPerConn
-    ) {
-        return createClientNetwork(UUID.randomUUID().toString(), destinationNode, configDef, clock,
-                memoryAlloc, maxInflightRequestPerConn);
-    }
-
-    public static CobraNetworkClient createClientNetwork(
-            String clientId,
-            SocketNode destinationNode,
+            ChannelNode destinationNode,
             ConfigDef configDef,
             Clock clock,
             MemoryAlloc memoryAlloc,
             int maxInflightRequestPerConn
     ) {
         long requestTimeoutMs = configDef.get(DefaultClientConfigs.REQUEST_TIMEOUT_MS_CONF).value();
-        return createClientNetwork(clientId, configDef, clock, memoryAlloc,
+        return createClientNetwork(configDef, clock, memoryAlloc,
                 destinationNode, maxInflightRequestPerConn, requestTimeoutMs);
     }
 
     public static CobraNetworkClient createClientNetwork(
-            String clientId,
             ConfigDef configDef,
             Clock clock,
             MemoryAlloc memoryAlloc,
-            SocketNode destinationSocket,
+            ChannelNode destinationSocket,
             int maxInflightRequestPerConn,
             long defaultRequestTimeoutMs
     ) {
@@ -66,7 +51,6 @@ public class CobraNetworkClientFactory {
                 selectable,
                 clock,
                 destinationSocket,
-                clientId,
                 sndBufferSize,
                 rcvBufferSize,
                 maxInflightRequestPerConn,

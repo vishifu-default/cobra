@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.List;
 
 public class Utils {
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
@@ -15,6 +14,14 @@ public class Utils {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void swallow(String name, Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            log.error("{} swallow error", name, e);
         }
     }
 

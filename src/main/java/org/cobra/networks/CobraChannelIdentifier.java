@@ -1,5 +1,6 @@
 package org.cobra.networks;
 
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class CobraChannelIdentifier {
@@ -16,6 +17,13 @@ public class CobraChannelIdentifier {
      * Generate an ID for socket by using socket address
      */
     public static String identifier(Socket socket) {
-        return socket.getRemoteSocketAddress().toString();
+        return identifier(new InetSocketAddress(socket.getInetAddress(), socket.getPort()));
+    }
+
+    public static String identifier(InetSocketAddress inetAddress) {
+        String ipAddress = inetAddress.getAddress().getHostAddress();
+        int port = inetAddress.getPort();
+
+        return ipAddress + ":" + port;
     }
 }

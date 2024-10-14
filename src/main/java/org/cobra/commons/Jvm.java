@@ -15,5 +15,5 @@ public class Jvm {
     /* By using this constant, we'll let OS determine socket buffer size */
     public static final int USE_DEFAULT_SOCKET_BUFFER_SIZE = -1;
 
-    public static final long INF_TIME_MS = -1L;
+    public static final long INF_TIMESTAMP = -1L;
 }

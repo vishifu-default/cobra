@@ -43,7 +43,7 @@ public abstract class AbstractRequest implements ApiData {
         };
     }
 
-    public abstract AbstractResponse toErrorResponse();
+    public abstract AbstractResponse toErrorResponse(Throwable cause);
 
     /**
      * @return the apikey of request type

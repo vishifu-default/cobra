@@ -18,6 +18,10 @@ public class SampleResponseMessage implements ApiMessage {
         this.text = text;
     }
 
+    public SampleResponseMessage(MessageReadable _readable) {
+        read(_readable);
+    }
+
     @Override
     public short apikeyId() {
         return Apikey.SAMPLE_REQUEST.id();

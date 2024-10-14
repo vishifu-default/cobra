@@ -3,6 +3,7 @@ package org.cobra.networks;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +29,9 @@ public interface Selectable extends Closeable {
      * @param address        remote address
      * @param sendBufferSize send buffer size for socket
      * @param rcvBufferSize  receive buffer size for socket
+     * @return connection id
      */
-    void connect(String channelId, InetSocketAddress address, int sendBufferSize, int rcvBufferSize) throws IOException;
+    SocketChannel connect(String channelId, InetSocketAddress address, int sendBufferSize, int rcvBufferSize) throws IOException;
 
     /**
      * Wakeup this applicable selector, interrupt the nioSelector if it's blocked on I/O

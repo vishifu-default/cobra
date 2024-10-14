@@ -22,7 +22,7 @@ public class HeaderRequest implements ApiData {
     public static HeaderRequest parse(ByteBuffer buffer) {
         final HeaderRequestMessage headerData = new HeaderRequestMessage(new MessageAccessor(buffer));
         if (headerData.clientId == null)
-            headerData.clientId = "";
+            throw new IllegalArgumentException("clientId is null");
 
         return new HeaderRequest(headerData);
     }
@@ -42,6 +42,13 @@ public class HeaderRequest implements ApiData {
     @Override
     public ApiMessage data() {
         return data;
+    }
+
+    public HeaderResponse toResponse() {
+        return new HeaderResponse(new HeaderResponseMessage(
+                data.requestApikey,
+                data.correlationId
+        ));
     }
 
     @Override
