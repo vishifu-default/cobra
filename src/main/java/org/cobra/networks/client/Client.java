@@ -60,7 +60,7 @@ public interface Client extends Closeable {
     long ioLatencyMs(long nowMs);
 
     /**
-     * Queue up the given request for sending, requests can only be sent in READY_STATE
+     * Send request to server, this is blocking-io operation
      *
      * @param clientRequest request to send
      * @param nowMs         current time (ms)

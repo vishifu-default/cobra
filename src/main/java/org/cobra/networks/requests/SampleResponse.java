@@ -1,6 +1,5 @@
 package org.cobra.networks.requests;
 
-import org.cobra.networks.protocol.ApiMessage;
 import org.cobra.networks.protocol.Apikey;
 import org.cobra.networks.protocol.MessageAccessor;
 

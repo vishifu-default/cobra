@@ -12,7 +12,6 @@ import org.cobra.networks.SocketNode;
 import org.cobra.networks.requests.AbstractRequest;
 import org.cobra.networks.requests.AbstractResponse;
 import org.cobra.networks.requests.HeaderRequest;
-import org.cobra.networks.requests.HeaderResponse;
 import org.cobra.networks.requests.RequestCompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

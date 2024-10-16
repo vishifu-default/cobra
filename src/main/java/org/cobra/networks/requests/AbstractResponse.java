@@ -2,7 +2,10 @@ package org.cobra.networks.requests;
 
 import org.cobra.commons.errors.CorrelationIDMismatchException;
 import org.cobra.networks.Send;
-import org.cobra.networks.protocol.*;
+import org.cobra.networks.protocol.ApiData;
+import org.cobra.networks.protocol.Apikey;
+import org.cobra.networks.protocol.MessageAccessor;
+import org.cobra.networks.protocol.SendBuilder;
 
 import java.nio.ByteBuffer;
 
@@ -31,10 +34,6 @@ public abstract class AbstractResponse implements ApiData {
 
     public Apikey apikey() {
         return apikey;
-    }
-
-    public ByteBuffer toBuffer() {
-        return Message.toBuffer(data());
     }
 
     public ByteBuffer toBufferIncludeHeader(HeaderResponse header) {
