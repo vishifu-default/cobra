@@ -9,13 +9,13 @@ import java.util.concurrent.ThreadLocalRandom;
  * Backoff(attempts) = random(1 - jitter, 1 + jitter) * interval * multiplier ^ attempts
  */
 public class ExponentialBackoff {
-    private final long initialInterval;
-    private final long maxInterval;
+    private final int initialInterval;
+    private final int maxInterval;
     private final double jitter;
     private final double exponentMax;
     private final int multiplier;
 
-    public ExponentialBackoff(long initialInterval, long maxInterval, double jitter, int multiplier) {
+    public ExponentialBackoff(int initialInterval, int maxInterval, double jitter, int multiplier) {
         this.initialInterval = initialInterval;
         this.maxInterval = maxInterval;
         this.jitter = jitter;
@@ -25,11 +25,11 @@ public class ExponentialBackoff {
                 : 0;
     }
 
-    public long getInitialInterval() {
+    public int getInitialInterval() {
         return this.initialInterval;
     }
 
-    public long backoff(long attempts) {
+    public int backoff(long attempts) {
         if (this.exponentMax == 0)
             return initialInterval;
 
@@ -37,7 +37,7 @@ public class ExponentialBackoff {
         double term = initialInterval * Math.pow(multiplier, exp);
         double randomFactor = jitter < Double.MIN_NORMAL ? 1.0 : ThreadLocalRandom.current().nextDouble(1 - jitter,
                 1 + jitter);
-        long backoffValue = (long) (randomFactor * term);
+        int backoffValue = (int) (randomFactor * term);
         return Math.min(backoffValue, maxInterval);
     }
 

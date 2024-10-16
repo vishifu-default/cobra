@@ -8,26 +8,20 @@ import org.cobra.networks.requests.RequestCompletionCallback;
 
 public class ClientRequest {
 
-    private final String destination;
     private final String clientId;
     private final long correlationId;
-    private final long timeoutMs;
     private final long createdAtMs;
     private final AbstractRequest.Builder<?> requestBuilder;
     private final RequestCompletionCallback callback;
 
     public ClientRequest(
-            String destination,
             String clientId,
             long correlationId,
-            long timeoutMs,
             long createdAtMs,
             AbstractRequest.Builder<?> requestBuilder,
             RequestCompletionCallback callback) {
-        this.destination = destination;
         this.clientId = clientId;
         this.correlationId = correlationId;
-        this.timeoutMs = timeoutMs;
         this.createdAtMs = createdAtMs;
         this.requestBuilder = requestBuilder;
         this.callback = callback;
@@ -53,16 +47,8 @@ public class ClientRequest {
         return createdAtMs;
     }
 
-    public String getDestination() {
-        return destination;
-    }
-
     public AbstractRequest.Builder<?> getRequestBuilder() {
         return requestBuilder;
-    }
-
-    public long getTimeoutMs() {
-        return timeoutMs;
     }
 
     public HeaderRequest toHeaderRequest() {
@@ -74,10 +60,8 @@ public class ClientRequest {
     public String toString() {
         return "ClientRequest(" +
                 "callback=" + callback +
-                ", destination='" + destination + '\'' +
                 ", clientId='" + clientId + '\'' +
                 ", correlationId=" + correlationId +
-                ", timeoutMs=" + timeoutMs +
                 ", createdAtMs=" + createdAtMs +
                 ", requestBuilder=" + requestBuilder +
                 ')';

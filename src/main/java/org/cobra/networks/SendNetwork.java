@@ -1,6 +1,7 @@
 package org.cobra.networks;
 
 import java.io.IOException;
+import java.nio.channels.GatheringByteChannel;
 
 /**
  * A network send that is backed by another send (usually {@link SendByteBuffer}), we will write the backed send to
@@ -26,7 +27,7 @@ public class SendNetwork implements Send {
     }
 
     @Override
-    public long writeTo(TransferableChannel channel) throws IOException {
+    public long writeTo(GatheringByteChannel channel) throws IOException {
         return send.writeTo(channel);
     }
 

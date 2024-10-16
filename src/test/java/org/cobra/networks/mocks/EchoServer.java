@@ -5,6 +5,7 @@ import org.cobra.networks.auth.SecurityProtocol;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public class EchoServer extends Thread {
         join();
     }
 
-    public String socketAddress() {
-        return serverSocket.getLocalSocketAddress().toString();
+    public InetSocketAddress getInetAddress() {
+        return (InetSocketAddress) serverSocket.getLocalSocketAddress();
     }
 }

@@ -2,18 +2,21 @@ package org.cobra.networks;
 
 import java.net.InetSocketAddress;
 
-public class ChannelNode {
+public class SocketNode {
 
-    private final String id;
+    private String id = null;
     private final int port;
     private final String host;
     private final InetSocketAddress inetAddress;
 
-    public ChannelNode(String host, int port) {
-        this.host = host;
-        this.port = port;
-        this.inetAddress = new InetSocketAddress(host, port);
-        this.id = CobraChannelIdentifier.identifier(inetAddress);
+    public SocketNode(InetSocketAddress inetAddress) {
+        this.inetAddress = inetAddress;
+        this.host = inetAddress.getAddress().getHostAddress();
+        this.port = inetAddress.getPort();
+    }
+
+    public SocketNode(String host, int port) {
+        this(new InetSocketAddress(host, port));
     }
 
     /**
@@ -24,15 +27,16 @@ public class ChannelNode {
     }
 
     public String id() {
+        if (id == null) id = CobraChannelIdentifier.identifier(inetAddress);
         return id;
     }
 
     public String host() {
-        return this.host;
+        return host;
     }
 
     public int port() {
-        return this.port;
+        return port;
     }
 
     @Override

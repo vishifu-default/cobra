@@ -22,7 +22,7 @@ public class SampleResponse extends AbstractResponse {
     }
 
     @Override
-    public ApiMessage data() {
+    public SampleResponseMessage data() {
         return data;
     }
 

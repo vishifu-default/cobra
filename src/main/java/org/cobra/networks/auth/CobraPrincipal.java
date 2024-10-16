@@ -43,4 +43,12 @@ public class CobraPrincipal implements Principal {
     public int hashCode() {
         return 31 * principalType.hashCode() + name.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "CobraPrincipal(" +
+                "name='" + name + '\'' +
+                ", principalType='" + principalType + '\'' +
+                ')';
+    }
 }

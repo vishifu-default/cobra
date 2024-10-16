@@ -3,6 +3,9 @@ package org.cobra.networks.requests;
 import org.cobra.networks.protocol.ApiData;
 import org.cobra.networks.protocol.ApiMessage;
 import org.cobra.networks.protocol.Apikey;
+import org.cobra.networks.protocol.MessageAccessor;
+
+import java.nio.ByteBuffer;
 
 public class HeaderResponse implements ApiData {
 
@@ -12,8 +15,13 @@ public class HeaderResponse implements ApiData {
         this.data = data;
     }
 
-    public HeaderResponse(short apikeyId, long correlationId) {
-        this.data = new HeaderResponseMessage(apikeyId, correlationId);
+    public HeaderResponse(short apikeyId, long correlationId, String clientId) {
+        this.data = new HeaderResponseMessage(apikeyId, correlationId, clientId);
+    }
+
+    public static HeaderResponse parse(ByteBuffer buffer) {
+        HeaderResponseMessage data = new HeaderResponseMessage(new MessageAccessor(buffer));
+        return new HeaderResponse(data);
     }
 
     public Apikey apikey() {

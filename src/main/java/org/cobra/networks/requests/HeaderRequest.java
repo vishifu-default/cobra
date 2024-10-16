@@ -47,7 +47,8 @@ public class HeaderRequest implements ApiData {
     public HeaderResponse toResponse() {
         return new HeaderResponse(new HeaderResponseMessage(
                 data.requestApikey,
-                data.correlationId
+                data.correlationId,
+                data.clientId
         ));
     }
 

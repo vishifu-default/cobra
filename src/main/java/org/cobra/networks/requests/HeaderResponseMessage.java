@@ -10,15 +10,17 @@ public class HeaderResponseMessage implements ApiMessage {
 
     short requestApikey;
     long correlationId;
+    String clientId;
 
     public HeaderResponseMessage() {
         this.requestApikey = -1;
         this.correlationId = INF_CORRELATION_ID;
     }
 
-    public HeaderResponseMessage(short requestApikey, long correlationId) {
+    public HeaderResponseMessage(short requestApikey, long correlationId, String clientId) {
         this.requestApikey = requestApikey;
         this.correlationId = correlationId;
+        this.clientId = clientId;
     }
 
     public HeaderResponseMessage(MessageReadable _readable) {
@@ -39,11 +41,13 @@ public class HeaderResponseMessage implements ApiMessage {
     public void write(MessageWritable _writable) {
         _writable.writeShort(requestApikey);
         _writable.writeLong(correlationId);
+        _writable.writeString(clientId);
     }
 
     @Override
     public void read(MessageReadable _readable) {
         requestApikey = _readable.readShort();
         correlationId = _readable.readLong();
+        clientId = _readable.readString();
     }
 }

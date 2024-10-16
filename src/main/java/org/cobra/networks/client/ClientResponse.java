@@ -5,6 +5,9 @@ import org.cobra.networks.requests.AbstractResponse;
 import org.cobra.networks.requests.HeaderRequest;
 import org.cobra.networks.requests.RequestCompletionCallback;
 
+import java.util.concurrent.atomic.AtomicLong;
+
+// todo: mark as deleted
 public class ClientResponse {
 
     private final String destination;
@@ -80,10 +83,6 @@ public class ClientResponse {
         return responseBody;
     }
 
-    public void onComplete() throws Exception {
-        if (callback != null)
-            callback.onComplete();
-    }
 
     @Override
     public String toString() {

@@ -3,6 +3,7 @@ package org.cobra.networks;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.GatheringByteChannel;
 
 /**
  * A network send backed by an array of ByteBuffer
@@ -12,7 +13,6 @@ public class SendByteBuffer implements Send {
     private final long size;
     private final ByteBuffer[] buffers;
     private long remaining;
-    private boolean pending = false;
 
     public SendByteBuffer(ByteBuffer... buffers) {
         this.buffers = buffers;
@@ -31,17 +31,16 @@ public class SendByteBuffer implements Send {
 
     @Override
     public boolean isCompleted() {
-        return remaining == 0 && !pending;
+        return remaining == 0;
     }
 
     @Override
-    public long writeTo(TransferableChannel channel) throws IOException {
+    public long writeTo(GatheringByteChannel channel) throws IOException {
         long writes = channel.write(buffers);
         if (writes < 0)
             throw new EOFException("attempt to write negative bytes to channel");
 
         remaining -= writes;
-        pending = channel.hasPendingWrites();
         return writes;
     }
 

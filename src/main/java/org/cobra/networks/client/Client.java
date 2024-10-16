@@ -5,10 +5,10 @@ import org.cobra.networks.requests.AbstractRequest;
 import org.cobra.networks.requests.RequestCompletionCallback;
 
 import java.io.Closeable;
-import java.util.List;
+import java.io.IOException;
 import java.util.Optional;
 
-public interface NetworkClient extends Closeable {
+public interface Client extends Closeable {
 
     /**
      * Test if application is currently ready to send request to the server, if not yet, attempt to connect.
@@ -57,45 +57,23 @@ public interface NetworkClient extends Closeable {
      * @param nowMs current timestamp (ms)
      * @return milliseconds to wait
      */
-    long connectionDelayMs(long nowMs);
-
-    /**
-     * Get the number of milliseconds to wait, base on the connection state and the throttle time, before attempt to
-     * send data, if the connection has been established but being throttled, return throttle delay, otherwise,
-     * return the connection delay
-     *
-     * @param nowMs current timestamp (ms)
-     * @return milliseconds to wait
-     */
-    long pollDelayMs(long nowMs);
+    long ioLatencyMs(long nowMs);
 
     /**
      * Queue up the given request for sending, requests can only be sent in READY_STATE
      *
      * @param clientRequest request to send
      * @param nowMs         current time (ms)
+     * @return true if send is complete, otherwise false.
      */
-    void send(ClientRequest clientRequest, long nowMs);
-
-    /**
-     * Do actual reads & writes from sockets
-     *
-     * @param timeout the maximum amount of time to wait for responses in millis, must be non-negative. The implementation
-     *                is free to use a lower value if appropriate
-     * @return list of response from socket
-     */
-    List<ClientResponse> poll(long timeout);
+    boolean send(ClientRequest clientRequest, long nowMs);
 
     /**
      * Disconnect the socket connection, if there is one. Any pending ClientRequest for this connection
      * will receive cancelled
      */
-    void disconnect();
+    void disconnect() throws IOException;
 
-    /**
-     * Wake up the client if it is currently blocked waiting for I/O
-     */
-    void wakeup();
 
     /**
      * Create new ClientRequest
@@ -112,27 +90,10 @@ public interface NetworkClient extends Closeable {
      *
      * @param requestBuilder request builder use for building request
      * @param creationMs     creation time of request (in millis)
-     * @param timeoutMs      timeout of request
      * @param callback       callback to invoked after received response
      * @return a new ClientRequest
      */
     ClientRequest createClientRequest(AbstractRequest.Builder<?> requestBuilder,
                                       long creationMs,
-                                      long timeoutMs,
                                       RequestCompletionCallback callback);
-
-    /**
-     * @return number of current inflight-requests in client.
-     */
-    int countInflightRequests();
-
-    /**
-     * Starting to shut down this client, this method maybe invoked by another thread while this client is being polled.
-     * No more further requests be sent using this client, the current poll() will be terminated using
-     * {@link #wakeup()},
-     * the client should be explicitly shutdown using {@link #close()} after poll returns, note that {@link #close()}
-     * should not be invoked concurrently while polling
-     */
-    void beginShutdown();
-
 }

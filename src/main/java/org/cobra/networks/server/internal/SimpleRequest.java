@@ -72,16 +72,9 @@ public class SimpleRequest {
 
     @Override
     public String toString() {
-        return "RequestEvent(" +
-                "apiLocalCompleteAtNanos=" + apiLocalCompleteAtNanos +
-                ", processorId=" + processorId +
-                ", requestContext=" + requestContext +
+        return "Request(" +
+                "processorId=" + processorId +
                 ", clientSession=" + clientSession +
-                ", memoryAlloc=" + memoryAlloc +
-                ", responseCompleteAtNanos=" + responseCompleteAtNanos +
-                ", requestDequeAtNanos=" + requestDequeAtNanos +
-                ", requestAndSize=" + requestAndSize +
-                ", buffer=" + buffer +
                 ')';
     }
 }

@@ -12,7 +12,7 @@ public class ChannelBuilderFactory {
     private static ChannelBuilder of(SecurityProtocol securityProtocol) {
         return switch (securityProtocol) {
             case PLAINTEXT -> new PlaintextChannelBuilder();
-            case SASL_PLAINTEXT -> throw new UnsupportedOperationException("implement me");
+            case SASL_PLAINTEXT -> throw new UnsupportedOperationException("SASL_PLAINTEXT is not supported yet");
             case null -> throw new IllegalArgumentException("Unknown security protocol");
         };
     }

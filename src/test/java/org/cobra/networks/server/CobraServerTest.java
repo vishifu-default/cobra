@@ -2,18 +2,27 @@ package org.cobra.networks.server;
 
 import org.cobra.commons.Clock;
 import org.cobra.commons.pools.MemoryAlloc;
-import org.cobra.networks.ChannelNode;
-import org.cobra.networks.client.*;
+import org.cobra.networks.SocketNode;
+import org.cobra.networks.client.ClientRequest;
+import org.cobra.networks.client.CobraClient;
+import org.cobra.networks.client.CobraClientFactory;
+import org.cobra.networks.client.DefaultClientConfigs;
+import org.cobra.networks.protocol.Apikey;
+import org.cobra.networks.requests.AbstractResponse;
+import org.cobra.networks.requests.RequestCompletionCallback;
 import org.cobra.networks.requests.SampleRequest;
+import org.cobra.networks.requests.SampleResponse;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class CobraServerTest {
 
-    private final ChannelNode channelNode = new ChannelNode("localhost", 9002);
+    private static final Logger log = LoggerFactory.getLogger(CobraServerTest.class);
     private final Clock clock = Clock.system();
 
     @Test
@@ -28,47 +37,41 @@ public class CobraServerTest {
     @Test
     public void sendAndReceive() {
         /* bootstrap server */
-        CobraServer server = new CobraServer(
+        final CobraServer server = new CobraServer(
                 Clock.system(),
                 MemoryAlloc.NONE,
                 DefaultServerConfigs.CONFIG_DEF
         );
         server.bootstrap();
 
-        /* init client */
-        CobraNetworkClient clientNetwork = CobraNetworkClientFactory.createClientNetwork(
-                channelNode,
-                DefaultClientConfigs.CONFIG_DEF,
-                Clock.system(),
-                MemoryAlloc.NONE,
-                500);
+        final SocketNode socketNode = new SocketNode("localhost", 9002);
+        final CobraClient client = CobraClientFactory.createClient(clock, MemoryAlloc.NONE, socketNode,
+                DefaultClientConfigs.CONFIG_DEF);
 
-        awaitReady(clientNetwork);
+        client.ready(clock.milliseconds());
 
-        assertRequestResponse(clientNetwork);
+        SampleRequest.Builder builder = new SampleRequest.Builder("foo");
+        ClientRequest clientRequest = client.createClientRequest(builder, clock.milliseconds(),
+                new SampleRequestCompletionCallback());
+
+        client.send(clientRequest, clock.milliseconds());
     }
 
-    private void assertRequestResponse(NetworkClient client) {
-        awaitReady(client);
-        SampleRequest.Builder builder = new SampleRequest.Builder("test");
-        ClientRequest request = client.createClientRequest(builder, clock.milliseconds());
+    private static void assertSampleResponse(SampleResponse response) {
+        assertEquals(Apikey.SAMPLE_REQUEST.id(), response.apikey().id());
+        assertEquals("foo", response.data().getText());
+    }
 
-        client.send(request, clock.milliseconds());
-        client.poll(1);
+    private static final class SampleRequestCompletionCallback implements RequestCompletionCallback {
 
-        assertEquals(1, client.countInflightRequests(), "send 1 request");
-
-        boolean shouldBreak = false;
-
-        while (!shouldBreak) {
-            List<ClientResponse> responses = client.poll(1);
-            if (!responses.isEmpty())
-                shouldBreak = true;
+        @Override
+        public void consume(AbstractResponse response) {
+            invokeConsume((SampleResponse) response);
         }
-    }
 
-    private void awaitReady(NetworkClient client) {
-        while (!client.ready(clock.milliseconds()))
-            client.poll(1L);
+        private void invokeConsume(SampleResponse response) {
+            log.info("consume response {}", response);
+            assertSampleResponse(response);
+        }
     }
 }

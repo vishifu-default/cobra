@@ -4,7 +4,7 @@ import org.cobra.commons.Jvm;
 import org.cobra.commons.errors.AuthenticationException;
 import org.cobra.networks.ConnectionState;
 
-public class ConnectionStateControl {
+public class ConnectionStateControlPlane {
 
     static final int RECONNECT_BACKOFF_EXP_BASE = 2;
     static final int CONNECTION_SETUP_TIMEOUT_EXP_BASE = 2;
@@ -17,16 +17,16 @@ public class ConnectionStateControl {
     private AuthenticationException authException;
 
     long lastAttemptConnectAtMs = Jvm.INF_TIMESTAMP;
-    long reconnectBackoffMs = 0;
-    long connectionSetupTimeoutMs = 0;
+    int reconnectBackoffMs = 0;
+    int connectionSetupTimeoutMs = 0;
     int failAttempts = 0;
     int failConnectAttempts = 0;
 
-    public ConnectionStateControl(
-            long reconnectBackoffMs,
-            long reconnectBackoffMaxMs,
-            long connectionSetupTimeoutMs,
-            long connectionSetupTimeoutMaxMs
+    public ConnectionStateControlPlane(
+            int reconnectBackoffMs,
+            int reconnectBackoffMaxMs,
+            int connectionSetupTimeoutMs,
+            int connectionSetupTimeoutMaxMs
     ) {
         this.reconnectBackoff = new ExponentialBackoff(reconnectBackoffMs, reconnectBackoffMaxMs,
                 RECONNECT_BACKOFF_EXP_JITTER, RECONNECT_BACKOFF_EXP_BASE);
@@ -61,7 +61,7 @@ public class ConnectionStateControl {
     }
 
     public boolean isReady() {
-        return connectionState == ConnectionState.READY;
+        return connectionState.isConnected();
     }
 
     public boolean canConnect(long nowMs) {
@@ -79,10 +79,6 @@ public class ConnectionStateControl {
         return authException;
     }
 
-    public boolean isConnected() {
-        return connectionState.isConnected();
-    }
-
     public boolean isDisconnected() {
         return connectionState.isDisconnected();
     }
@@ -94,7 +90,7 @@ public class ConnectionStateControl {
         return nowMs - lastAttemptConnectAtMs > connectionSetupTimeoutMs;
     }
 
-    public long ioWorkDelayMs(long nowMs) {
+    public long ioLatencyMs(long nowMs) {
         if (connectionState.isConnecting())
             return connectionSetupTimeoutMs;
         if (connectionState.isDisconnected()) {

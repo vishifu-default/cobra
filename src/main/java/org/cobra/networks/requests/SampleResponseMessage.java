@@ -10,7 +10,6 @@ public class SampleResponseMessage implements ApiMessage {
 
     String text;
 
-
     public SampleResponseMessage() {
     }
 
@@ -20,6 +19,10 @@ public class SampleResponseMessage implements ApiMessage {
 
     public SampleResponseMessage(MessageReadable _readable) {
         read(_readable);
+    }
+
+    public String getText() {
+        return text;
     }
 
     @Override

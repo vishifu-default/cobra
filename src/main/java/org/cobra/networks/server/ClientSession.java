@@ -39,7 +39,7 @@ public class ClientSession {
     @Override
     public String toString() {
         return "ClientSession(" +
-                "clientIpAddress=" + clientIpAddress +
+                "clientIpAddress='" + clientIpAddress + '\'' +
                 ", principal=" + principal +
                 ')';
     }

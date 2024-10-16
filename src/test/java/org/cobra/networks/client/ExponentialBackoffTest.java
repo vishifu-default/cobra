@@ -9,9 +9,9 @@ public class ExponentialBackoffTest {
 
     @Test
     public void testExponentialBackoff() {
-        long scaleFactor = 100;
+        int scaleFactor = 100;
         int ratio = 2;
-        long backoffMax = 2000;
+        int backoffMax = 2000;
         double jitter = .2f;
 
         ExponentialBackoff exponentBackoff = new ExponentialBackoff(scaleFactor, backoffMax, jitter, ratio);

@@ -20,9 +20,11 @@ public class CobraApis implements ApiHandler {
 
     @Override
     public void handle(SimpleRequest simpleRequest) {
-        log.debug("handle request {} from {}; security_protocol: {}; principal: {}",
-                simpleRequest, simpleRequest.getRequestContext().getChannelId(),
-                simpleRequest.getRequestContext().getSecurityProtocol(), simpleRequest.getRequestContext().getPrincipal());
+        log.debug("handle request {} from '{}'; security_protocol: {}; principal: {}",
+                simpleRequest.getHeaderRequest().apikey(),
+                simpleRequest.getRequestContext().getChannelId(),
+                simpleRequest.getRequestContext().getSecurityProtocol(),
+                simpleRequest.getRequestContext().getPrincipal());
 
         Apikey apikey = simpleRequest.getRequestContext().getHeader().apikey();
 

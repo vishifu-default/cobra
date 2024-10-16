@@ -15,7 +15,7 @@ public class SampleRequestApi {
     private static final Logger log = LoggerFactory.getLogger(SampleRequestApi.class);
 
     public static void handle(SimpleRequest simpleRequest, RequestChanel requestChanel) {
-        log.info("handle sample request {}", simpleRequest);
+        log.info("handle sample request {}; ({})", simpleRequest, simpleRequest.body());
 
         MessageAccessor accessor = new MessageAccessor(7);
         accessor.writeString("foo");
