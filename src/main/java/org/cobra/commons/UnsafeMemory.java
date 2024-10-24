@@ -14,6 +14,8 @@ public class UnsafeMemory {
     private static final Unsafe UNSAFE;
     public static final UnsafeMemory INSTANCE;
 
+    private static final int ARRAY_BASE_OFFSET = Unsafe.ARRAY_BYTE_BASE_OFFSET;
+
     static {
         Field theUnsafe;
         try {
@@ -30,7 +32,31 @@ public class UnsafeMemory {
         return UNSAFE.pageSize();
     }
 
-    public void putByteVolatile(Object object,long offset, byte b) {
+    public void unsafePutByte(@NotNull Object object, long offset, byte b) {
+        UNSAFE.putByte(object,  Unsafe.ARRAY_BYTE_BASE_OFFSET + offset, b);
+    }
+
+    public byte unsafeGetByte(@NotNull Object object, long offset) {
+        return UNSAFE.getByte(object, ARRAY_BASE_OFFSET + offset);
+    }
+
+    public void unsafePutBytes(@NotNull Object object, long offset, byte[] src) {
+        UNSAFE.copyMemory(src, ARRAY_BASE_OFFSET,
+                object, ARRAY_BASE_OFFSET + offset, src.length);
+    }
+
+    public void unsafePutBytes(@NotNull Object object, long offset, byte[] src, int srcOffset, int len) {
+        UNSAFE.copyMemory(src, ARRAY_BASE_OFFSET + srcOffset,
+                object, ARRAY_BASE_OFFSET + offset, len);
+    }
+
+    public byte[] unsafeGetBytes(@NotNull Object object, long offset, int len) {
+        byte[] result = new byte[len];
+        UNSAFE.copyMemory(object, ARRAY_BASE_OFFSET + offset, result, ARRAY_BASE_OFFSET, len);
+        return result;
+    }
+
+    public void putByteVolatile(Object object, long offset, byte b) {
         UNSAFE.putByteVolatile(object, offset, b);
     }
 
