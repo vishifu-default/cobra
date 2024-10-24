@@ -15,5 +15,14 @@ public class Jvm {
     /* By using this constant, we'll let OS determine socket buffer size */
     public static final int USE_DEFAULT_SOCKET_BUFFER_SIZE = -1;
 
+    /* Indicating an infinite timestamp */
     public static final long INF_TIMESTAMP = -1L;
+
+    /* Control the assertion define */
+    public static boolean SKIP_ASSERTION = false;
+
+    /* An instance that provides UNSAFE manipulation for memory */
+    public static UnsafeMemory memory() {
+        return UnsafeMemory.INSTANCE;
+    }
 }
