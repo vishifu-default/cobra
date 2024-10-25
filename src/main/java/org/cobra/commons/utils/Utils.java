@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Random;
 
 public class Utils {
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
@@ -94,4 +95,35 @@ public class Utils {
 
         return min;
     }
+
+    public static boolean isLog2(long val) {
+        return (val & (val - 1)) == 0;
+    }
+
+    public static boolean isLog2(int val) {
+        return (val & (val - 1)) == 0;
+    }
+
+    public static int randInt() {
+        return new Random().nextInt();
+    }
+
+    public static int randInt(int l, int h) {
+        return new Random().nextInt(l, h);
+    }
+
+    public static long randLong() {
+        return new Random().nextInt();
+    }
+
+    public static long randLong(int l, int h) {
+        return new Random().nextInt(l, h);
+    }
+
+    public static byte[] randBytes(int len) {
+        byte[] result = new byte[len];
+        new Random().nextBytes(result);
+        return result;
+    }
+
 }
