@@ -1,5 +1,6 @@
 package org.cobra.commons;
 
+import org.cobra.core.encoding.VarLenHandles;
 import org.cobra.networks.auth.PrincipalBuilder;
 import org.cobra.networks.auth.PrincipalBuilderImpl;
 
@@ -24,5 +25,9 @@ public class Jvm {
     /* An instance that provides UNSAFE manipulation for memory */
     public static UnsafeMemory memory() {
         return UnsafeMemory.INSTANCE;
+    }
+
+    public static VarLenHandles varLenHandles() {
+        return VarLenHandles.INSTANCE;
     }
 }
