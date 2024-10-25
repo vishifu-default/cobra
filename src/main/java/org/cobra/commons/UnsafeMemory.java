@@ -13,8 +13,7 @@ public class UnsafeMemory {
 
     private static final Unsafe UNSAFE;
     public static final UnsafeMemory INSTANCE;
-
-    private static final int ARRAY_BASE_OFFSET = Unsafe.ARRAY_BYTE_BASE_OFFSET;
+    public static final int ARRAY_BASE_OFFSET = Unsafe.ARRAY_BYTE_BASE_OFFSET;
 
     static {
         Field theUnsafe;

@@ -1,7 +1,7 @@
 package org.cobra.core.encoding;
 
 import org.cobra.core.memory.Bytes;
-import org.cobra.core.memory.HeapBytes;
+import org.cobra.core.memory.internal.HeapBytes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +90,7 @@ class VarLenHandlesTest {
         assertEquals(5, varHandles.sizeOfVarint(1 << 28));
         assertEquals(5, varHandles.sizeOfVarint(1 << 29));
         /* int_64_bits */
-        assertEquals(10, varHandles.sizeOfVarint(0L));
+        assertEquals(10, varHandles.sizeOfVarint(-1L));
         assertEquals(5, varHandles.sizeOfVarint((1L << 35) - 1));
         assertEquals(6, varHandles.sizeOfVarint(1L << 35));
         assertEquals(6, varHandles.sizeOfVarint((1L << 42) - 1));

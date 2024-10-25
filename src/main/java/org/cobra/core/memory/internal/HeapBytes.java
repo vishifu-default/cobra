@@ -1,6 +1,6 @@
-package org.cobra.core.memory;
+package org.cobra.core.memory.internal;
 
-import org.cobra.core.memory.internal.SegmentedBytesMemory;
+import org.cobra.core.memory.Bytes;
 
 /**
  * Provides simple ways to manipulate on-heap bytes with offset, we can seek to any offset and read its value.

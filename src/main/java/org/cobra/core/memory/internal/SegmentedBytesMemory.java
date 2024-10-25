@@ -1,8 +1,8 @@
 package org.cobra.core.memory.internal;
 
 import org.cobra.commons.Jvm;
+import org.cobra.commons.UnsafeMemory;
 import org.cobra.commons.pools.BytesPool;
-import sun.misc.Unsafe;
 
 import java.util.Arrays;
 
@@ -75,8 +75,8 @@ public class SegmentedBytesMemory {
             int remainingSegmentSize = segmentSize - whichByte;
             int toCopies = Math.min(len, remainingSegmentSize);
             checkResizing(whichSegment);
-            Jvm.memory().copyMemory(src, srcOffset + Unsafe.ARRAY_BYTE_BASE_OFFSET,
-                    segments[whichSegment], whichByte + Unsafe.ARRAY_BYTE_BASE_OFFSET, toCopies);
+            Jvm.memory().copyMemory(src, srcOffset + UnsafeMemory.ARRAY_BASE_OFFSET,
+                    segments[whichSegment], whichByte + UnsafeMemory.ARRAY_BASE_OFFSET, toCopies);
 
             len -= toCopies;
             srcOffset += toCopies;
@@ -117,8 +117,8 @@ public class SegmentedBytesMemory {
             int toCopies = Math.min(len, remainingSegmentSize);
             checkResizing(whichSegment);
 
-            Jvm.memory().copyMemory(segments[whichSegment], (whichByte + Unsafe.ARRAY_BYTE_BASE_OFFSET),
-                    dest, destOffset + Unsafe.ARRAY_BYTE_BASE_OFFSET, len);
+            Jvm.memory().copyMemory(segments[whichSegment], (whichByte + UnsafeMemory.ARRAY_BASE_OFFSET),
+                    dest, destOffset + UnsafeMemory.ARRAY_BASE_OFFSET, len);
             len -= toCopies;
             srcOffset += toCopies;
             destOffset += toCopies;
@@ -127,7 +127,7 @@ public class SegmentedBytesMemory {
 
     private void copyMemoryVolatile0(byte[] src, int srcOffset, byte[] dest, int destOffset, int len) {
         int endOffset = srcOffset + len;
-        destOffset += Unsafe.ARRAY_BYTE_BASE_OFFSET;
+        destOffset += UnsafeMemory.ARRAY_BASE_OFFSET;
 
         while (srcOffset < endOffset) {
             Jvm.memory().putByteVolatile(dest, destOffset++, src[srcOffset++]);
