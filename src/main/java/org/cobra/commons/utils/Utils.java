@@ -78,4 +78,20 @@ public class Utils {
 
         return min;
     }
+
+    public static int max(int first, int... values) {
+        int max = first;
+        for (int v : values)
+            max = Math.max(max, v);
+
+        return max;
+    }
+
+    public static int min(int first, int... values) {
+        int min = first;
+        for (int v : values)
+            min = Math.min(min, v);
+
+        return min;
+    }
 }
