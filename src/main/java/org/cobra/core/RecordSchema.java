@@ -1,19 +1,19 @@
 package org.cobra.core;
 
 import org.cobra.commons.errors.CobraException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
 
-public class CobraSchema {
+public class RecordSchema {
 
-    private final String clazzname;
+    private final Class<?> clazz;
 
-    public CobraSchema(String clazzname) {
-        Objects.requireNonNull(clazzname, "clazz name is null");
-        this.clazzname = clazzname;
+    public RecordSchema(@NotNull Class<?> clazz) {
+        this.clazz = Objects.requireNonNull(clazz, "clazz is null");
     }
 
     /**
@@ -21,17 +21,28 @@ public class CobraSchema {
      */
     public void write(OutputStream os) {
         try (DataOutputStream dataOs = new DataOutputStream(os)) {
-            dataOs.writeUTF(this.clazzname);
+            dataOs.writeUTF(getClazzName());
         } catch (IOException e) {
             throw new CobraException(e);
         }
     }
 
-    public final String clazzName() {
-        return this.clazzname;
+    public Class<?> getClazz() {
+        return this.clazz;
+    }
+
+    public String getClazzName() {
+        return this.clazz.getTypeName();
     }
 
     public final boolean isDefaultExtractor() {
         return true; // todo: we will pass extractor function here.
+    }
+
+    @Override
+    public String toString() {
+        return "RecordSchema{" +
+                "clazz=" + clazz +
+                '}';
     }
 }

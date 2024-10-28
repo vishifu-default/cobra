@@ -8,13 +8,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class CobraSchemaTest {
+class RecordSchemaTest {
 
     @BeforeEach
     void setUp() {
@@ -27,22 +24,22 @@ class CobraSchemaTest {
     @Test
     void write() throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        String clazz = "test.sample.clazz";
-        CobraSchema schema = new CobraSchema(clazz);
+        RecordSchema schema = new RecordSchema(Sample.class);
 
         schema.write(os);
         os.flush();
 
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(os.toByteArray()));
         String readClazz = dis.readUTF();
-        assertEquals(clazz, readClazz);
+        assertEquals(Sample.class.getTypeName(), readClazz);
     }
 
     @Test
-    void clazzName() {
-        String clazz = "test.sample.clazz";
-        CobraSchema schema = new CobraSchema(clazz);
+    void getClazzName() {
+        RecordSchema schema = new RecordSchema(Sample.class);
+        assertEquals(Sample.class.getTypeName(), schema.getClazzName());
+    }
 
-        assertEquals(clazz, schema.clazzName());
+    private static final class Sample {
     }
 }
