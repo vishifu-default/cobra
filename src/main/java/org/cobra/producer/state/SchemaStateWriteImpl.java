@@ -1,13 +1,13 @@
 package org.cobra.producer.state;
 
-import org.cobra.core.CobraSchema;
+import org.cobra.core.RecordSchema;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class SchemaStateWriteImpl implements SchemaStateWrite {
     @Override
-    public CobraSchema getSchema() {
+    public RecordSchema getSchema() {
         throw new UnsupportedOperationException("implement me");
     }
 

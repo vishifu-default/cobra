@@ -1,6 +1,6 @@
 package org.cobra.core.objects;
 
-import org.cobra.core.CobraSchema;
+import org.cobra.core.RecordSchema;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +13,7 @@ public class BlobHeaderContext {
 
     private long originRandomizedTag;
     private long destinationRandomizedTag;
-    private Collection<CobraSchema> schemas = new ArrayList<>();
+    private Collection<RecordSchema> schemas = new ArrayList<>();
     private Map<Integer, Class<?>> registeredResolverClassIds = new HashMap<>();
 
     public long getDestinationRandomizedTag() {
@@ -40,11 +40,11 @@ public class BlobHeaderContext {
         this.registeredResolverClassIds = registeredResolverClassIds;
     }
 
-    public Collection<CobraSchema> getSchemas() {
+    public Collection<RecordSchema> getSchemas() {
         return schemas;
     }
 
-    public void setSchemas(Collection<CobraSchema> schemas) {
+    public void setSchemas(Collection<RecordSchema> schemas) {
         this.schemas = schemas;
     }
 }

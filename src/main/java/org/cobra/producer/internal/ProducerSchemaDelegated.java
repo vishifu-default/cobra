@@ -1,6 +1,6 @@
 package org.cobra.producer.internal;
 
-import org.cobra.core.CobraSchema;
+import org.cobra.core.RecordSchema;
 import org.cobra.producer.state.SchemaStateWrite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +39,11 @@ public class ProducerSchemaDelegated {
     }
 
     /**
-     * Turns a map of {@link SchemaStateWrite} into a set of {@link CobraSchema}
+     * Turns a map of {@link SchemaStateWrite} into a set of {@link RecordSchema}
      *
-     * @return current set of {@link CobraSchema} in context
+     * @return current set of {@link RecordSchema} in context
      */
-    public Set<CobraSchema> getSchemas() {
+    public Set<RecordSchema> getSchemas() {
         return this.typenameToStateWrites.values().stream()
                 .map(SchemaStateWrite::getSchema)
                 .collect(Collectors.toSet());

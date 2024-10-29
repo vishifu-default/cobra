@@ -1,13 +1,13 @@
 package org.cobra.producer.state;
 
-import org.cobra.core.CobraSchema;
+import org.cobra.core.RecordSchema;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public interface SchemaStateWrite {
 
-    CobraSchema getSchema();
+    RecordSchema getSchema();
 
     boolean isModified();
 
