@@ -140,7 +140,8 @@ public class ElasticNativeBytes implements Bytes {
 
     @Override
     public void clear() {
-        throw new UnsupportedOperationException("implement me");
+        for (ElasticMemoryBlock block : memoryBlocks)
+            block.clear();
     }
 
     private ElasticMemoryBlock block(int index) {

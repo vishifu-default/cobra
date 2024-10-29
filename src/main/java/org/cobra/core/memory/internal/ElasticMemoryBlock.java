@@ -87,4 +87,8 @@ class ElasticMemoryBlock {
         if (offset >= capacity())
             throw new IndexOutOfBoundsException(GIVEN_OFFSET_OUT_OF_BOUND);
     }
+
+    public void clear() {
+        this.buffer.clear();
+    }
 }

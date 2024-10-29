@@ -19,6 +19,8 @@ public class Jvm {
     /* Indicating an infinite timestamp */
     public static final long INF_TIMESTAMP = -1L;
 
+    public static final int MAX_SINGLE_BUFFER_CAPACITY = (1 << 30);
+
     /* Control the assertion define */
     public static boolean SKIP_ASSERTION = false;
 
@@ -27,7 +29,12 @@ public class Jvm {
         return UnsafeMemory.INSTANCE;
     }
 
+    /* An singleton instance that provide var-len handles */
     public static VarLenHandles varLenHandles() {
         return VarLenHandles.INSTANCE;
+    }
+
+    public static class File {
+        public static final String READ_ONLY_MODE = "r";
     }
 }
