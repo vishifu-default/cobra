@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-final class ElasticNativeBytesTest {
+final class ElasticNativeBytesStoreTest {
 
     private static final int SMALL_ALIGN = 3;
 

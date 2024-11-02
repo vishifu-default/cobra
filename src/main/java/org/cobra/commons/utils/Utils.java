@@ -104,6 +104,13 @@ public class Utils {
         return (val & (val - 1)) == 0;
     }
 
+    public static int log2(int val) {
+        if (val < 0)
+            throw new IllegalArgumentException("Negative value: " + val);
+
+        return 31 - Integer.numberOfLeadingZeros(val);
+    }
+
     public static int randInt() {
         return new Random().nextInt();
     }

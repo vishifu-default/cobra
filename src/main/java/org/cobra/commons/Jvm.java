@@ -34,6 +34,12 @@ public class Jvm {
         return VarLenHandles.INSTANCE;
     }
 
+    public static org.cobra.core.memory.internal.UnsafeMemory ofUnsafeMemory() {
+        return org.cobra.core.memory.internal.UnsafeMemory.MEMORY;
+    }
+
+    public static final int DEFAULT_PAGE_CHUNK_SIZE_BYTE = 32;
+
     public static class File {
         public static final String READ_ONLY_MODE = "r";
     }
