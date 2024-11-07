@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.unsafe.UnsafeInput;
 import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
 import org.cobra.commons.errors.CobraException;
+import org.cobra.commons.utils.Utils;
 import org.cobra.core.RecordSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class RecordSerdeImpl implements RecordSerde {
             Object result = kryo.readClassAndObject(this.unsafeInput);
             this.unsafeInput.reset();
 
-            return (T) result;
+            return Utils.uncheckedCast(result);
         } catch (Exception e) {
             log.error("Failed to deserialize object {}", bytes, e);
             throw new CobraException(e);
