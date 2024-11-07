@@ -6,6 +6,9 @@ target/
 ### Misc ###
 misc/
 
+# gradle
+.gradle/
+
 ### IntelliJ IDEA ###
 .idea/
 .idea/modules.xml
