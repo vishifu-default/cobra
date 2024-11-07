@@ -1,6 +1,7 @@
 package org.cobra.commons;
 
 import org.cobra.core.encoding.VarLenHandles;
+import org.cobra.core.memory.internal.OSMemory;
 import org.cobra.networks.auth.PrincipalBuilder;
 import org.cobra.networks.auth.PrincipalBuilderImpl;
 
@@ -24,20 +25,17 @@ public class Jvm {
     /* Control the assertion define */
     public static boolean SKIP_ASSERTION = false;
 
-    /* An instance that provides UNSAFE manipulation for memory */
-    public static UnsafeMemory memory() {
-        return UnsafeMemory.INSTANCE;
-    }
-
-    /* An singleton instance that provide var-len handles */
-    public static VarLenHandles varLenHandles() {
+    /* A singleton instance that provide var-len handles */
+    public static VarLenHandles varint() {
         return VarLenHandles.INSTANCE;
     }
 
-    public static org.cobra.core.memory.internal.UnsafeMemory ofUnsafeMemory() {
-        return org.cobra.core.memory.internal.UnsafeMemory.MEMORY;
+    /* A singleton instance that provide unsafe memory */
+    public static OSMemory osMemory() {
+        return OSMemory.MEMORY;
     }
 
+    public static final int DEFAULT_MEMORY_THRESHOLD = 1024 * 1024;
     public static final int DEFAULT_PAGE_CHUNK_SIZE_BYTE = 32;
 
     public static class File {

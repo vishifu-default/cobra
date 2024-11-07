@@ -111,6 +111,15 @@ public class Utils {
         return 31 - Integer.numberOfLeadingZeros(val);
     }
 
+    public static int nextPowerOf2(int val) {
+        return val == 0 ? 0 : 1 << (32 - Integer.numberOfLeadingZeros(val - 1));
+
+    }
+
+    public static long nextPowerOf2(long val) {
+        return val == 0 ? 0 : 1L << (32 - Long.numberOfLeadingZeros(val - 1));
+    }
+
     public static int randInt() {
         return new Random().nextInt();
     }
@@ -133,4 +142,8 @@ public class Utils {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T uncheckedCast(Object o) {
+        return (T) o;
+    }
 }

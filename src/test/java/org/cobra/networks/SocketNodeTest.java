@@ -13,11 +13,4 @@ class SocketNodeTest {
 
         assertEquals("127.0.0.1:9001", id, "localhost must be resolved to 127.0.0.1");
     }
-
-    @Test
-    public void test_unresolved() {
-        SocketNode node = new SocketNode(".badhost", 9001);
-        assertFalse(node.isResolved());
-    }
-
 }

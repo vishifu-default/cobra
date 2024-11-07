@@ -4,23 +4,25 @@ import org.cobra.commons.Jvm;
 import org.cobra.commons.errors.CobraException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class UnsafeMemory {
+public class OSMemory {
 
     private final static sun.misc.Unsafe UNSAFE;
-    public final static UnsafeMemory MEMORY;
+    public final static OSMemory MEMORY;
 
-    public static final int ARRAY_BYTE_BASE_OFFSET = Unsafe.ARRAY_BYTE_BASE_OFFSET;
+    public static final int ARRAY_BYTE_BASE_OFFSET = sun.misc.Unsafe.ARRAY_BYTE_BASE_OFFSET;
     private static final boolean SKIP_ASSERT = Jvm.SKIP_ASSERTION;
-    private static final int UNSAFE_IO_THRESHOLD = 1024 * 1024;
+    private static final int UNSAFE_IO_THRESHOLD = Jvm.DEFAULT_MEMORY_THRESHOLD;
 
     private final AtomicLong nativeMemUsed = new AtomicLong(0);
+
+    /* Prevent construct outside */
+    private OSMemory() {}
 
     /* static construct for Unsafe and Instance */
     static {
@@ -29,7 +31,7 @@ public class UnsafeMemory {
             sunUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             sunUnsafe.setAccessible(true);
             UNSAFE = (sun.misc.Unsafe) sunUnsafe.get(null);
-            MEMORY = new UnsafeMemory();
+            MEMORY = new OSMemory();
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new CobraException(e);
         }
@@ -84,12 +86,12 @@ public class UnsafeMemory {
         UNSAFE.putByte(address, i8);
     }
 
-    public void writeByte(@NotNull Object object, long offset, byte i8) {
+    public void writeByte(Object object, long offset, byte i8) {
         assert SKIP_ASSERT || offset >= 0;
         UNSAFE.putByte(object, offset, i8);
     }
 
-    public void writeByteVolatile(@NotNull Object object, long offset, byte i8) {
+    public void writeByteVolatile(Object object, long offset, byte i8) {
         assert SKIP_ASSERT || offset >= 0;
         UNSAFE.putByteVolatile(object, offset, i8);
     }
@@ -99,12 +101,12 @@ public class UnsafeMemory {
         return UNSAFE.getByte(address);
     }
 
-    public byte readByte(@NotNull Object object, long offset) {
+    public byte readByte(Object object, long offset) {
         assert SKIP_ASSERT || offset >= 0;
         return UNSAFE.getByte(object, offset);
     }
 
-    public byte readByteVolatile(@NotNull Object object, long offset) {
+    public byte readByteVolatile(Object object, long offset) {
         assert SKIP_ASSERT || offset >= 0;
         return UNSAFE.getByteVolatile(object, offset);
     }
@@ -114,12 +116,12 @@ public class UnsafeMemory {
         UNSAFE.putInt(address, i32);
     }
 
-    public void writeInt(@NotNull Object object, long offset, int i32) {
+    public void writeInt(Object object, long offset, int i32) {
         assert SKIP_ASSERT || offset >= 0;
         UNSAFE.putInt(object, offset, i32);
     }
 
-    public void writeIntVolatile(@NotNull Object object, long offset, int i32) {
+    public void writeIntVolatile(Object object, long offset, int i32) {
         assert SKIP_ASSERT || offset >= 0;
         UNSAFE.putIntVolatile(object, offset, i32);
     }
@@ -129,12 +131,12 @@ public class UnsafeMemory {
         return UNSAFE.getInt(address);
     }
 
-    public int readInt(@NotNull Object object, long offset) {
+    public int readInt(Object object, long offset) {
         assert SKIP_ASSERT || offset >= 0;
         return UNSAFE.getInt(object, offset);
     }
 
-    public int readIntVolatile(@NotNull Object object, long offset) {
+    public int readIntVolatile(Object object, long offset) {
         assert SKIP_ASSERT || offset >= 0;
         return UNSAFE.getIntVolatile(object, offset);
     }
@@ -144,12 +146,12 @@ public class UnsafeMemory {
         UNSAFE.putLong(address, i64);
     }
 
-    public void writeLong(@NotNull Object object, long offset, long i64) {
+    public void writeLong(Object object, long offset, long i64) {
         assert SKIP_ASSERT || offset >= 0;
         UNSAFE.putLong(object, offset, i64);
     }
 
-    public void writeLongVolatile(@NotNull Object object, long offset, long i64) {
+    public void writeLongVolatile(Object object, long offset, long i64) {
         assert SKIP_ASSERT || offset >= 0;
         UNSAFE.putLongVolatile(object, offset, i64);
     }
@@ -159,12 +161,12 @@ public class UnsafeMemory {
         return UNSAFE.getLong(address);
     }
 
-    public long readLong(@NotNull Object object, long offset) {
+    public long readLong(Object object, long offset) {
         assert SKIP_ASSERT || offset >= 0;
         return UNSAFE.getLong(object, offset);
     }
 
-    public long readLongVolatile(@NotNull Object object, long offset) {
+    public long readLongVolatile(Object object, long offset) {
         assert SKIP_ASSERT || offset >= 0;
         return UNSAFE.getLongVolatile(object, offset);
     }
@@ -201,8 +203,8 @@ public class UnsafeMemory {
 
         if (src instanceof byte[]) {
             if (dest instanceof byte[])
-                copyMemory((byte[]) src, ARRAY_BYTE_BASE_OFFSET + Math.toIntExact(srcOffset),
-                        (byte[]) dest, ARRAY_BYTE_BASE_OFFSET + Math.toIntExact(destOffset), len);
+                copyMemory((byte[]) src, Math.toIntExact(srcOffset),
+                        (byte[]) dest, Math.toIntExact(destOffset), len);
             else
                 copyMemoryLoops(src, ARRAY_BYTE_BASE_OFFSET + Math.toIntExact(srcOffset), dest, destOffset, len);
             return;
@@ -212,7 +214,7 @@ public class UnsafeMemory {
             if (dest == null)
                 copyMemory(srcOffset, destOffset, len);
             else
-                copyMemory(null, srcOffset, dest, destOffset, len);
+                copyMemoryLoops(null, srcOffset, dest, destOffset, len);
             return;
         }
 
@@ -245,7 +247,7 @@ public class UnsafeMemory {
             int i32 = UNSAFE.getInt(src, srcOffset + i);
             UNSAFE.putInt(dest, destOffset + i, i32);
         }
-        for (; i < len - 1; i++) {
+        for (; i < len; i++) {
             byte b = UNSAFE.getByte(src, srcOffset + i);
             UNSAFE.putByte(dest, destOffset + i, b);
         }

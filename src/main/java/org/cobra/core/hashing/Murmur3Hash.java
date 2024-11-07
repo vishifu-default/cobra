@@ -1,7 +1,5 @@
 package org.cobra.core.hashing;
 
-import org.cobra.core.memory.Bytes;
-
 public final class Murmur3Hash {
     private static final int MURMUR3_SEED = 0xcceaccf9;
     private static final int c1 = 0xcc9e2d51;
@@ -47,19 +45,6 @@ public final class Murmur3Hash {
         hash ^= (hash >>> 16);
 
         return hash;
-    }
-
-    /**
-     * Implementation of Murmur3 (non-cryptographic hash function)
-     *
-     * @param data   byte data to hash.
-     * @param offset offset start to read for hashing.
-     * @param len    len of data hashing.
-     * @return MurMur3 hashing key.
-     */
-    public static int hash(Bytes data, long offset, int len) {
-        byte[] backBytes = data.readBlock(len, offset);
-        return hash(backBytes);
     }
 
     public static int fmix(int h) {
