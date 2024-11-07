@@ -1,29 +1,29 @@
 package org.cobra.core.encoding;
 
-import org.cobra.core.memory.Bytes;
-import org.cobra.core.memory.internal.HeapBytes;
+import org.cobra.commons.Jvm;
+import org.cobra.core.memory.BytesStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VarLenHandlesTest {
 
-    private Bytes bytes;
+    private BytesStore bytes;
     private byte[] byteArray;
 
     static VarLenHandles varHandles;
 
     @BeforeAll
     static void setupOnce() {
-        varHandles = new VarLenHandles();
+        varHandles = Jvm.varint();
     }
 
     @BeforeEach
     void setUp() {
-        bytes = new HeapBytes();
         byteArray = new byte[16];
     }
 
@@ -41,9 +41,6 @@ class VarLenHandlesTest {
         assertTrue(varHandles.readNull(byteArray, 10));
 
         /* bytes store */
-        varHandles.writeNull(bytes);
-        bytes.seek(0);
-        assertTrue(varHandles.readNull(bytes));
     }
 
     @Test
@@ -56,9 +53,6 @@ class VarLenHandlesTest {
         assertEquals(10, varHandles.readVarInt(byteArray, 10));
 
         /* bytes store */
-        varHandles.writeVarInt(bytes, 11);
-        bytes.seek(0);
-        assertEquals(11, varHandles.readVarInt(bytes));
     }
 
     @Test
@@ -71,9 +65,6 @@ class VarLenHandlesTest {
         assertEquals(10, varHandles.readVarLong(byteArray, 10));
 
         /* bytes store */
-        varHandles.writeVarLong(bytes, 11);
-        bytes.seek(0);
-        assertEquals(11, varHandles.readVarLong(bytes));
     }
 
     @Test

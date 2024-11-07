@@ -3,6 +3,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Misc ###
+misc/
+
 ### IntelliJ IDEA ###
 .idea/
 .idea/modules.xml
