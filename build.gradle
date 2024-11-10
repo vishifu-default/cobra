@@ -24,8 +24,6 @@ dependencies {
     testImplementation libs.org.junit.jupiter.junit.jupiter.engine
     testImplementation libs.org.junit.platform.junit.platform.runner
     testImplementation libs.org.mockito.mockito.core
-    testImplementation libs.org.openjdk.jmh.jmh.core
-    testImplementation libs.org.openjdk.jmh.jmh.generator.annprocess
 }
 
 group = 'org.cobra'

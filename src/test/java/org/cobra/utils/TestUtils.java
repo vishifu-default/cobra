@@ -13,6 +13,11 @@ public class TestUtils {
     public static final String DIGITS = "0123456789";
     public static final String LETTERS_AND_DIGITS = LETTERS + DIGITS;
 
+    public static int randInt(int low, int high) {
+        Random rand = new Random();
+        return rand.nextInt(low, high);
+    }
+
     public static String randString(int len) {
         Random rand = new Random();
         int boundRand = LETTERS_AND_DIGITS.length();
