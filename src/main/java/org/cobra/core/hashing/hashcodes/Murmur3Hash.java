@@ -1,4 +1,4 @@
-package org.cobra.core.hashing;
+package org.cobra.core.hashing.hashcodes;
 
 public final class Murmur3Hash {
     private static final int MURMUR3_SEED = 0xcceaccf9;
