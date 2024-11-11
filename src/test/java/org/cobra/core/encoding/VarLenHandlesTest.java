@@ -46,8 +46,8 @@ class VarLenHandlesTest {
         onHeapBytes.position(0);
         assertTrue(varHandles.readNull(onHeapBytes));
 
-        varHandles.writeNull(byteArray, 4);
-        assertTrue(varHandles.readNull(byteArray, 4));
+        varHandles.writeNull(onHeapBytes, 4);
+        assertTrue(varHandles.readNull(onHeapBytes, 4));
     }
 
     @Test
@@ -72,14 +72,22 @@ class VarLenHandlesTest {
 
     @Test
     void writeAndRead_long() {
+        long val = 16_359L;
+
         /* byte array */
-        varHandles.writeVarLong(byteArray, 0, 10);
-        assertEquals(10, varHandles.readVarLong(byteArray, 0));
+        varHandles.writeVarLong(byteArray, 0, val);
+        assertEquals(val, varHandles.readVarLong(byteArray, 0));
 
-        varHandles.writeVarLong(byteArray, 10, 10);
-        assertEquals(10, varHandles.readVarLong(byteArray, 10));
+        varHandles.writeVarLong(byteArray, 10, val);
+        assertEquals(val, varHandles.readVarLong(byteArray, 10));
 
-        /* bytes store */
+        /* random, sequenced bytes*/
+        varHandles.writeVarLong(onHeapBytes, val);
+        onHeapBytes.position(0);
+        assertEquals(val, varHandles.readVarLong(onHeapBytes));
+
+        varHandles.writeVarLong(onHeapBytes, 4, val);
+        assertEquals(val, varHandles.readVarLong(onHeapBytes, 4));
     }
 
     @Test
