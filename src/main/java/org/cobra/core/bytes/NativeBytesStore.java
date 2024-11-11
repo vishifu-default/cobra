@@ -2,7 +2,7 @@ package org.cobra.core.bytes;
 
 import org.cobra.commons.Jvm;
 import org.cobra.commons.utils.Bytex;
-import org.cobra.core.memory.internal.OSMemory;
+import org.cobra.core.memory.OSMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,7 @@
 package org.cobra.commons;
 
 import org.cobra.core.encoding.VarLenHandles;
-import org.cobra.core.memory.internal.OSMemory;
+import org.cobra.core.memory.OSMemory;
 import org.cobra.networks.auth.PrincipalBuilder;
 import org.cobra.networks.auth.PrincipalBuilderImpl;
 

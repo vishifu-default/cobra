@@ -3,7 +3,7 @@ package org.cobra.core.bytes;
 import org.cobra.commons.Jvm;
 import org.cobra.commons.pools.BytesPool;
 import org.cobra.commons.utils.Bytex;
-import org.cobra.core.memory.internal.OSMemory;
+import org.cobra.core.memory.OSMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +70,7 @@ public class OnHeapBytesStore implements BytesStore {
         final TranslatedAddress address = translate(toSize);
 
         final long startWatchMs = System.currentTimeMillis();
-        while (this.arena.length < address.index()) {
+        while (this.arena.length <= address.index()) {
             this.arena = Arrays.copyOf(this.arena, this.arena.length * 3 / 2);
         }
 

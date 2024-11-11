@@ -1,4 +1,4 @@
-package org.cobra.core.memory.internal;
+package org.cobra.core.memory;
 
 import org.cobra.commons.Jvm;
 import org.cobra.commons.errors.CobraException;

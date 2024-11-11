@@ -77,7 +77,7 @@ public interface SequencedBytes {
      *
      * @param buffer byte buffer, read until fulfilling buffer
      */
-    void read(ByteBuffer buffer);
+    int read(ByteBuffer buffer);
 
     /**
      * Reads bytes into a byte buffer
@@ -86,7 +86,7 @@ public interface SequencedBytes {
      * @param offset offset starting to write at buffer
      * @param len    number of bytes that actually read
      */
-    void read(ByteBuffer buffer, int offset, int len);
+    int read(ByteBuffer buffer, int offset, int len);
 
     /**
      * @return the current position of cursor
