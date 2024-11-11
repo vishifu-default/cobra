@@ -1,6 +1,6 @@
 package org.cobra.commons.utils;
 
-public class Strings {
+public class Stringx {
 
     public static boolean isNullOrEmpty(String s) {
         return s == null || s.isEmpty();

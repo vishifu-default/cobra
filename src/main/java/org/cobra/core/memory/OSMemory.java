@@ -1,4 +1,4 @@
-package org.cobra.core.memory.internal;
+package org.cobra.core.memory;
 
 import org.cobra.commons.Jvm;
 import org.cobra.commons.errors.CobraException;
@@ -22,7 +22,8 @@ public class OSMemory {
     private final AtomicLong nativeMemUsed = new AtomicLong(0);
 
     /* Prevent construct outside */
-    private OSMemory() {}
+    OSMemory() {
+    }
 
     /* static construct for Unsafe and Instance */
     static {

@@ -1,6 +1,6 @@
 package org.cobra.networks.protocol;
 
-import org.cobra.commons.utils.Bytes;
+import org.cobra.commons.utils.Bytex;
 
 import java.nio.ByteBuffer;
 
@@ -26,7 +26,7 @@ public interface MessageReadable {
         if (len == 0)
             return "";
 
-        return Bytes.utf8(readBytes(len));
+        return Bytex.utf8(readBytes(len));
     }
 
     default String readString() {

@@ -1,6 +1,6 @@
 package org.cobra.networks.requests;
 
-import org.cobra.commons.utils.Strings;
+import org.cobra.commons.utils.Stringx;
 import org.cobra.networks.protocol.ApiMessage;
 import org.cobra.networks.protocol.MessageReadable;
 import org.cobra.networks.protocol.MessageWritable;
@@ -31,7 +31,7 @@ public class HeaderRequestMessage implements ApiMessage {
 
     @Override
     public int size() {
-        return Short.BYTES + Long.BYTES + Strings.fixedLength(clientId);
+        return Short.BYTES + Long.BYTES + Stringx.fixedLength(clientId);
     }
 
     @Override

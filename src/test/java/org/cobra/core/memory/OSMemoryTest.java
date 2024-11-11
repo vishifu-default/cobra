@@ -1,4 +1,4 @@
-package org.cobra.core.memory.internal;
+package org.cobra.core.memory;
 
 import org.cobra.commons.Jvm;
 import org.cobra.utils.TestUtils;
@@ -16,7 +16,7 @@ class OSMemoryTest {
 
     @BeforeEach
     void setUp() {
-        memory = Jvm.osMemory();
+        memory = new OSMemory();
     }
 
     @Test

@@ -1,7 +1,6 @@
 package org.cobra.core.encoding;
 
 import org.cobra.commons.Jvm;
-import org.cobra.core.memory.BytesStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VarLenHandlesTest {
 
-    private BytesStore bytes;
     private byte[] byteArray;
 
     static VarLenHandles varHandles;
