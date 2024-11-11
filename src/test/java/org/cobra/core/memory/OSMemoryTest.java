@@ -16,7 +16,7 @@ class OSMemoryTest {
 
     @BeforeEach
     void setUp() {
-        memory = Jvm.osMemory();
+        memory = new OSMemory();
     }
 
     @Test

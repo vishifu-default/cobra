@@ -22,7 +22,8 @@ public class OSMemory {
     private final AtomicLong nativeMemUsed = new AtomicLong(0);
 
     /* Prevent construct outside */
-    private OSMemory() {}
+    OSMemory() {
+    }
 
     /* static construct for Unsafe and Instance */
     static {
