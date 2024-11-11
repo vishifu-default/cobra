@@ -52,15 +52,22 @@ class VarLenHandlesTest {
 
     @Test
     void writeAndRead_int() {
+        int val = 128;
+
         /* byte array */
-        varHandles.writeVarInt(byteArray, 0, 10);
-        assertEquals(10, varHandles.readVarInt(byteArray, 0));
+        varHandles.writeVarInt(byteArray, 0, val);
+        assertEquals(val, varHandles.readVarInt(byteArray, 0));
 
-        varHandles.writeVarInt(byteArray, 10, 10);
-        assertEquals(10, varHandles.readVarInt(byteArray, 10));
+        varHandles.writeVarInt(byteArray, 10, val);
+        assertEquals(val, varHandles.readVarInt(byteArray, 10));
 
-        /* bytes store */
+        /* random, sequenced bytes */
+        varHandles.writeVarInt(onHeapBytes, val);
+        onHeapBytes.position(0);
+        assertEquals(val, varHandles.readVarInt(onHeapBytes));
 
+        varHandles.writeVarInt(onHeapBytes, 4, val);
+        assertEquals(val, varHandles.readVarInt(onHeapBytes, 4));
     }
 
     @Test

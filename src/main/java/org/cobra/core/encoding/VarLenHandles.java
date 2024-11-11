@@ -23,7 +23,7 @@ public class VarLenHandles {
         return pos;
     }
 
-    public int writeNull(RandomBytes bytes, int pos) {
+    public long writeNull(RandomBytes bytes, long pos) {
         bytes.writeAt(pos, NULL_BYTE);
         return pos + 1;
     }
@@ -37,7 +37,7 @@ public class VarLenHandles {
         return data[pos] == NULL_BYTE;
     }
 
-    public boolean readNull(RandomBytes bytes, int pos) {
+    public boolean readNull(RandomBytes bytes, long pos) {
         return bytes.readAt(pos) == NULL_BYTE;
     }
 
@@ -59,6 +59,26 @@ public class VarLenHandles {
         return pos;
     }
 
+    public long writeVarInt(RandomBytes bytes, long pos, int val) {
+        int sizeOfVarint = sizeOfVarint(val);
+        byte[] varint = new byte[sizeOfVarint];
+        writeVarInt(varint, 0, val);
+
+        bytes.writeAt(pos, varint);
+
+        return pos + sizeOfVarint;
+    }
+
+    public long writeVarInt(SequencedBytes bytes, int val) {
+        int sizeOfVarint = sizeOfVarint(val);
+        byte[] varint = new byte[sizeOfVarint];
+        writeVarInt(varint, 0, val);
+
+        bytes.write(varint);
+
+        return bytes.position();
+    }
+
     public int readVarInt(byte[] data, int pos) {
         byte b = data[pos++];
         if (b == NULL_BYTE)
@@ -67,6 +87,36 @@ public class VarLenHandles {
         int result = b & MASKING_BYTE;
         while ((b & NULL_BYTE) != 0) {
             b = data[pos++];
+            result <<= 7;
+            result |= (b & MASKING_BYTE);
+        }
+
+        return result;
+    }
+
+    public int readVarInt(RandomBytes bytes, long pos) {
+        byte b = bytes.readAt(pos++);
+        if (b == NULL_BYTE)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_INTEGER);
+
+        int result = b & MASKING_BYTE;
+        while ((b & NULL_BYTE) != 0) {
+            b = bytes.readAt(pos++);
+            result <<= 7;
+            result |= (b & MASKING_BYTE);
+        }
+
+        return result;
+    }
+
+    public int readVarInt(SequencedBytes bytes) {
+        byte b = bytes.read();
+        if (b == NULL_BYTE)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_INTEGER);
+
+        int result = b & MASKING_BYTE;
+        while ((b & NULL_BYTE) != 0) {
+            b = bytes.read();
             result <<= 7;
             result |= (b & MASKING_BYTE);
         }
