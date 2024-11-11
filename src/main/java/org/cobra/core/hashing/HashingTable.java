@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class HashingTable {
+public class HashingTable implements DataPointerTable {
 
     private static final Logger log = LoggerFactory.getLogger(HashingTable.class);
 
@@ -48,14 +48,17 @@ public class HashingTable {
         return this.sensor.toString();
     }
 
+    @Override
     public int size() {
         return this.size.get();
     }
 
+    @Override
     public int capacity() {
         return this.table.length;
     }
 
+    @Override
     public long get(int key) {
         try {
             if (this.reentrantLock.readLock().tryLock(DEFAULT_LOCK_TIMEOUT_SECS, TimeUnit.SECONDS)) {
@@ -90,6 +93,7 @@ public class HashingTable {
         }
     }
 
+    @Override
     public void put(int key, long value) {
         this.reentrantLock.writeLock().lock();
 
@@ -103,6 +107,7 @@ public class HashingTable {
         }
     }
 
+    @Override
     public long remove(int key) {
         this.reentrantLock.writeLock().lock();
         try {
