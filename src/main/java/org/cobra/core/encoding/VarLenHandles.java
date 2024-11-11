@@ -1,6 +1,8 @@
 package org.cobra.core.encoding;
 
 import org.cobra.commons.errors.CobraException;
+import org.cobra.core.bytes.RandomBytes;
+import org.cobra.core.bytes.SequencedBytes;
 
 @SuppressWarnings("DuplicatedCode")
 public class VarLenHandles {
@@ -21,8 +23,26 @@ public class VarLenHandles {
         return pos;
     }
 
+    public int writeNull(RandomBytes bytes, int pos) {
+        bytes.writeAt(pos, NULL_BYTE);
+        return pos + 1;
+    }
+
+    public long writeNull(SequencedBytes bytes) {
+        bytes.write(NULL_BYTE);
+        return bytes.position();
+    }
+
     public boolean readNull(byte[] data, int pos) {
         return data[pos] == NULL_BYTE;
+    }
+
+    public boolean readNull(RandomBytes bytes, int pos) {
+        return bytes.readAt(pos) == NULL_BYTE;
+    }
+
+    public boolean readNull(SequencedBytes bytes) {
+        return bytes.read() == NULL_BYTE;
     }
 
     public int writeVarInt(byte[] data, int pos, int val) {

@@ -1,6 +1,7 @@
 package org.cobra.core.encoding;
 
 import org.cobra.commons.Jvm;
+import org.cobra.core.bytes.OnHeapBytes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class VarLenHandlesTest {
 
     private byte[] byteArray;
+    private OnHeapBytes onHeapBytes;
 
     static VarLenHandles varHandles;
 
@@ -23,6 +25,7 @@ class VarLenHandlesTest {
     @BeforeEach
     void setUp() {
         byteArray = new byte[16];
+        onHeapBytes = OnHeapBytes.createLog2Align(8);
     }
 
     @AfterEach
@@ -38,7 +41,13 @@ class VarLenHandlesTest {
         varHandles.writeNull(byteArray, 10);
         assertTrue(varHandles.readNull(byteArray, 10));
 
-        /* bytes store */
+        /* random, sequenced bytes*/
+        varHandles.writeNull(onHeapBytes);
+        onHeapBytes.position(0);
+        assertTrue(varHandles.readNull(onHeapBytes));
+
+        varHandles.writeNull(byteArray, 4);
+        assertTrue(varHandles.readNull(byteArray, 4));
     }
 
     @Test
@@ -51,6 +60,7 @@ class VarLenHandlesTest {
         assertEquals(10, varHandles.readVarInt(byteArray, 10));
 
         /* bytes store */
+
     }
 
     @Test
