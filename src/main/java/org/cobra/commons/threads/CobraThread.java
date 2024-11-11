@@ -1,6 +1,6 @@
 package org.cobra.commons.threads;
 
-import org.cobra.commons.utils.Strings;
+import org.cobra.commons.utils.Stringx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class CobraThread extends Thread {
 
     private static String buildContextDesc(Class<?> context, String desc) {
         StringBuilder sb = new StringBuilder(context.getSimpleName());
-        if (!Strings.isBlank(desc))
+        if (!Stringx.isBlank(desc))
             sb.append(".").append(desc);
         return sb.toString();
     }

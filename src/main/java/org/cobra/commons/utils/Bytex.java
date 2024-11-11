@@ -3,7 +3,7 @@ package org.cobra.commons.utils;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class Bytes {
+public class Bytex {
 
     public static byte[] toArray(ByteBuffer buffer) {
         return toArray(buffer, buffer.remaining());
@@ -17,7 +17,7 @@ public class Bytes {
         byte[] dest = new byte[len];
 
         if (buffer.hasArray())
-            System.arraycopy(buffer.array(), buffer.position(), dest, 0, len);
+            System.arraycopy(buffer.array(), buffer.position() + offset, dest, 0, len);
         else {
             int pos = buffer.position();
             buffer.position(pos + offset);

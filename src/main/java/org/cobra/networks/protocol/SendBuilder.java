@@ -1,6 +1,6 @@
 package org.cobra.networks.protocol;
 
-import org.cobra.commons.utils.Strings;
+import org.cobra.commons.utils.Stringx;
 import org.cobra.networks.Send;
 import org.cobra.networks.SendByteBuffer;
 import org.cobra.networks.SendQueued;
@@ -79,7 +79,7 @@ public class SendBuilder implements MessageWritable {
 
     @Override
     public void writeString(String val) {
-        if (Strings.isBlank(val))
+        if (Stringx.isBlank(val))
             writeInt(0);
         else {
             writeInt(val.length());

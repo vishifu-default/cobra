@@ -1,6 +1,6 @@
 package org.cobra.networks.protocol;
 
-import org.cobra.commons.utils.Bytes;
+import org.cobra.commons.utils.Bytex;
 
 import java.nio.ByteBuffer;
 
@@ -43,6 +43,6 @@ public interface Message {
                 && (buffer.limit() == buffer.array().length))
             return buffer.array();
 
-        return Bytes.toArray(buffer);
+        return Bytex.toArray(buffer);
     }
 }

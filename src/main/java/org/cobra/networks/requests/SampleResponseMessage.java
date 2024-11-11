@@ -1,6 +1,6 @@
 package org.cobra.networks.requests;
 
-import org.cobra.commons.utils.Strings;
+import org.cobra.commons.utils.Stringx;
 import org.cobra.networks.protocol.ApiMessage;
 import org.cobra.networks.protocol.Apikey;
 import org.cobra.networks.protocol.MessageReadable;
@@ -32,7 +32,7 @@ public class SampleResponseMessage implements ApiMessage {
 
     @Override
     public int size() {
-        return Strings.fixedLength(text);
+        return Stringx.fixedLength(text);
     }
 
     @Override

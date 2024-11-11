@@ -6,7 +6,7 @@ import org.cobra.commons.configs.ConfigDef;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.pools.MemoryAlloc;
 import org.cobra.commons.threads.CobraThread;
-import org.cobra.commons.utils.Strings;
+import org.cobra.commons.utils.Stringx;
 import org.cobra.commons.utils.Utils;
 import org.cobra.networks.Endpoint;
 import org.cobra.networks.auth.SecurityProtocol;
@@ -223,7 +223,7 @@ public abstract class SocketAcceptor implements Acceptor {
     }
 
     private ServerSocketChannel openServerSocketChannel(String host, int port, int backlog) throws IOException {
-        final InetSocketAddress socketAddress = Strings.isBlank(host)
+        final InetSocketAddress socketAddress = Stringx.isBlank(host)
                 ? new InetSocketAddress(port) :
                 new InetSocketAddress(host, port);
 
