@@ -87,6 +87,17 @@ public class OnHeapBytesStore implements BytesStore {
     }
 
     @Override
+    public void destroy() {
+        this.size = 0;
+        for (byte[] seg : this.arena) {
+            if (seg == null)
+                continue;
+            this.bytesPool.free(seg);
+        }
+        this.arena = null;
+    }
+
+    @Override
     public void writeAt(long pos, byte b) {
         ensureNotOutBound(pos);
         final TranslatedAddress address = translate(pos);

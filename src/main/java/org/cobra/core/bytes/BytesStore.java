@@ -11,4 +11,9 @@ public interface BytesStore extends RandomBytes {
      * Resizes current memory block to given size
      */
     void attemptResizing(long toSize);
+
+    /**
+     * Clear all data and destroy it, means that we can not use it anymore
+     */
+    void destroy();
 }
