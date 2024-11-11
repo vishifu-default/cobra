@@ -1,6 +1,8 @@
 package org.cobra.core.encoding;
 
 import org.cobra.commons.errors.CobraException;
+import org.cobra.core.bytes.RandomBytes;
+import org.cobra.core.bytes.SequencedBytes;
 
 @SuppressWarnings("DuplicatedCode")
 public class VarLenHandles {
@@ -21,8 +23,26 @@ public class VarLenHandles {
         return pos;
     }
 
+    public long writeNull(RandomBytes bytes, long pos) {
+        bytes.writeAt(pos, NULL_BYTE);
+        return pos + 1;
+    }
+
+    public long writeNull(SequencedBytes bytes) {
+        bytes.write(NULL_BYTE);
+        return bytes.position();
+    }
+
     public boolean readNull(byte[] data, int pos) {
         return data[pos] == NULL_BYTE;
+    }
+
+    public boolean readNull(RandomBytes bytes, long pos) {
+        return bytes.readAt(pos) == NULL_BYTE;
+    }
+
+    public boolean readNull(SequencedBytes bytes) {
+        return bytes.read() == NULL_BYTE;
     }
 
     public int writeVarInt(byte[] data, int pos, int val) {
@@ -39,6 +59,27 @@ public class VarLenHandles {
         return pos;
     }
 
+    public long writeVarInt(RandomBytes bytes, long pos, int val) {
+        int sizeOfVarint = sizeOfVarint(val);
+        byte[] varint = new byte[sizeOfVarint];
+        writeVarInt(varint, 0, val);
+
+        bytes.writeAt(pos, varint);
+
+        return pos + sizeOfVarint;
+    }
+
+    public long writeVarInt(SequencedBytes bytes, int val) {
+        long oldPosition = bytes.position();
+        int sizeOfVarint = sizeOfVarint(val);
+        byte[] varint = new byte[sizeOfVarint];
+        writeVarInt(varint, 0, val);
+
+        bytes.write(varint);
+
+        return oldPosition + sizeOfVarint;
+    }
+
     public int readVarInt(byte[] data, int pos) {
         byte b = data[pos++];
         if (b == NULL_BYTE)
@@ -47,6 +88,36 @@ public class VarLenHandles {
         int result = b & MASKING_BYTE;
         while ((b & NULL_BYTE) != 0) {
             b = data[pos++];
+            result <<= 7;
+            result |= (b & MASKING_BYTE);
+        }
+
+        return result;
+    }
+
+    public int readVarInt(RandomBytes bytes, long pos) {
+        byte b = bytes.readAt(pos++);
+        if (b == NULL_BYTE)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_INTEGER);
+
+        int result = b & MASKING_BYTE;
+        while ((b & NULL_BYTE) != 0) {
+            b = bytes.readAt(pos++);
+            result <<= 7;
+            result |= (b & MASKING_BYTE);
+        }
+
+        return result;
+    }
+
+    public int readVarInt(SequencedBytes bytes) {
+        byte b = bytes.read();
+        if (b == NULL_BYTE)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_INTEGER);
+
+        int result = b & MASKING_BYTE;
+        while ((b & NULL_BYTE) != 0) {
+            b = bytes.read();
             result <<= 7;
             result |= (b & MASKING_BYTE);
         }
@@ -78,6 +149,26 @@ public class VarLenHandles {
         return pos;
     }
 
+    public long writeVarLong(RandomBytes bytes, long pos, long val) {
+        int sizeof = sizeOfVarint(val);
+        byte[] varint = new byte[sizeof];
+        writeVarLong(varint, 0, val);
+
+        bytes.writeAt(pos, varint);
+
+        return pos + sizeof;
+    }
+
+    public long writeVarLong(SequencedBytes bytes, long val) {
+        long oldPosition = bytes.position();
+        int sizeof = sizeOfVarint(val);
+        byte[] varint = new byte[sizeof];
+        writeVarLong(varint, 0, val);
+        bytes.write(varint);
+
+        return oldPosition + sizeof;
+    }
+
     public long readVarLong(byte[] data, int pos) {
         byte b = data[pos++];
         if (b == NULL_BYTE)
@@ -86,6 +177,36 @@ public class VarLenHandles {
         long result = b & MASKING_BYTE;
         while ((b & NULL_BYTE) != 0) {
             b = data[pos++];
+            result <<= 7;
+            result |= (b & MASKING_BYTE);
+        }
+
+        return result;
+    }
+
+    public long readVarLong(RandomBytes bytes, long pos) {
+        byte b = bytes.readAt(pos++);
+        if (b == NULL_BYTE)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_LONG);
+
+        long result = b & MASKING_BYTE;
+        while ((b & NULL_BYTE) != 0) {
+            b = bytes.readAt(pos++);
+            result <<= 7;
+            result |= (b & MASKING_BYTE);
+        }
+
+        return result;
+    }
+
+    public long readVarLong(SequencedBytes bytes) {
+        byte b = bytes.read();
+        if (b == NULL_BYTE)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_LONG);
+
+        long result = b & MASKING_BYTE;
+        while ((b & NULL_BYTE) != 0) {
+            b = bytes.read();
             result <<= 7;
             result |= (b & MASKING_BYTE);
         }

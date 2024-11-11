@@ -1,6 +1,7 @@
 package org.cobra.core.encoding;
 
 import org.cobra.commons.Jvm;
+import org.cobra.core.bytes.OnHeapBytes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class VarLenHandlesTest {
 
     private byte[] byteArray;
+    private OnHeapBytes onHeapBytes;
 
     static VarLenHandles varHandles;
 
@@ -23,6 +25,7 @@ class VarLenHandlesTest {
     @BeforeEach
     void setUp() {
         byteArray = new byte[16];
+        onHeapBytes = OnHeapBytes.createLog2Align(8);
     }
 
     @AfterEach
@@ -38,31 +41,53 @@ class VarLenHandlesTest {
         varHandles.writeNull(byteArray, 10);
         assertTrue(varHandles.readNull(byteArray, 10));
 
-        /* bytes store */
+        /* random, sequenced bytes*/
+        varHandles.writeNull(onHeapBytes);
+        onHeapBytes.position(0);
+        assertTrue(varHandles.readNull(onHeapBytes));
+
+        varHandles.writeNull(onHeapBytes, 4);
+        assertTrue(varHandles.readNull(onHeapBytes, 4));
     }
 
     @Test
     void writeAndRead_int() {
+        int val = 128;
+
         /* byte array */
-        varHandles.writeVarInt(byteArray, 0, 10);
-        assertEquals(10, varHandles.readVarInt(byteArray, 0));
+        varHandles.writeVarInt(byteArray, 0, val);
+        assertEquals(val, varHandles.readVarInt(byteArray, 0));
 
-        varHandles.writeVarInt(byteArray, 10, 10);
-        assertEquals(10, varHandles.readVarInt(byteArray, 10));
+        varHandles.writeVarInt(byteArray, 10, val);
+        assertEquals(val, varHandles.readVarInt(byteArray, 10));
 
-        /* bytes store */
+        /* random, sequenced bytes */
+        varHandles.writeVarInt(onHeapBytes, val);
+        onHeapBytes.position(0);
+        assertEquals(val, varHandles.readVarInt(onHeapBytes));
+
+        varHandles.writeVarInt(onHeapBytes, 4, val);
+        assertEquals(val, varHandles.readVarInt(onHeapBytes, 4));
     }
 
     @Test
     void writeAndRead_long() {
+        long val = 16_359L;
+
         /* byte array */
-        varHandles.writeVarLong(byteArray, 0, 10);
-        assertEquals(10, varHandles.readVarLong(byteArray, 0));
+        varHandles.writeVarLong(byteArray, 0, val);
+        assertEquals(val, varHandles.readVarLong(byteArray, 0));
 
-        varHandles.writeVarLong(byteArray, 10, 10);
-        assertEquals(10, varHandles.readVarLong(byteArray, 10));
+        varHandles.writeVarLong(byteArray, 10, val);
+        assertEquals(val, varHandles.readVarLong(byteArray, 10));
 
-        /* bytes store */
+        /* random, sequenced bytes*/
+        varHandles.writeVarLong(onHeapBytes, val);
+        onHeapBytes.position(0);
+        assertEquals(val, varHandles.readVarLong(onHeapBytes));
+
+        varHandles.writeVarLong(onHeapBytes, 4, val);
+        assertEquals(val, varHandles.readVarLong(onHeapBytes, 4));
     }
 
     @Test
