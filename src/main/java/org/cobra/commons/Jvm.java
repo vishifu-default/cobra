@@ -35,6 +35,10 @@ public class Jvm {
         return OSMemory.MEMORY;
     }
 
+    public static int osPageSize() {
+        return OSMemory.MEMORY.pageSize();
+    }
+
     public static final int DEFAULT_MEMORY_THRESHOLD = 1024 * 1024;
     public static final int DEFAULT_PAGE_CHUNK_SIZE_BYTE = 32;
 

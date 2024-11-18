@@ -16,7 +16,7 @@ public class NativeBytesStore implements BytesStore {
 
     private static final boolean SKIP_ASSERT = Jvm.SKIP_ASSERTION;
     private static final long NATIVE_LIMIT_SIZE = 1L << 60;
-    private static final int DEFAULT_NATIVE_BLOCK_SIZE = 1 << 30; // 1Gib
+    private static final int DEFAULT_NATIVE_BLOCK_SIZE_LOG2 = 30; // 1Gib
 
     private long size;
     private long[] arenaAddress;
@@ -34,7 +34,7 @@ public class NativeBytesStore implements BytesStore {
     }
 
     public static NativeBytesStore create() {
-        return create(DEFAULT_NATIVE_BLOCK_SIZE);
+        return create(DEFAULT_NATIVE_BLOCK_SIZE_LOG2);
     }
 
     public static NativeBytesStore create(int log2) {

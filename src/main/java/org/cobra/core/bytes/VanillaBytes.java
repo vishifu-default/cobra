@@ -1,13 +1,8 @@
 package org.cobra.core.bytes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
 
 public abstract class VanillaBytes implements Bytes {
-
-    private static final Logger log = LoggerFactory.getLogger(VanillaBytes.class);
 
     protected long position;
     protected BytesStore store;
@@ -25,6 +20,11 @@ public abstract class VanillaBytes implements Bytes {
         if (pos >= this.store.size())
             throw new IllegalArgumentException(("Required offset is out of bound; " +
                     "required = %d; size = %d").formatted(pos, this.store.size()));
+    }
+
+    @Override
+    public void resizing(long toSize) {
+        checkWriteOffset(toSize);
     }
 
     @Override
