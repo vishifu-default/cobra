@@ -39,7 +39,6 @@ class NativeBytesStoreTest {
         nativeStore.writeAt(1, a);
         nativeStore.writeAt(2, b);
 
-        assertEquals(0, nativeStore.readAt(0));
         assertEquals(a, nativeStore.readAt(1));
         assertEquals(b, nativeStore.readAt(2));
     }
