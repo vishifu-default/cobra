@@ -1,6 +1,8 @@
 package org.cobra.core.hashing;
 
-public interface Maps {
+import org.jetbrains.annotations.Nullable;
+
+public interface EntryMap {
 
     /**
      * Puts a key-value into index
@@ -12,15 +14,15 @@ public interface Maps {
     /**
      * Gets value of record by key
      */
-    byte[] get(String key);
+    byte @Nullable [] get(String key);
 
     /**
      * Removes a key-value record from index
      */
-    byte[] remove(String key);
+    byte @Nullable [] remove(String key);
 
     /**
      * Test as if key is existed in index
      */
-    boolean contains(String key);
+    boolean exist(String key);
 }
