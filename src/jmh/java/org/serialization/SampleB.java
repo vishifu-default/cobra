@@ -1,4 +1,4 @@
-package org.benchmark.serialization;
+package org.serialization;
 
 public class SampleB {
     int id;

@@ -1,4 +1,4 @@
-package org.benchmark.serialization;
+package org.serialization;
 
 import java.util.Set;
 
