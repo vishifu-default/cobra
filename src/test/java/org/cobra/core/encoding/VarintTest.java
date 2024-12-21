@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class VarLenHandlesTest {
+class VarintTest {
 
     private byte[] byteArray;
     private OnHeapBytes onHeapBytes;
 
-    static VarLenHandles varHandles;
+    static Varint varHandles;
 
     @BeforeAll
     static void setupOnce() {
@@ -68,6 +68,12 @@ class VarLenHandlesTest {
 
         varHandles.writeVarInt(onHeapBytes, 4, val);
         assertEquals(val, varHandles.readVarInt(onHeapBytes, 4));
+
+        /* memory address */
+        final long addr = Jvm.osMemory().allocate(16);
+        final long afterWriteAddr = varHandles.writeVarInt(addr, val);
+        assertEquals(val, varHandles.readVarInt(addr));
+        assertEquals(afterWriteAddr, addr + varHandles.sizeOfVarint(val));
     }
 
     @Test
@@ -88,6 +94,12 @@ class VarLenHandlesTest {
 
         varHandles.writeVarLong(onHeapBytes, 4, val);
         assertEquals(val, varHandles.readVarLong(onHeapBytes, 4));
+
+        /* memory address */
+        final long addr = Jvm.osMemory().allocate(32);
+        final long afterWriteAddr = varHandles.writeVarLong(addr, val);
+        assertEquals(val, varHandles.readVarLong(addr));
+        assertEquals(afterWriteAddr, addr + varHandles.sizeOfVarint(val));
     }
 
     @Test
