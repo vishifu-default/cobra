@@ -1,6 +1,6 @@
 package org.cobra.commons;
 
-import org.cobra.core.encoding.VarLenHandles;
+import org.cobra.core.encoding.Varint;
 import org.cobra.core.memory.OSMemory;
 import org.cobra.networks.auth.PrincipalBuilder;
 import org.cobra.networks.auth.PrincipalBuilderImpl;
@@ -26,8 +26,8 @@ public class Jvm {
     public static boolean SKIP_ASSERTION = false;
 
     /* A singleton instance that provide var-len handles */
-    public static VarLenHandles varint() {
-        return VarLenHandles.INSTANCE;
+    public static Varint varint() {
+        return Varint.INSTANCE;
     }
 
     /* A singleton instance that provide unsafe memory */

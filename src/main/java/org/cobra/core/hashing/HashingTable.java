@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class HashingTable implements DataPointerTable {
+public class HashingTable implements Table {
 
     private static final Logger log = LoggerFactory.getLogger(HashingTable.class);
 
@@ -16,6 +16,7 @@ public class HashingTable implements DataPointerTable {
     private static final int DEFAULT_TABLE_CAPACITY = 128;
     private static final int DEFAULT_LOCK_TIMEOUT_SECS = 60;
     private static final int UNDEFINED_HASH = -1;
+    private static final int UNDEFINED_VALUE = -1; // by design, this should store value of memory pointer
     private static final int PRIME_MOD_BUCKET = 29;
 
     private static final String ACQUIRE_LOCK_TIMEOUT = "Timeout for acquire read-lock";
@@ -60,37 +61,11 @@ public class HashingTable implements DataPointerTable {
 
     @Override
     public long get(int key) {
-        try {
-            if (this.reentrantLock.readLock().tryLock(DEFAULT_LOCK_TIMEOUT_SECS, TimeUnit.SECONDS)) {
-                int hash = hash(key);
-                int firstHash = UNDEFINED_HASH;
-                int let = 0;
+        final int retHashValue = findBucket(key);
+        if (retHashValue == UNDEFINED_HASH)
+            return UNDEFINED_VALUE;
 
-                while (availSlot(hash, firstHash, key)) {
-                    if (firstHash == UNDEFINED_HASH) {
-                        firstHash = hash;
-                    }
-
-                    hash = probing(key, ++let);
-                }
-
-                if (entry(hash) == null || hash == firstHash) {
-                    sensor.incMisses();
-                    return UNDEFINED_HASH;
-                }
-
-                sensor.incHits();
-                return entry(hash).value;
-
-            } else {
-                throw new CobraException(ACQUIRE_LOCK_TIMEOUT);
-            }
-        } catch (Throwable cause) {
-            log.error("Interrupt while acquire read-lock", cause);
-            throw new CobraException(cause.getMessage(), cause);
-        } finally {
-            this.reentrantLock.readLock().unlock();
-        }
+        return entry(retHashValue).value;
     }
 
     @Override
@@ -130,9 +105,45 @@ public class HashingTable implements DataPointerTable {
                 return result;
             }
 
-            return UNDEFINED_HASH; // not actual remove anything
+            return UNDEFINED_VALUE; // not actual remove anything
         } finally {
             this.reentrantLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public int findBucket(int key) {
+        try {
+            if (this.reentrantLock.readLock().tryLock(DEFAULT_LOCK_TIMEOUT_SECS, TimeUnit.SECONDS)) {
+                int hash = hash(key);
+                int firstHash = UNDEFINED_HASH;
+                int let = 0;
+
+                while (availSlot(hash, firstHash, key)) {
+                    if (firstHash == UNDEFINED_HASH) {
+                        firstHash = hash;
+                    }
+
+                    hash = probing(key, ++let);
+                }
+
+                if (entry(hash) == null || hash == firstHash) {
+                    sensor.incMisses();
+                    return UNDEFINED_HASH;
+                }
+
+                sensor.incHits();
+
+                return hash;
+
+            } else {
+                throw new CobraException(ACQUIRE_LOCK_TIMEOUT);
+            }
+        } catch (Throwable cause) {
+            log.error("Interrupt while acquire read-lock", cause);
+            throw new CobraException(cause.getMessage(), cause);
+        } finally {
+            this.reentrantLock.readLock().unlock();
         }
     }
 

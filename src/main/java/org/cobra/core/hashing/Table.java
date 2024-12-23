@@ -3,7 +3,7 @@ package org.cobra.core.hashing;
 /**
  * Provides a table of [hash_key, pointer_data]
  */
-public interface DataPointerTable {
+public interface Table {
 
     /**
      * @return number of entry has been put in table
@@ -38,4 +38,12 @@ public interface DataPointerTable {
      * @return deleted data if exists, otherwise -1
      */
     long remove(int key);
+
+    /**
+     * Given the key, get the bucket (hash-value) that hold key
+     *
+     * @param key hash key
+     * @return bucket value
+     */
+    int findBucket(int key);
 }
