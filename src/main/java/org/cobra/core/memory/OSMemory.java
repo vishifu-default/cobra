@@ -112,9 +112,29 @@ public class OSMemory {
         return UNSAFE.getByteVolatile(object, offset);
     }
 
+    public void writeShort(long address, short i2) {
+        assert SKIP_ASSERT || address > 0;
+        UNSAFE.putShort(address, i2);
+    }
+
+    public void writeShort(Object object, long offset, short i2) {
+        assert SKIP_ASSERT || offset >= 0;
+        UNSAFE.putShort(object, offset, i2);
+    }
+
     public void writeInt(long address, int i32) {
         assert SKIP_ASSERT || address > 0;
         UNSAFE.putInt(address, i32);
+    }
+
+    public short readShort(long address) {
+        assert SKIP_ASSERT || address > 0;
+        return UNSAFE.getShort(address);
+    }
+
+    public short readShort(Object object, long offset) {
+        assert SKIP_ASSERT || offset >= 0;
+        return UNSAFE.getShort(object, offset);
     }
 
     public void writeInt(Object object, long offset, int i32) {
@@ -240,7 +260,7 @@ public class OSMemory {
         int i = 0;
         for (; i < len - 15; i += 16) {
             long a = UNSAFE.getLong(src, srcOffset + i);
-            long b = UNSAFE.getLong(dest, destOffset + i + 8);
+            long b = UNSAFE.getLong(src, srcOffset + i + 8);
             UNSAFE.putLong(dest, destOffset + i, a);
             UNSAFE.putLong(dest, destOffset + i + 8, b);
         }
