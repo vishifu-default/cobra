@@ -21,28 +21,23 @@ public class MemorySlabArena {
     private static final int FACTOR = 2;
     private static final long INF_MEM_LIMIT = -1;
 
-    private final AtomicLong memAvailable;
     private final AtomicLong memAllocated;
     private final ConfigDef configDef;
     private final SlabClass[] slabClasses = new SlabClass[MAX_NUMBER_SLAB_CLASS];
 
     private int largestIndex;
-    private final boolean isStrict;
 
-    private MemorySlabArena(long memLimit, ConfigDef configDef) {
-        this.memAvailable = new AtomicLong(memLimit);
+    private MemorySlabArena(ConfigDef configDef) {
         this.memAllocated = new AtomicLong();
         this.configDef = configDef;
-
-        this.isStrict = memLimit != INF_MEM_LIMIT;
     }
 
     public static MemorySlabArena init() {
-        return init(INF_MEM_LIMIT, DefaultMemoryConfig.CONFIG_DEF);
+        return init(DefaultMemoryConfig.CONFIG_DEF);
     }
 
-    public static MemorySlabArena init(long memLimit, ConfigDef configDef) {
-        final MemorySlabArena arena = new MemorySlabArena(memLimit, configDef);
+    public static MemorySlabArena init(ConfigDef configDef) {
+        final MemorySlabArena arena = new MemorySlabArena(configDef);
 
         int chunkSize = 1 << DEFAULT_CHUNK_BASE2_SMALLEST;
         final int maxChunkSize = configDef.valueOf(DefaultMemoryConfig.SLAB_CHUNK_MAX_SIZE);
@@ -83,11 +78,6 @@ public class MemorySlabArena {
     public ChunkMemory allocate(int sizeof) {
         final int requiredSize = sizeof + SlabLoc.FOOTPRINT;
 
-        if (this.isStrict) {
-            if (this.memAvailable.get() < requiredSize)
-                throw new OutOfMemoryError("SlabArena exceed memory available in strict-mode");
-        }
-
         final int clsid = slabClassId(requiredSize);
         if (clsid == FAILED_CLSID) {
             log.error("failed to find an fit-allocated slab-class for size of {} bytes", sizeof);
@@ -97,9 +87,6 @@ public class MemorySlabArena {
         final SlabClass slabClass = slabClass(clsid);
         final ChunkMemory chunk = slabClass.allocate();
 
-        if (this.isStrict)
-            this.memAvailable.addAndGet(-slabClass.chunkSize());
-
         this.memAllocated.addAndGet(slabClass.chunkSize());
 
         return chunk;
@@ -108,9 +95,6 @@ public class MemorySlabArena {
     public void free(long address) {
         final SlabLoc loc = ChunkMethods.getLoc(address);
         final SlabClass slabClass = slabClass(loc.getClassIndex());
-
-        if (this.isStrict)
-            this.memAvailable.addAndGet(slabClass.chunkSize());
 
         this.memAllocated.addAndGet(-slabClass.chunkSize());
         slabClass.free(loc);
@@ -138,10 +122,8 @@ public class MemorySlabArena {
     @Override
     public String toString() {
         return "MemorySlabArena(" +
-                "memAvailable=" + memAvailable.get() +
                 ", memAllocated=" + memAllocated.get() +
                 ", largestIndex=" + largestIndex +
-                ", isStrict=" + isStrict +
                 ')';
     }
 }

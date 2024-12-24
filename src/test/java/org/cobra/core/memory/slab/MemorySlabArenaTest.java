@@ -29,12 +29,6 @@ class MemorySlabArenaTest {
 
         assertNotNull(chunkOf40);
         assertNotNull(chunkOf1300);
-
-        SlabClass slabClass1 = arena.slabClass(chunkOf40.loc().getClassIndex());
-        SlabClass slabClass2 = arena.slabClass(chunkOf1300.loc().getClassIndex());
-
-        assertNotSame(chunkOf40.loc(), slabClass1.getFreelist().getSelf());
-        assertNotSame(chunkOf1300.loc(), slabClass2.getFreelist().getSelf());
     }
 
     @Test
@@ -42,7 +36,7 @@ class MemorySlabArenaTest {
         final MemorySlabArena arena = MemorySlabArena.init();
 
         for (int i = 0; i < 100_000; i++) {
-            ChunkMemory chunk = arena.allocate(200);
+            ChunkMemory chunk = arena.allocate(TestUtils.randInt(10, 2 * 1024 * 1024));
             if (chunk == null || chunk.loc().isNull())
                 fail();
         }
@@ -64,8 +58,5 @@ class MemorySlabArenaTest {
         assertArrayEquals(data, retData);
 
         arena.free(addr);
-
-        assertEquals(chunk.loc().toString(),
-                arena.slabClass(chunk.loc().getClassIndex()).getFreelist().getSelf().toString());
     }
 }

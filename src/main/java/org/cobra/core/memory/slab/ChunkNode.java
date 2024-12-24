@@ -2,16 +2,16 @@ package org.cobra.core.memory.slab;
 
 class ChunkNode {
 
-    private final SlabLoc self;
+    private final int selfIndex;
     private ChunkNode next;
 
-    public ChunkNode(SlabLoc self) {
-        this.self = self;
+    public ChunkNode(int self) {
+        this.selfIndex = self;
         this.next = null;
     }
 
-    public SlabLoc getSelf() {
-        return this.self;
+    public int getSelf() {
+        return this.selfIndex;
     }
 
     public ChunkNode getNext() {

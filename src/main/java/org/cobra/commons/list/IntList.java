@@ -6,7 +6,7 @@ import java.util.Objects;
 public class IntList {
 
     private int[] barr;
-    private int limit;
+    private int size;
 
     public IntList() {
         this(16);
@@ -21,48 +21,43 @@ public class IntList {
     }
 
     public int size() {
-        return this.limit;
+        return this.size;
     }
 
     public void add(int value) {
-        if (this.limit == capacity())
-            expandTo(this.limit * 3 / 2);
+        if (this.size == capacity())
+            expandTo(this.size * 3 / 2);
 
-        this.barr[this.limit++] = value;
-    }
-
-    public void addAll(IntList list) {
-        for (int i = 0; i < list.size(); i++)
-            add(list.get(i));
+        this.barr[this.size++] = value;
     }
 
     public void set(int index, int value) {
-        ensureLimit(index);
+        ensureBound(index);
         this.barr[index] = value;
     }
 
     public int get(int index) {
-        ensureLimit(index);
+        ensureBound(index);
         return this.barr[index];
 
     }
 
     public void sort() {
-        Arrays.sort(this.barr, 0, this.limit);
+        Arrays.sort(this.barr, 0, this.size);
     }
 
     public void reverse() {
-        final int mid = this.limit / 2;
+        final int mid = this.size / 2;
         int temp;
         for (int i = 0; i < mid; i++) {
             temp = this.barr[i];
-            this.barr[i] = barr[this.limit - 1 - i];
-            this.barr[this.limit - 1 - i] = temp;
+            this.barr[i] = barr[this.size - 1 - i];
+            this.barr[this.size - 1 - i] = temp;
         }
     }
 
     public void clear() {
-        this.limit = 0;
+        this.size = 0;
     }
 
     public void expandTo(int size) {
@@ -75,9 +70,9 @@ public class IntList {
         return arr;
     }
 
-    private void ensureLimit(int index) {
-        if (index >= this.limit)
-            throw new IllegalArgumentException("Index out of limit; limit = %d".formatted(this.limit));
+    private void ensureBound(int index) {
+        if (index >= this.size)
+            throw new IllegalArgumentException("Index out of limit; limit = %d".formatted(this.size));
     }
 
     @Override
@@ -98,11 +93,11 @@ public class IntList {
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(barr), limit);
+        return Objects.hash(Arrays.hashCode(barr), size);
     }
 
     @Override
     public String toString() {
-        return "IntList{capacity=%d, limit=%d}".formatted(capacity(), limit);
+        return "IntList(capacity=%d, limit=%d)".formatted(capacity(), size);
     }
 }
