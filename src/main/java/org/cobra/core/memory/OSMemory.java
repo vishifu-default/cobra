@@ -192,8 +192,8 @@ public class OSMemory {
         return UNSAFE.getLongVolatile(object, offset);
     }
 
-    public void copyMemory(long address, byte[] arr, int arrOffset, int len) {
-        assert SKIP_ASSERT || address > 0;
+    public void copyMemory(long toAddr, byte[] arr, int arrOffset, int len) {
+        assert SKIP_ASSERT || toAddr > 0;
         assert SKIP_ASSERT || arrOffset >= 0 && len >= 0;
 
         if (arrOffset + len > arr.length)
@@ -202,7 +202,7 @@ public class OSMemory {
         if (len == 0)
             return;
 
-        UNSAFE.copyMemory(arr, ARRAY_BYTE_BASE_OFFSET + arrOffset, null, address, len);
+        UNSAFE.copyMemory(arr, ARRAY_BYTE_BASE_OFFSET + arrOffset, null, toAddr, len);
     }
 
     public void copyMemory(byte[] src, int srcOffset, byte[] dest, int destOffset, int len) {
