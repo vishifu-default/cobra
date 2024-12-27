@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class IntListTest {
 
@@ -46,6 +47,18 @@ class IntListTest {
 
         intList.reverse();
         assertArrayEquals(new int[]{10, 5, 1}, intList.copyRangeOf(0, 3));
+    }
+
+    @Test
+    void expand() {
+        for (int i = 0; i < 100; i++) {
+            intList.add(i);
+        }
+
+        for (int i = 0; i < 100; i++) {
+            if (i != intList.get(i))
+                fail();
+        }
     }
 
     @Test

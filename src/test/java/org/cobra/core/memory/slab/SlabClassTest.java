@@ -3,46 +3,55 @@ package org.cobra.core.memory.slab;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class SlabClassTest {
 
     @Test
-    void init() {
-        final SlabClass slabClass = new SlabClass(0, 32, 8);
-        assertEquals(0, slabClass.totalChunks(), "no chunk when just new a slab class");
-        assertEquals(32, slabClass.chunkSize());
+    void initialize() {
+        final SlabClass slab = new SlabClass(0, 32, 4);
+
+        assertEquals(0, slab.getId());
+        assertEquals(32, slab.getChunkSize());
+        assertEquals(4, slab.getChunksPerPage());
+        assertEquals(3, slab.getChunkMasking());
+
+        assertEquals(0, slab.getTotalChunks(), "not yet pre-allocated");
     }
 
     @Test
     void allocate_free() {
-        final int clsid = 0;
-        final SlabClass slabClass = new SlabClass(clsid, 32, 8);
+        final SlabClass slab = new SlabClass(0, 32, 4);
+        SlabOffset offset0 = slab.allocate();
+        SlabOffset offset1 = slab.allocate();
 
-        final ChunkMemory chunk = slabClass.allocate();
+        assertEquals(2, slab.page(0).getAllocatedSize());
+        assertEquals(4, slab.getTotalChunks(), "poll offset 2-time, must allocate 1 page");
 
-        assertNotNull(chunk, "just-allocated chunk is null");
-        assertFalse(chunk.loc().isNull(), "just-allocated chunk location is null");
-        assertEquals(7, slabClass.getNumFreeChunks(), "-1 free-chunk");
+        assertEquals(0, offset0.getClsid());
+        assertEquals(0, offset0.getPageId());
+        assertEquals(0, offset1.getPageId());
+        assertEquals(0, offset0.getChunkId());
+        assertEquals(1, offset1.getChunkId());
 
-        slabClass.free(chunk.loc());
-        assertEquals(8, slabClass.getNumFreeChunks());
+        slab.free(offset0);
+        slab.free(offset1);
     }
 
     @Test
-    void allocateMorePage() {
-        final int clsid = 0;
-        final SlabClass slabClass = new SlabClass(clsid, 32, 2);
+    void allocate_grow() {
+        final SlabClass slab = new SlabClass(0, 32, 4);
 
-        // take 2 chunks
-        slabClass.allocate();
-        slabClass.allocate();
+        for (int i = 0; i < 10; i++) {
+            slab.allocate();
+        }
 
-        // allocate page
-        slabClass.allocate();
-
-        assertEquals(4, slabClass.totalChunks());
-        assertNotNull(slabClass.page(1));
+        assertEquals(12, slab.getTotalChunks());
+        assertNotNull(slab.page(2));
+        assertEquals(1, slab.page(0).getUtilized());
+        assertEquals(1, slab.page(1).getUtilized());
+        assertEquals(0.5f, slab.page(2).getUtilized());
+        assertEquals(2, slab.countFreeNum());
     }
+
 }

@@ -6,6 +6,8 @@ import org.cobra.core.bytes.RandomBytes;
 import org.cobra.core.bytes.SequencedBytes;
 import org.cobra.core.memory.OSMemory;
 
+import java.nio.ByteBuffer;
+
 @SuppressWarnings("DuplicatedCode")
 public class Varint {
 
@@ -25,6 +27,10 @@ public class Varint {
         return pos;
     }
 
+    public void writeNull(ByteBuffer buffer) {
+        buffer.put((byte) 0x80);
+    }
+
     public long writeNull(RandomBytes bytes, long pos) {
         bytes.writeAt(pos, (byte) 0x80);
         return pos + 1;
@@ -37,6 +43,10 @@ public class Varint {
 
     public boolean readNull(byte[] data, int pos) {
         return data[pos] == (byte) 0x80;
+    }
+
+    public boolean readNull(ByteBuffer buffer) {
+        return buffer.get() == (byte) 0x80;
     }
 
     public boolean readNull(RandomBytes bytes, long pos) {
@@ -58,11 +68,20 @@ public class Varint {
         return pos;
     }
 
+    public void writeVarInt(ByteBuffer buffer, int val) {
+        if (val > 0xfffffff || val < 0) buffer.put((byte) (val >>> 28));
+        if (val > 0x1fffff || val < 0) buffer.put((byte) (0x80 | (val >>> 21) & 0x7f));
+        if (val > 0x3fff || val < 0) buffer.put((byte) (0x80 | (val >>> 14) & 0x7f));
+        if (val > 0x7f || val < 0) buffer.put((byte) (0x80 | (val >>> 7) & 0x7f));
+
+        buffer.put((byte) (val & 0x7f));
+    }
+
     public long writeVarInt(long address, int val) {
         if (val > 0xfffffff || val < 0) memory.writeByte(address++, (byte) (val >>> 28));
-        if (val > 0x1fffff || val < 0)  memory.writeByte(address++, (byte) (0x80 | (val >>> 21) & 0x7f));
-        if (val > 0x3fff || val < 0)    memory.writeByte(address++, (byte) (0x80 | (val >>> 14) & 0x7f));
-        if (val > 0x7f || val < 0)      memory.writeByte(address++, (byte) (0x80 | (val >>> 7) & 0x7f));
+        if (val > 0x1fffff || val < 0) memory.writeByte(address++, (byte) (0x80 | (val >>> 21) & 0x7f));
+        if (val > 0x3fff || val < 0) memory.writeByte(address++, (byte) (0x80 | (val >>> 14) & 0x7f));
+        if (val > 0x7f || val < 0) memory.writeByte(address++, (byte) (0x80 | (val >>> 7) & 0x7f));
 
         memory.writeByte(address++, (byte) (val & 0x7f));
         return address;
@@ -97,6 +116,21 @@ public class Varint {
         int result = b & 0x7f;
         while ((b & 0x80) != 0) {
             b = data[pos++];
+            result <<= 7;
+            result |= (b & 0x7f);
+        }
+
+        return result;
+    }
+
+    public int readVarInt(ByteBuffer buffer) {
+        byte b = buffer.get();
+        if (b == (byte) 0x80)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_INTEGER);
+
+        int result = b & 0x7f;
+        while ((b & 0x80) != 0) {
+            b = buffer.get();
             result <<= 7;
             result |= (b & 0x7f);
         }
@@ -165,6 +199,20 @@ public class Varint {
         return pos;
     }
 
+    public void writeVarLong(ByteBuffer buffer, long val) {
+        if (val < 0) buffer.put((byte) 0x81);
+        if (val > 0xffffffffffffffL || val < 0) buffer.put((byte) (0x80 | ((val >>> 56) & 0x7fL)));
+        if (val > 0x1ffffffffffffL || val < 0)  buffer.put((byte) (0x80 | ((val >>> 49) & 0x7fL)));
+        if (val > 0x3ffffffffffL || val < 0)    buffer.put((byte) (0x80 | ((val >>> 42) & 0x7fL)));
+        if (val > 0x7ffffffffL || val < 0)      buffer.put((byte) (0x80 | ((val >>> 35) & 0x7fL)));
+        if (val > 0xfffffffL || val < 0)        buffer.put((byte) (0x80 | ((val >>> 28) & 0x7fL)));
+        if (val > 0x1fffffL || val < 0)         buffer.put((byte) (0x80 | ((val >>> 21) & 0x7fL)));
+        if (val > 0x3fffL || val < 0)           buffer.put((byte) (0x80 | ((val >>> 14) & 0x7fL)));
+        if (val > 0x7fL || val < 0)             buffer.put((byte) (0x80 | ((val >>> 7) & 0x7fL)));
+
+        buffer.put((byte) (val & 0x7fL));
+    }
+
     public long writeVarLong(long address, long val) {
         if (val < 0) memory.writeByte(address++, (byte) 0x81);
         if (val > 0xffffffffffffffL || val < 0) memory.writeByte(address++, (byte) (0x80 | ((val >>> 56) & 0x7fL)));
@@ -215,6 +263,21 @@ public class Varint {
         return result;
     }
 
+    public long readVarLong(ByteBuffer buffer) {
+        byte b = buffer.get();
+        if (b == (byte) 0x80)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_LONG);
+
+        long result = b & 0x7f;
+        while ((b & 0x80) != 0) {
+            b = buffer.get();
+            result <<= 7;
+            result |= (b & 0x7f);
+        }
+
+        return result;
+    }
+
     public long readVarLong(long address) {
         byte b = memory.readByte(address++);
         if (b == (byte) 0x80)
@@ -239,7 +302,7 @@ public class Varint {
         while ((b & 0x80) != 0) {
             b = bytes.readAt(pos++);
             result <<= 7;
-           result |= (b & 0x7f);
+            result |= (b & 0x7f);
         }
 
         return result;
