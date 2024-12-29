@@ -1,15 +1,15 @@
 package org.cobra.core.serialization;
 
-import org.cobra.core.RecordSchema;
+import org.cobra.core.ModelSchema;
 
 public interface RecordSerde {
 
     /**
      * Registers a schema to associated with a unique ID into serde instance.
      *
-     * @param recordSchema schema of data type
+     * @param modelSchema schema of data type
      */
-    void register(RecordSchema recordSchema);
+    void register(ModelSchema modelSchema);
 
     /**
      * Serializes object into raw bytes.
@@ -27,4 +27,6 @@ public interface RecordSerde {
      * @return deserialized object
      */
     <T> T deserialize(byte[] bytes);
+
+    SerdeClassResolver resolver();
 }

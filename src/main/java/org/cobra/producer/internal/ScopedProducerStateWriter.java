@@ -2,34 +2,35 @@ package org.cobra.producer.internal;
 
 import org.cobra.commons.Clock;
 import org.cobra.producer.CobraProducer;
+import org.cobra.producer.state.ProducerStateContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProducerStateWriter implements CobraProducer.StateWriter, AutoCloseable {
+public class ScopedProducerStateWriter implements CobraProducer.StateWriter, AutoCloseable {
 
-    private static final Logger log = LoggerFactory.getLogger(ProducerStateWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(ScopedProducerStateWriter.class);
     private volatile boolean isClosed = false;
 
-    private final ProducerSchemaDelegated schemaWriteDelegate;
+    private final ProducerStateContext stateContext;
     private final long version;
     private final Clock clock;
 
-    public ProducerStateWriter(ProducerSchemaDelegated schemaWriteDelegate, long version, Clock clock) {
-        this.schemaWriteDelegate = schemaWriteDelegate;
+    public ScopedProducerStateWriter(ProducerStateContext stateContext, long version, Clock clock) {
+        this.stateContext = stateContext;
         this.version = version;
         this.clock = clock;
     }
 
     @Override
-    public void putObject(String key, Object object) {
+    public void addObject(String key, Object object) {
         requireNotClosed();
-        this.schemaWriteDelegate.addObject(key, object);
+        this.stateContext.addObject(key, object);
     }
 
     @Override
     public void removeObject(String key, Class<?> clazz) {
         requireNotClosed();
-        this.schemaWriteDelegate.removeObject(key, clazz);
+        this.stateContext.removeObject(key, clazz);
     }
 
     @Override
@@ -50,6 +51,6 @@ public class ProducerStateWriter implements CobraProducer.StateWriter, AutoClose
 
     @Override
     public String toString() {
-        return "ScopeProducerState()";
+        return "ProducerStateWriter(isClosed=%s, version=%d)".formatted(isClosed, version);
     }
 }

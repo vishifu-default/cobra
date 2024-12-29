@@ -1,5 +1,6 @@
 package org.cobra.producer;
 
+import org.cobra.commons.Clock;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
@@ -11,6 +12,10 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 public interface CobraProducer {
+
+    long produce(Populator populator);
+
+    void registerModel(Class<?> clazz);
 
     interface BlobPublisher {
         void publish(PublishableArtifact publishable);
@@ -48,7 +53,7 @@ public interface CobraProducer {
     interface PublishableArtifact extends StreamingBlob {
         void write(BlobWriter blobWriter) throws IOException;
 
-        void close();
+        void cleanup();
 
         Path getPath();
     }
@@ -61,7 +66,7 @@ public interface CobraProducer {
          * @param key    identity key (should be unique).
          * @param object source object.
          */
-        void putObject(String key, Object object);
+        void addObject(String key, Object object);
 
         /**
          * Removes an object from current state writer
@@ -87,5 +92,51 @@ public interface CobraProducer {
          * @return new version
          */
         long mint();
+    }
+
+    @FunctionalInterface
+    interface Populator {
+        void populate(StateWriter stateWriter);
+    }
+
+    static Builder fromBuilder() {
+        return new Builder();
+    }
+
+    class Builder {
+        BlobPublisher blobPublisher;
+        BlobStagger blobStagger;
+        BlobCompressor blobCompressor;
+        VersionMinter versionMinter;
+        Clock clock;
+
+        Builder withBlobPublisher(BlobPublisher blobPublisher) {
+            this.blobPublisher = blobPublisher;
+            return this;
+        }
+
+        Builder withBlobStagger(BlobStagger blobStagger) {
+            this.blobStagger = blobStagger;
+            return this;
+        }
+
+        Builder withBlobCompressor(BlobCompressor blobCompressor) {
+            this.blobCompressor = blobCompressor;
+            return this;
+        }
+
+        Builder withVersionMinter(VersionMinter versionMinter) {
+            this.versionMinter = versionMinter;
+            return this;
+        }
+
+        Builder withClock(Clock clock) {
+            this.clock = clock;
+            return this;
+        }
+
+        CobraProducer buildSimple() {
+            return new CobraSimpleProducer(this);
+        }
     }
 }

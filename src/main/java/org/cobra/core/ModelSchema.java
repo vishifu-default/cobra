@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
 
-public class RecordSchema {
+public class ModelSchema {
 
     private final Class<?> clazz;
 
-    public RecordSchema(@NotNull Class<?> clazz) {
+    public ModelSchema(@NotNull Class<?> clazz) {
         this.clazz = Objects.requireNonNull(clazz, "clazz is null");
     }
 

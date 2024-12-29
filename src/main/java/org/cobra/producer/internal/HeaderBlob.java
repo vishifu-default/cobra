@@ -18,4 +18,9 @@ public abstract class HeaderBlob implements CobraProducer.PublishableArtifact {
     public long getVersion() {
         return this.version;
     }
+
+    @Override
+    public String toString() {
+        return "HeaderBlob(version=%d)".formatted(version);
+    }
 }

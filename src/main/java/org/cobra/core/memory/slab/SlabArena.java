@@ -74,6 +74,20 @@ public class SlabArena {
         return this.slabs[i];
     }
 
+    public SlabOffset allocate(int sizeof) {
+        final int requiredSize = sizeof + SlabMethods.SLAB_META_FOOTPRINT;
+        final int clsid = clsid(requiredSize);
+
+        if (clsid == FAILED_CLSID) {
+            log.error("failed to find a fit-size to allocate for size {}", requiredSize);
+            throw new IllegalStateException(ERROR_NOT_FIND_CLSID);
+        }
+
+        final SlabClass slabClass = slab(clsid);
+        return slabClass.allocate();
+    }
+
+    @Deprecated
     public long allocate(int hash, byte[] arr) {
         final int requiredSize = arr.length + SlabMethods.SLAB_META_FOOTPRINT;
         final int clsid = clsid(requiredSize);

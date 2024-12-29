@@ -16,6 +16,10 @@ public class OnHeapBytes extends VanillaBytes {
         return create(OnHeapBytesStore.create());
     }
 
+    public static OnHeapBytes create(BytesPool bytesPool) {
+        return create(OnHeapBytesStore.create(bytesPool));
+    }
+
     public static OnHeapBytes createLog2Align(int log2) {
         return create(OnHeapBytesStore.create(log2));
     }

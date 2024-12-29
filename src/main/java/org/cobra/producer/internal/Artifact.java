@@ -47,12 +47,12 @@ public final class Artifact {
         this.isClosed = true;
 
         if (hasDelta()) {
-            this.deltaBlob.close();
+            this.deltaBlob.cleanup();
             this.deltaBlob = null;
         }
 
         if (hasReversedDelta()) {
-            this.reversedDeltaBlob.close();
+            this.reversedDeltaBlob.cleanup();
             this.reversedDeltaBlob = null;
         }
     }

@@ -46,6 +46,10 @@ public class OnHeapBytesStore implements BytesStore {
         return create(DEFAULT_LOG2_OF_SEGMENT, BytesPool.NONE);
     }
 
+    public static OnHeapBytesStore create(BytesPool bytesPool) {
+        return create(DEFAULT_LOG2_OF_SEGMENT, bytesPool);
+    }
+
     public static OnHeapBytesStore create(int log2Align) {
         return create(log2Align, BytesPool.NONE);
     }

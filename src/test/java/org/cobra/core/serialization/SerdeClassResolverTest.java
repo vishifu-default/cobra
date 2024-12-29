@@ -6,9 +6,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,7 +34,7 @@ class SerdeClassResolverTest {
         serdeClassResolver.register(new Registration(Sample2.class,
                 new DefaultSerializers.VoidSerializer(), 200));
 
-        Set<SerdeRegistration> registrations = serdeClassResolver.registrationEntries();
+        Set<SerdeRegistration> registrations = serdeClassResolver.registrationValues();
         Set<Integer> ids = registrations.stream()
                 .map(SerdeRegistration::getRegisteredId).collect(Collectors.toSet());
         Set<Class<?>> classes = registrations.stream()
@@ -44,6 +46,12 @@ class SerdeClassResolverTest {
         assertTrue(classes.contains(Sample1.class));
         assertTrue(classes.contains(Sample2.class));
 
+        Map<String, Integer> classNameToId = serdeClassResolver.registrationClassTypeEntries();
+        assertFalse(classNameToId.isEmpty());
+        assertTrue(classNameToId.containsKey(Sample1.class.getName()));
+        assertTrue(classNameToId.containsKey(Sample2.class.getName()));
+        assertEquals(100, classNameToId.get(Sample1.class.getName()));
+        assertEquals(200, classNameToId.get(Sample2.class.getName()));
     }
 
     private static class Sample1 {

@@ -26,4 +26,9 @@ public abstract class Blob extends VersioningBlob implements CobraProducer.Publi
     public Path getPath() {
         return this.path;
     }
+
+    @Override
+    public String toString() {
+        return "Blob(fromVersion=%d, toVersion=%d)".formatted(fromVersion, toVersion);
+    }
 }

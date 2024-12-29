@@ -5,7 +5,7 @@ import com.esotericsoftware.kryo.unsafe.UnsafeInput;
 import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.utils.Utils;
-import org.cobra.core.RecordSchema;
+import org.cobra.core.ModelSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +22,7 @@ public class RecordSerdeImpl implements RecordSerde {
     private static final int LIMIT_CAPACITY_OF_OBJECT = 1 << 22; // approximate 4MiB
 
     private static Kryo kryo;
+    private static SerdeClassResolver resolver;
 
     private UnsafeOutput unsafeOutput;
     private UnsafeInput unsafeInput;
@@ -29,6 +30,7 @@ public class RecordSerdeImpl implements RecordSerde {
     static {
         SerdeClassResolver serdeClassResolver = new SerdeClassResolver();
         kryo = new Kryo(serdeClassResolver, null);
+        resolver = serdeClassResolver;
     }
 
     public RecordSerdeImpl() {
@@ -37,8 +39,8 @@ public class RecordSerdeImpl implements RecordSerde {
     }
 
     @Override
-    public void register(RecordSchema recordSchema) {
-        Set<Class<?>> innerReferences = ReferentVisits.visits(recordSchema.getClazz(), new HashSet<>(), 0);
+    public void register(ModelSchema modelSchema) {
+        Set<Class<?>> innerReferences = ReferentVisits.visits(modelSchema.getClazz(), new HashSet<>(), 0);
         for (Class<?> clazz : innerReferences) {
             kryo.register(clazz);
         }
@@ -71,5 +73,10 @@ public class RecordSerdeImpl implements RecordSerde {
             log.error("Failed to deserialize object {}", bytes, e);
             throw new CobraException(e);
         }
+    }
+
+    @Override
+    public SerdeClassResolver resolver() {
+        return resolver;
     }
 }
