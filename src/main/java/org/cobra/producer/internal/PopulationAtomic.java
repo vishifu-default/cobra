@@ -12,52 +12,56 @@ public class PopulationAtomic {
         this.pending = pending;
     }
 
-    static PopulationAtomic createDeltaChain(long initVersion) {
+    public static PopulationAtomic createDeltaChain(long initVersion) {
         return new PopulationAtomic(atomic(initVersion), null);
     }
 
-    static Atomic atomic(long version) {
+    public static Atomic atomic(long version) {
         return () -> version;
     }
 
-    Atomic getCurrent() {
+    public Atomic getCurrent() {
         return this.current;
     }
 
-    Atomic getPending() {
+    public Atomic getPending() {
         return this.pending;
     }
 
-    boolean hasCurrentState() {
+    public boolean hasCurrentState() {
         return getCurrent() != null;
     }
 
-    long pendingVersion() {
+    public long pendingVersion() {
         return getPending() == null ? VersioningBlob.VERSION_UNDEFINED : getPending().getVersion();
     }
 
-    PopulationAtomic round(long pendingVersion) {
+    public PopulationAtomic round(long pendingVersion) {
         if (getPending() != null)
             throw new IllegalStateException("Attempt to round other pending");
 
         return new PopulationAtomic(this.current, atomic(pendingVersion));
     }
 
-    PopulationAtomic commit() {
+    public PopulationAtomic commit() {
         if (getPending() == null)
             throw new IllegalStateException("Attempt to commit non-pending");
 
         return new PopulationAtomic(this.pending, null);
     }
 
-    PopulationAtomic rollback() {
+    public PopulationAtomic rollback() {
         if (getPending() == null)
             throw new IllegalStateException("Attempt to rollback non-pending");
 
         return new PopulationAtomic(this.current, null);
     }
 
-    interface Atomic {
+    public PopulationAtomic swap() {
+        return new PopulationAtomic(atomic(current.getVersion()), atomic(pending.getVersion()));
+    }
+
+    public interface Atomic {
         long getVersion();
     }
 }

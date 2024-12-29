@@ -7,8 +7,6 @@ import java.nio.file.Path;
 
 public abstract class HeaderBlob implements CobraProducer.PublishableArtifact {
 
-    public static final int VERSION_ID = 2_000;
-
     protected final long version;
     protected final Path path;
 
@@ -19,5 +17,10 @@ public abstract class HeaderBlob implements CobraProducer.PublishableArtifact {
 
     public long getVersion() {
         return this.version;
+    }
+
+    @Override
+    public String toString() {
+        return "HeaderBlob(version=%d)".formatted(version);
     }
 }

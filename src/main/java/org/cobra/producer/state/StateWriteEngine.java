@@ -68,6 +68,10 @@ public class StateWriteEngine {
         this.phase = Phasing.NEXT_CYCLE;
     }
 
+    public void revertToLastState() {
+        // todo: implement me
+    }
+
     public boolean isModified() {
         for (final SchemaStateWrite schemaStateWrite : this.producerStateContext.collectSchemaStateWrites()) {
             if (schemaStateWrite.isModified())

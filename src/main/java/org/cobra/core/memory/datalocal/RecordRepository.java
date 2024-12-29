@@ -46,6 +46,6 @@ public class RecordRepository {
     }
 
     private int toHashKey(String key) {
-        return Murmur3Hash.hash(key.getBytes());
+        return Murmur3Hash.murmurhash3_x86_32(key.getBytes(), 0, key.length(), 0);
     }
 }

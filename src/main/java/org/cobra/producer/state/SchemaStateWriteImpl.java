@@ -77,8 +77,8 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         this.toAdditionalRecordStore.write(keyBytes);
 
         /* b. record bytes */
-        varint.writeVarInt(this.toRemovalRecordStore, serialized.length);
-        this.toRemovalRecordStore.write(serialized);
+        varint.writeVarInt(this.toAdditionalRecordStore, serialized.length);
+        this.toAdditionalRecordStore.write(serialized);
 
         /* put object to data repo */
         this.recordRepository.putObject(key, serialized);
@@ -96,8 +96,8 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         this.toRemovalRecordStore.write(keyBytes);
 
         /* b. removal record bytes, (used for reversed) */
-        varint.writeVarInt(this.toAdditionalRecordStore, removalData.length);
-        this.toAdditionalRecordStore.write(removalData);
+        varint.writeVarInt(this.toRemovalRecordStore, removalData.length);
+        this.toRemovalRecordStore.write(removalData);
     }
 
     @Override

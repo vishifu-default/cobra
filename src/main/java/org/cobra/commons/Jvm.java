@@ -45,4 +45,6 @@ public class Jvm {
     public static class File {
         public static final String READ_ONLY_MODE = "r";
     }
+
+    public static final String SYSTEM_TEMPDIR = System.getProperty("java.io.tmpdir");
 }

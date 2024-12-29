@@ -1,10 +1,10 @@
 package org.cobra.producer.state;
 
+import org.cobra.commons.CobraConstants;
 import org.cobra.commons.Jvm;
 import org.cobra.commons.threads.CobraThreadExecutor;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.encoding.Varint;
-import org.cobra.producer.internal.HeaderBlob;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -101,7 +101,7 @@ public class BlobWriterImpl implements BlobWriter {
 
     private void doWriteHeader(DataOutputStream dos) throws IOException {
         /* write version_id, tag */
-        dos.writeInt(HeaderBlob.VERSION_ID);
+        dos.writeInt(CobraConstants.BLOB_HEADER_VERSION_ID);
         dos.writeLong(this.stateWriteEngine.getOriginRandomizedTag());
         dos.writeLong(this.stateWriteEngine.getNextRandomizedTag());
 

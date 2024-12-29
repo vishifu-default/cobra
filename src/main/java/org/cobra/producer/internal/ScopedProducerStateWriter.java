@@ -6,23 +6,23 @@ import org.cobra.producer.state.ProducerStateContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProducerStateWriter implements CobraProducer.StateWriter, AutoCloseable {
+public class ScopedProducerStateWriter implements CobraProducer.StateWriter, AutoCloseable {
 
-    private static final Logger log = LoggerFactory.getLogger(ProducerStateWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(ScopedProducerStateWriter.class);
     private volatile boolean isClosed = false;
 
     private final ProducerStateContext stateContext;
     private final long version;
     private final Clock clock;
 
-    public ProducerStateWriter(ProducerStateContext stateContext, long version, Clock clock) {
+    public ScopedProducerStateWriter(ProducerStateContext stateContext, long version, Clock clock) {
         this.stateContext = stateContext;
         this.version = version;
         this.clock = clock;
     }
 
     @Override
-    public void putObject(String key, Object object) {
+    public void addObject(String key, Object object) {
         requireNotClosed();
         this.stateContext.addObject(key, object);
     }
