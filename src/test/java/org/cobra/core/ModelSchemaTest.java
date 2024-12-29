@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class RecordSchemaTest {
+class ModelSchemaTest {
 
     @BeforeEach
     void setUp() {
@@ -24,7 +24,7 @@ class RecordSchemaTest {
     @Test
     void write() throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        RecordSchema schema = new RecordSchema(Sample.class);
+        ModelSchema schema = new ModelSchema(Sample.class);
 
         schema.write(os);
         os.flush();
@@ -36,7 +36,7 @@ class RecordSchemaTest {
 
     @Test
     void getClazzName() {
-        RecordSchema schema = new RecordSchema(Sample.class);
+        ModelSchema schema = new ModelSchema(Sample.class);
         assertEquals(Sample.class.getTypeName(), schema.getClazzName());
     }
 

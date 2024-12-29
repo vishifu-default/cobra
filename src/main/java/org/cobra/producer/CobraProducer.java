@@ -1,6 +1,7 @@
 package org.cobra.producer;
 
 import org.cobra.core.objects.StreamingBlob;
+import org.cobra.core.serialization.SerdeClassResolver;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
 import org.cobra.producer.state.BlobWriter;
@@ -11,6 +12,9 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 public interface CobraProducer {
+
+    long produce(Populator populator);
+
 
     interface BlobPublisher {
         void publish(PublishableArtifact publishable);
@@ -87,5 +91,10 @@ public interface CobraProducer {
          * @return new version
          */
         long mint();
+    }
+
+    @FunctionalInterface
+    interface Populator {
+        void populate(StateWriter stateWriter);
     }
 }

@@ -1,13 +1,13 @@
 package org.cobra.producer.state;
 
-import org.cobra.core.RecordSchema;
+import org.cobra.core.ModelSchema;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public interface SchemaStateWrite {
 
-    RecordSchema getSchema();
+    ModelSchema getSchema();
 
     boolean isModified();
 
@@ -17,11 +17,13 @@ public interface SchemaStateWrite {
 
     void writeObject(String key, Object object);
 
-    void remoteObject(String key);
+    void removeObject(String key);
+
+    void prepareWriteDelta();
 
     void writeDelta(DataOutputStream dos) throws IOException;
 
-    void writeReversedDelta(DataOutputStream dos) throws IOException;
+    void prepareWriteReversedDelta();
 
-    void setupForReversedDelta();
+    void writeReversedDelta(DataOutputStream dos) throws IOException;
 }

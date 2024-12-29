@@ -185,4 +185,9 @@ public abstract class VanillaBytes implements Bytes {
 
         return result;
     }
+
+    @Override
+    public void rewind() {
+        this.position = 0;
+    }
 }

@@ -36,6 +36,18 @@ public class SlabMethods {
         return ans;
     }
 
+    public byte[] get(long address) {
+        long skipMetaAddress = address + SLAB_META_FOOTPRINT;
+
+        int varintSize = varint.readVarInt(skipMetaAddress);
+        skipMetaAddress += varint.sizeOfVarint(varintSize);
+        byte[] ans = new byte[varintSize];
+
+        memory.copyMemory(null, skipMetaAddress, ans, OSMemory.ARRAY_BYTE_BASE_OFFSET, varintSize);
+
+        return ans;
+    }
+
     public SlabOffset location(long address) {
         final byte[] meta = new byte[SLAB_META_FOOTPRINT];
         memory.copyMemory(null, address, meta, 0, SLAB_META_FOOTPRINT);

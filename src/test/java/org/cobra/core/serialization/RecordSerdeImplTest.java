@@ -1,7 +1,6 @@
 package org.cobra.core.serialization;
 
-import org.cobra.core.RecordSchema;
-import org.junit.jupiter.api.Assertions;
+import org.cobra.core.ModelSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ class RecordSerdeImplTest {
 
     @Test
     void register_shouldNotThrow() {
-        serde.register(new RecordSchema(ClassA.class));
+        serde.register(new ModelSchema(ClassA.class));
     }
 
     @Test
@@ -31,7 +30,7 @@ class RecordSerdeImplTest {
         a.bMember.cMember = new ClassC();
         a.bMember.cMember.boxLongVal = 100L;
 
-        serde.register(new RecordSchema(ClassA.class));
+        serde.register(new ModelSchema(ClassA.class));
         byte[] bytes = serde.serialize(a);
 
         assertNotNull(bytes);
