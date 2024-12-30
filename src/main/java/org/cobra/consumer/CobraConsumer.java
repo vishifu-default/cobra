@@ -1,5 +1,6 @@
 package org.cobra.consumer;
 
+import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.pools.BytesPool;
 import org.cobra.commons.threads.CobraThreadExecutor;
@@ -72,7 +73,7 @@ public interface CobraConsumer {
         BytesPool bytesPool;
         Path blobStorePath;
         CobraThreadExecutor refreshExecutor;
-        AnnouncementWatcher announcementWatcher;
+        Clock clock = Clock.system();
 
         public Builder withBlobFetcher(BlobFetcher blobFetcher) {
             this.blobFetcher = blobFetcher;
@@ -99,8 +100,8 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withAnnouncementWatcher(AnnouncementWatcher announcementWatcher) {
-            this.announcementWatcher = announcementWatcher;
+        public Builder withClock(Clock clock) {
+            this.clock = clock;
             return this;
         }
 

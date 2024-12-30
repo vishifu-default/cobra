@@ -30,7 +30,7 @@ public class SchemaStateReaderImpl implements SchemaStateReader {
     @Override
     public void applyDelta(BlobInput blobInput) throws IOException {
         readDeltaContent(blobInput);
-        log.debug("DELTA applied mode: {}", modelSchema);
+        log.debug("DELTA applied mode:l {}", modelSchema);
     }
 
     private void readDeltaContent(BlobInput blobInput) throws IOException {

@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class DataBlobTransits {
+public class DataBlobState {
 
-    private static final Logger log = LoggerFactory.getLogger(DataBlobTransits.class);
+    private static final Logger log = LoggerFactory.getLogger(DataBlobState.class);
 
     private final TransitionStats transitionStats;
     private final MemoryMode memoryMode;
@@ -20,7 +20,7 @@ public class DataBlobTransits {
 
     private long currentVersion = CobraConstants.VERSION_NULL;
 
-    public DataBlobTransits(TransitionStats transitionStats, MemoryMode memoryMode, BlobReader blobReader) {
+    public DataBlobState(TransitionStats transitionStats, MemoryMode memoryMode, BlobReader blobReader) {
         this.transitionStats = transitionStats;
         this.memoryMode = memoryMode;
         this.blobReader = blobReader;
@@ -70,8 +70,11 @@ public class DataBlobTransits {
 
         currentVersion(deltaBlob.toVersion());
 
-        log.info(String.format("[DELTA-TRANSITION] transition complete; from_v = %d; to_v = %d",
-                deltaBlob.fromVersion(), deltaBlob.toVersion()));
+        logDeltaDone(deltaBlob);
     }
 
+    private void logDeltaDone(CobraConsumer.Blob blob) {
+        String prefix = blob.isDeltaBlob() ? "[DELTA-TRANSITION]" : "[REVERSED-DELTA-TRANSITION]";
+        log.info("{} complete; from_v: {}; to_v: {}", prefix, blob.fromVersion(), blob.toVersion());
+    }
 }

@@ -3,7 +3,10 @@ package org.cobra.producer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.errors.CobraException;
+import org.cobra.commons.pools.MemoryAlloc;
 import org.cobra.core.ModelSchema;
+import org.cobra.networks.server.CobraServer;
+import org.cobra.networks.server.DefaultServerConfigs;
 import org.cobra.producer.internal.Artifact;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
@@ -27,23 +30,34 @@ public abstract class AbstractProducer implements CobraProducer {
     private final CobraProducer.BlobPublisher blobPublisher;
     private final StateWriteEngine stateWriteEngine;
     private final ProducerStateContext producerStateContext;
-
+    private final Announcer announcer;
     private final Clock clock;
 
     private PopulationAtomic populationAtomic;
     private long lastSuccessVersion = CobraConstants.VERSION_NULL;
 
+    private final org.cobra.networks.server.Server networkServer;
+    private boolean isBootstrap = false;
 
     protected AbstractProducer(Builder builder) {
         this.versionMinter = builder.versionMinter;
         this.blobStagger = builder.blobStagger;
         this.blobPublisher = builder.blobPublisher;
         this.clock = builder.clock;
+        this.announcer = builder.announcer;
 
         this.producerStateContext = new ProducerStateContext();
         this.stateWriteEngine = new StateWriteEngine(this.producerStateContext);
 
         this.populationAtomic = PopulationAtomic.createDeltaChain(CobraConstants.VERSION_NULL);
+
+        this.networkServer = new CobraServer(clock, MemoryAlloc.NONE, DefaultServerConfigs.CONFIG_DEF);
+    }
+
+    @Override
+    public void bootstrap() {
+        networkServer.bootstrap();
+        isBootstrap = true;
     }
 
     @Override
@@ -53,6 +67,9 @@ public abstract class AbstractProducer implements CobraProducer {
     }
 
     protected long runProduce(Populator task) {
+        if (!isBootstrap)
+            throw new CobraException("producer must be bootstrap before produce a cycle");
+
         long toVersion = versionMinter.mint();
         Artifact artifact = new Artifact();
 
@@ -132,8 +149,7 @@ public abstract class AbstractProducer implements CobraProducer {
     }
 
     void announce(PopulationAtomic atomic) {
-        log.debug("implement Announcer");
-        // todo: implement Announcer
+        announcer.announce(atomic.getPending().getVersion());
     }
 
     private void doStageAndPublishHeaderBlob(HeaderBlob headerBlob) throws IOException {
@@ -154,7 +170,7 @@ public abstract class AbstractProducer implements CobraProducer {
         blobPublisher.publish(blob);
     }
 
-    private PopulationAtomic doCheckout(PopulationAtomic atomic, Artifact artifact){
+    private PopulationAtomic doCheckout(PopulationAtomic atomic, Artifact artifact) {
         PopulationAtomic result = atomic;
 
         if (result.hasCurrentState()) {

@@ -7,7 +7,7 @@ import org.cobra.networks.auth.SecurityProtocol;
 import org.cobra.networks.mocks.EchoServer;
 import org.cobra.networks.requests.AbstractResponse;
 import org.cobra.networks.requests.RequestCompletionCallback;
-import org.cobra.networks.requests.SampleRequest;
+import org.cobra.networks.requests.sample.SampleRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

@@ -1,7 +1,9 @@
-package org.cobra.networks.requests;
+package org.cobra.networks.requests.sample;
 
 import org.cobra.networks.protocol.Apikey;
 import org.cobra.networks.protocol.MessageAccessor;
+import org.cobra.networks.requests.AbstractRequest;
+import org.cobra.networks.requests.AbstractResponse;
 
 import java.nio.ByteBuffer;
 

@@ -15,14 +15,14 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FsBlobFetcher implements CobraConsumer.BlobFetcher {
+public class FilesystemBlobFetcher implements CobraConsumer.BlobFetcher {
 
-    private static final Logger log = LoggerFactory.getLogger(FsBlobFetcher.class);
+    private static final Logger log = LoggerFactory.getLogger(FilesystemBlobFetcher.class);
 
     private final Path blobStorePath;
     private final CobraConsumer.BlobFetcher fallbackBlobFetcher;
 
-    public FsBlobFetcher(Path blobStorePath, CobraConsumer.BlobFetcher fallbackBlobFetcher) {
+    public FilesystemBlobFetcher(Path blobStorePath, CobraConsumer.BlobFetcher fallbackBlobFetcher) {
         this.blobStorePath = blobStorePath;
         this.fallbackBlobFetcher = fallbackBlobFetcher;
 

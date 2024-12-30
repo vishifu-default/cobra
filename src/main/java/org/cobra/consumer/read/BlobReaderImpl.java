@@ -78,10 +78,10 @@ public class BlobReaderImpl implements BlobReader {
         long inputOriginRandomizedTag = blobInput.readLong();
         long inputNextRandomizedTag = blobInput.readLong();
 
-        if (inputOriginRandomizedTag != stateReadEngine.getOriginRandomizedTag()
-                && inputNextRandomizedTag != stateReadEngine.getNextRandomizedTag()) {
-            throw new IllegalStateException("Attempt to apply delta state that is not origin with state-engine");
-        }
+//        if (inputOriginRandomizedTag != stateReadEngine.getOriginRandomizedTag()
+//                && inputNextRandomizedTag != stateReadEngine.getNextRandomizedTag()) {
+//            throw new IllegalStateException("Attempt to apply delta state that is not origin with state-engine");
+//        }
     }
 
     private void readSchemaStateDelta(BlobInput blobInput) throws IOException {

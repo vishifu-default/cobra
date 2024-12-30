@@ -1,4 +1,4 @@
-package org.cobra.networks.requests;
+package org.cobra.networks.requests.sample;
 
 import org.cobra.commons.utils.Stringx;
 import org.cobra.networks.protocol.ApiMessage;

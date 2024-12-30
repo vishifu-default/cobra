@@ -1,8 +1,8 @@
 package org.cobra.networks.server.internal.handler;
 
 import org.cobra.networks.protocol.MessageAccessor;
-import org.cobra.networks.requests.SampleResponse;
-import org.cobra.networks.requests.SampleResponseMessage;
+import org.cobra.networks.requests.sample.SampleResponse;
+import org.cobra.networks.requests.sample.SampleResponseMessage;
 import org.cobra.networks.server.RequestChanel;
 import org.cobra.networks.server.internal.SimpleRequest;
 import org.slf4j.Logger;

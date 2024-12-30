@@ -14,7 +14,7 @@ public class ConsumerDataPlane {
 
     private static final Logger log = LoggerFactory.getLogger(ConsumerDataPlane.class);
 
-    private volatile DataBlobTransits dataBlobTransits;
+    private volatile DataBlobState dataBlobState;
     private final DataFetcher dataFetcher;
     private final MemoryMode memoryMode;
     private final StateReadEngine stateReadEngine;
@@ -25,20 +25,20 @@ public class ConsumerDataPlane {
         this.memoryMode = memoryMode;
         this.stateReadEngine = stateReadEngine;
 
-        this.dataBlobTransits = new DataBlobTransits(new TransitionStats(), memoryMode,
+        this.dataBlobState = new DataBlobState(new TransitionStats(), memoryMode,
                 new BlobReaderImpl(memoryMode, stateReadEngine));
     }
 
     public long currentVersion() {
-        return dataBlobTransits.currentVersion();
+        return dataBlobState.currentVersion();
     }
 
     public synchronized boolean update(CobraConsumer.VersionInformation versionInformation) throws IOException {
         long requestVersion = versionInformation.getVersion();
         if (requestVersion == currentVersion()) {
             log.info("no version to update");
-            if (requestVersion == CobraConstants.VERSION_NULL && dataBlobTransits == null) {
-                dataBlobTransits = new DataBlobTransits(new TransitionStats(), memoryMode,
+            if (requestVersion == CobraConstants.VERSION_NULL && dataBlobState == null) {
+                dataBlobState = new DataBlobState(new TransitionStats(), memoryMode,
                         new BlobReaderImpl(memoryMode, stateReadEngine));
             }
 
@@ -53,7 +53,7 @@ public class ConsumerDataPlane {
         if (updatePlan.getFinalDestinationVersion() == currentVersion() || updatePlan.getFinalDestinationVersion() == CobraConstants.VERSION_NULL)
             return true;
 
-        dataBlobTransits.update(updatePlan);
+        dataBlobState.update(updatePlan);
         return currentVersion() == requestVersion;
     }
 }

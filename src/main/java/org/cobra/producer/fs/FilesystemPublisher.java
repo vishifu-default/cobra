@@ -14,13 +14,13 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FsPublisher implements CobraProducer.BlobPublisher {
+public class FilesystemPublisher implements CobraProducer.BlobPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(FsPublisher.class);
+    private static final Logger log = LoggerFactory.getLogger(FilesystemPublisher.class);
 
     private final Path pathDir;
 
-    public FsPublisher(Path pathDir) {
+    public FilesystemPublisher(Path pathDir) {
         this.pathDir = pathDir;
         IOx.mkdirs(pathDir);
     }

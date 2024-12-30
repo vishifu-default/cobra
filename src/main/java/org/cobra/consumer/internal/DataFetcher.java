@@ -32,7 +32,7 @@ public class DataFetcher {
 
     private long applyDeltaPlan(long currentVersion, long toVersion, DataUpdatePlan plan) {
         while (currentVersion < toVersion) {
-            currentVersion = includeDelta(plan, toVersion);
+            currentVersion = includeDelta(plan, currentVersion + 1);
         }
 
         return currentVersion;
