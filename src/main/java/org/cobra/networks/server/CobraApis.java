@@ -3,6 +3,7 @@ package org.cobra.networks.server;
 import org.cobra.networks.protocol.Apikey;
 import org.cobra.networks.server.internal.ApiHandler;
 import org.cobra.networks.server.internal.SimpleRequest;
+import org.cobra.networks.server.internal.handler.FetchVersionRequestApi;
 import org.cobra.networks.server.internal.handler.SampleRequestApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class CobraApis implements ApiHandler {
 
         switch (apikey) {
             case SAMPLE_REQUEST -> SampleRequestApi.handle(simpleRequest, requestChannelPlane);
+            case FETCH_VERSION -> FetchVersionRequestApi.handle(simpleRequest, requestChannelPlane);
             case null -> throw new IllegalStateException("Null apikey from request");
         }
     }

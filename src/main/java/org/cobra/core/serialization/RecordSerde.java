@@ -11,6 +11,8 @@ public interface RecordSerde {
      */
     void register(ModelSchema modelSchema);
 
+    void register(Class<?> clazz, int id);
+
     /**
      * Serializes object into raw bytes.
      *

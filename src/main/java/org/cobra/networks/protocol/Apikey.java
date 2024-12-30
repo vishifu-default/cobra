@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 
 public enum Apikey {
 
-    SAMPLE_REQUEST((short) 0, "SAMPLE");
+    SAMPLE_REQUEST((short) 0, "SAMPLE"),
+    FETCH_VERSION((short) 1, "FETCH VERSION");
 
     private static final Map<Integer, Apikey> ID_TO_APIKEY = Arrays.stream(Apikey.values())
             .collect(Collectors.toMap(e -> (int) e.id(), e -> e));

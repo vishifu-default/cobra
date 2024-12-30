@@ -6,6 +6,7 @@ import org.cobra.networks.protocol.ApiData;
 import org.cobra.networks.protocol.Apikey;
 import org.cobra.networks.protocol.MessageAccessor;
 import org.cobra.networks.protocol.SendBuilder;
+import org.cobra.networks.requests.sample.SampleResponse;
 
 import java.nio.ByteBuffer;
 
@@ -28,6 +29,7 @@ public abstract class AbstractResponse implements ApiData {
     private static AbstractResponse doParsePayload(Apikey apikey, ByteBuffer buffer) {
         return switch (apikey) {
             case SAMPLE_REQUEST -> SampleResponse.doParse(buffer);
+            case FETCH_VERSION -> FetchVersionResponse.doParse(buffer);
             case null -> throw new IllegalArgumentException("Null apikey");
         };
     }

@@ -2,7 +2,7 @@ package org.cobra.core.objects;
 
 public enum BlobType {
     DELTA_BLOB("delta"),
-    REVERSED_DELTA_BLOB("reversed_delta"),
+    REVERSED_DELTA_BLOB("reversedelta"),
     ;
 
     private final String prefix;

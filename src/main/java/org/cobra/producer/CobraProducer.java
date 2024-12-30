@@ -13,9 +13,15 @@ import java.nio.file.Path;
 
 public interface CobraProducer {
 
+    void bootstrap();
+
     long produce(Populator populator);
 
     void registerModel(Class<?> clazz);
+
+    interface Announcer {
+        void announce(long version);
+    }
 
     interface BlobPublisher {
         void publish(PublishableArtifact publishable);
@@ -109,6 +115,7 @@ public interface CobraProducer {
         BlobCompressor blobCompressor;
         VersionMinter versionMinter;
         Clock clock;
+        Announcer announcer;
 
         Builder withBlobPublisher(BlobPublisher blobPublisher) {
             this.blobPublisher = blobPublisher;
@@ -132,6 +139,11 @@ public interface CobraProducer {
 
         Builder withClock(Clock clock) {
             this.clock = clock;
+            return this;
+        }
+
+        Builder withAnnouncer(Announcer announcer) {
+            this.announcer = announcer;
             return this;
         }
 

@@ -1,6 +1,8 @@
 package org.cobra.core;
 
 import org.cobra.commons.errors.CobraException;
+import org.cobra.commons.utils.Utils;
+import org.cobra.core.objects.BlobInput;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataOutputStream;
@@ -14,6 +16,11 @@ public class ModelSchema {
 
     public ModelSchema(@NotNull Class<?> clazz) {
         this.clazz = Objects.requireNonNull(clazz, "clazz is null");
+    }
+
+    public static ModelSchema readFrom(BlobInput blobInput) throws IOException {
+        String type = blobInput.readUtf();
+        return new ModelSchema(Utils.classLoader(type));
     }
 
     /**
@@ -41,8 +48,6 @@ public class ModelSchema {
 
     @Override
     public String toString() {
-        return "RecordSchema{" +
-                "clazz=" + clazz +
-                '}';
+        return "RecordSchema(clazz=%s)".formatted(clazz);
     }
 }

@@ -1,6 +1,7 @@
 package org.cobra.commons.utils;
 
 import org.cobra.commons.errors.CobraException;
+import org.cobra.core.ModelSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,5 +146,13 @@ public class Utils {
     @SuppressWarnings("unchecked")
     public static <T> T uncheckedCast(Object o) {
         return (T) o;
+    }
+
+    public static Class<?> classLoader(String clazzName) {
+        try {
+            return ClassLoader.getSystemClassLoader().loadClass(clazzName);
+        } catch (ClassNotFoundException e) {
+            throw new CobraException("Class not visible", e);
+        }
     }
 }

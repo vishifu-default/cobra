@@ -46,6 +46,8 @@ public class BlobWriterImpl implements BlobWriter {
 
         Set<SchemaStateWrite> modifiedStateWriteSet = collectModifiedSchemaStateWrite();
 
+        dos.writeInt(modifiedStateWriteSet.size());
+
         try (
                 final CobraThreadExecutor executor = CobraThreadExecutor.ofPhysicalProcessor(getClass(),
                         PROC_DESC_WRITE_DELTA)
@@ -71,6 +73,7 @@ public class BlobWriterImpl implements BlobWriter {
         dos.writeLong(this.stateWriteEngine.getOriginRandomizedTag());
 
         Set<SchemaStateWrite> modifiedStateWriteSet = collectModifiedSchemaStateWrite();
+        dos.writeInt(modifiedStateWriteSet.size());
 
         try (
                 final CobraThreadExecutor executor = CobraThreadExecutor.ofPhysicalProcessor(getClass(),
@@ -113,7 +116,9 @@ public class BlobWriterImpl implements BlobWriter {
     }
 
     private void doWriteHeaderModifiedSchema(DataOutputStream dos) throws IOException {
-        for (final ModelSchema schema : collectModifiedSchemas()) {
+        final Set<ModelSchema> modifiedSchemas = collectModifiedSchemas();
+        dos.writeInt(modifiedSchemas.size());
+        for (final ModelSchema schema : modifiedSchemas) {
             dos.writeUTF(schema.getClazzName());
         }
     }

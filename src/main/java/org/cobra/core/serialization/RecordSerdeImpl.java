@@ -21,8 +21,8 @@ public class RecordSerdeImpl implements RecordSerde {
 
     private static final int LIMIT_CAPACITY_OF_OBJECT = 1 << 22; // approximate 4MiB
 
-    private static Kryo kryo;
-    private static SerdeClassResolver resolver;
+    private static final Kryo kryo;
+    private static final SerdeClassResolver resolver;
 
     private UnsafeOutput unsafeOutput;
     private UnsafeInput unsafeInput;
@@ -44,6 +44,11 @@ public class RecordSerdeImpl implements RecordSerde {
         for (Class<?> clazz : innerReferences) {
             kryo.register(clazz);
         }
+    }
+
+    @Override
+    public void register(Class<?> clazz, int id) {
+        kryo.register(clazz, id);
     }
 
     @Override

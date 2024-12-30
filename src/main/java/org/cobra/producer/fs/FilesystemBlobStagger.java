@@ -16,16 +16,16 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class FsBlobStagger implements CobraProducer.BlobStagger {
+public class FilesystemBlobStagger implements CobraProducer.BlobStagger {
 
     private final Path stagingPathDir;
     private final CobraProducer.BlobCompressor compressor;
 
-    public FsBlobStagger() {
+    public FilesystemBlobStagger() {
         this(CobraProducer.BlobCompressor.EMPTY_INSTANCE);
     }
 
-    public FsBlobStagger(CobraProducer.BlobCompressor compressor) {
+    public FilesystemBlobStagger(CobraProducer.BlobCompressor compressor) {
         this.stagingPathDir = Path.of(Jvm.SYSTEM_TEMPDIR);
         this.compressor = compressor;
     }
@@ -85,7 +85,7 @@ public class FsBlobStagger implements CobraProducer.BlobStagger {
         }
 
         @Override
-        public InputStream streaming() throws IOException {
+        public InputStream input() throws IOException {
             return new BufferedInputStream(this.compressor.decompress(Files.newInputStream(this.path)));
         }
     }
@@ -131,7 +131,7 @@ public class FsBlobStagger implements CobraProducer.BlobStagger {
         }
 
         @Override
-        public InputStream streaming() throws IOException {
+        public InputStream input() throws IOException {
             return new BufferedInputStream(this.compressor.decompress(Files.newInputStream(this.path)));
         }
     }
