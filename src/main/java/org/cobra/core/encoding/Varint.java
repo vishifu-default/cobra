@@ -5,6 +5,7 @@ import org.cobra.commons.errors.CobraException;
 import org.cobra.core.bytes.RandomBytes;
 import org.cobra.core.bytes.SequencedBytes;
 import org.cobra.core.memory.OSMemory;
+import org.cobra.core.objects.BlobInput;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -167,6 +168,20 @@ public class Varint {
         int result = b & 0x7f;
         while ((b & 0x80) != 0) {
             b = safeReadByte(is);
+            result <<= 7;
+            result |= (b & 0x7f);
+        }
+        return result;
+    }
+
+    public int readVarInt(BlobInput blobInput) throws IOException {
+        byte b = safeReadByte(blobInput);
+        if (b == (byte) 0x80)
+            throw new CobraException(ATTEMPT_TO_READ_NULL_AS_INTEGER);
+
+        int result = b & 0x7f;
+        while ((b & 0x80) != 0) {
+            b = safeReadByte(blobInput);
             result <<= 7;
             result |= (b & 0x7f);
         }
@@ -423,10 +438,18 @@ public class Varint {
         return 9;
     }
 
-    private static byte safeReadByte(InputStream is)throws  IOException {
+    private static byte safeReadByte(InputStream is) throws  IOException {
         int i = is.read();
         if (i == -1)
             throw new EOFException("Unexpected end of stream");
+
+        return (byte) i;
+    }
+
+    private static byte safeReadByte(BlobInput blobInput) throws  IOException {
+        int i = blobInput.read();
+        if (i == -1)
+            throw new EOFException("Unexpected end of blob-input");
 
         return (byte) i;
     }

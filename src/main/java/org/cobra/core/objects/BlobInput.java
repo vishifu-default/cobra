@@ -43,14 +43,14 @@ public class BlobInput implements Closeable {
         return blobInput;
     }
 
-    public static BlobInput streaming(byte[] arr) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(arr);
-        return streaming(bais);
+    public static BlobInput serial(byte[] arr) {
+        InputStream bais = new ByteArrayInputStream(arr);
+        return serial(bais);
     }
 
-    public static BlobInput streaming(InputStream is) {
+    public static BlobInput serial(InputStream is) {
         BlobInput blobInput = new BlobInput(MemoryMode.ON_HEAP);
-        blobInput.input = is;
+        blobInput.input = new DataInputStream(is);
 
         return blobInput;
     }
@@ -59,10 +59,10 @@ public class BlobInput implements Closeable {
         return this.memoryMode;
     }
 
-    public int readByte() throws IOException {
+    public int read() throws IOException {
         if (isFile())
             return asFile().read();
-        if (isStream())
+        if (isSerial())
             return asStream().read();
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -71,7 +71,7 @@ public class BlobInput implements Closeable {
     public int readNByte(byte[] dest, int offset, int len) throws IOException {
         if (isFile())
             return asFile().read(dest, offset, len);
-        if (isStream())
+        if (isSerial())
             return asStream().read(dest, offset, len);
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -80,7 +80,7 @@ public class BlobInput implements Closeable {
     public int readNBytes(byte[] dest, int len) throws IOException {
         if (isFile())
             asFile().read(dest);
-        if (isStream()) {
+        if (isSerial()) {
             byte[] bytes = asStream().readNBytes(len);
             System.arraycopy(bytes, 0, dest, 0, bytes.length);
             return bytes.length;
@@ -92,7 +92,7 @@ public class BlobInput implements Closeable {
     public short readShort() throws IOException {
         if (isFile())
             return asFile().readShort();
-        if (isStream())
+        if (isSerial())
             return asStream().readShort();
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -101,7 +101,7 @@ public class BlobInput implements Closeable {
     public int readInt() throws IOException {
         if (isFile())
             return asFile().readInt();
-        if (isStream())
+        if (isSerial())
             return asStream().readInt();
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -110,7 +110,7 @@ public class BlobInput implements Closeable {
     public long readLong() throws IOException {
         if (isFile())
             return asFile().readLong();
-        if (isStream())
+        if (isSerial())
             return asStream().readLong();
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -119,7 +119,7 @@ public class BlobInput implements Closeable {
     public String readUtf() throws IOException {
         if (isFile())
             return asFile().readUTF();
-        if (isStream())
+        if (isSerial())
             return asStream().readUTF();
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -138,7 +138,7 @@ public class BlobInput implements Closeable {
             return total;
         }
 
-        if (isStream())
+        if (isSerial())
             return asStream().skip(n);
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -147,7 +147,7 @@ public class BlobInput implements Closeable {
     public void seek(long pos) throws IOException {
         if (isFile())
             asFile().seek(pos);
-        if (isStream())
+        if (isSerial())
             throw new UnsupportedOperationException("Could not seek cursor on stream");
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -156,7 +156,7 @@ public class BlobInput implements Closeable {
     public long getCursor() throws IOException {
         if (isFile())
             return asFile().getFilePointer();
-        if (isStream())
+        if (isSerial())
             throw new UnsupportedOperationException("Could not get cursor on stream");
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
@@ -165,7 +165,7 @@ public class BlobInput implements Closeable {
     @Override
     public void close() throws IOException {
         if (isFile()) asFile().close();
-        if (isStream()) asStream().close();
+        if (isSerial()) asStream().close();
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
     }
@@ -176,7 +176,7 @@ public class BlobInput implements Closeable {
 
     public BlobByteBuffer getBlobBuffer() {
         if (isFile()) return this.blobBuffer;
-        if (isStream()) throw new UnsupportedOperationException("A stream not have buffer");
+        if (isSerial()) throw new UnsupportedOperationException("A stream not have buffer");
 
         throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
     }
@@ -193,7 +193,7 @@ public class BlobInput implements Closeable {
         return this.input instanceof RandomAccessFile;
     }
 
-    private boolean isStream() {
+    private boolean isSerial() {
         return this.input instanceof DataInputStream;
     }
 }

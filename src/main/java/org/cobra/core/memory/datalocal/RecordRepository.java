@@ -15,6 +15,10 @@ public class RecordRepository {
     }
 
     public void putObject(String key, byte[] representation) {
+        putObject(key.getBytes(), representation);
+    }
+
+    public void putObject(byte[] key, byte[] representation) {
         final int hashKey = toHashKey(key);
 
         // todo: mutex lock re-balance
@@ -24,6 +28,10 @@ public class RecordRepository {
     }
 
     public byte[] removeObject(String key) {
+        return key.getBytes();
+    }
+
+    public byte[] removeObject(byte[] key) {
         final int hashKey = toHashKey(key);
 
         final long retAddress = lookupTable.remove(hashKey);
@@ -37,7 +45,7 @@ public class RecordRepository {
     }
 
     public byte[] getData(String key) {
-        final int hashKey = toHashKey(key);
+        final int hashKey = toHashKey(key.getBytes());
         final long retAddress = lookupTable.get(hashKey);
         if (retAddress == -1)
             return null;
@@ -45,7 +53,7 @@ public class RecordRepository {
         return arena.methods().get(retAddress);
     }
 
-    private int toHashKey(String key) {
-        return Murmur3Hash.murmurhash3_x86_32(key.getBytes(), 0, key.length(), 0);
+    private int toHashKey(byte[] key) {
+        return Murmur3Hash.murmurhash3_x86_32(key, 0, key.length, 0);
     }
 }

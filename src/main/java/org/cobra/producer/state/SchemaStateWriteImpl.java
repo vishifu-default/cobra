@@ -121,7 +121,7 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
     }
 
     private void writeBlobContent(DataOutputStream dos) throws IOException {
-        /* BLOB write schema type */
+        /* BLOB_DELTA write schema type */
         dos.writeUTF(this.modelSchema.getClazzName());
 
         if (!this.isReversedDelta) {
@@ -145,7 +145,7 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         if (bytes.position() == 0)
             return; // end if nothing to write
 
-        /* varint_len of addition */
+        /* varint_len of bytes */
         varint.writeVarInt(dos, (int) bytes.position());
 
         byte[] dataOfBytes = new byte[(int) bytes.position()];
