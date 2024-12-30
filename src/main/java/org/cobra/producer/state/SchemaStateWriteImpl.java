@@ -142,8 +142,10 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
     }
 
     private static void doWriteBlobOutputStream(DataOutputStream dos, Bytes bytes) throws IOException {
-        if (bytes.position() == 0)
+        if (bytes.position() == 0) {
+            varint.writeVarInt(dos, 0);
             return; // end if nothing to write
+        }
 
         /* varint_len of bytes */
         varint.writeVarInt(dos, (int) bytes.position());

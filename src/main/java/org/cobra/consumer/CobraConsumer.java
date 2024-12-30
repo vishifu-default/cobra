@@ -9,11 +9,11 @@ public interface CobraConsumer {
 
 
     interface BlobFetcher {
-        HeaderBlob fetchHeaderBlob(long version);
+        HeaderBlob fetchHeaderBlob(long desiredVersion);
 
-        Blob fetchDeltaBlob(long version);
+        Blob fetchDeltaBlob(long desiredVersion);
 
-        Blob fetchReversedDeltaBlob(long version);
+        Blob fetchReversedDeltaBlob(long desiredVersion);
     }
 
     abstract class HeaderBlob implements StreamingBlob {

@@ -1,4 +1,4 @@
-package org.cobra.consumer.read;
+package org.cobra.consumer.internal;
 
 import org.cobra.consumer.CobraConsumer;
 

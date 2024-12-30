@@ -85,7 +85,7 @@ public class FsBlobStagger implements CobraProducer.BlobStagger {
         }
 
         @Override
-        public InputStream streaming() throws IOException {
+        public InputStream input() throws IOException {
             return new BufferedInputStream(this.compressor.decompress(Files.newInputStream(this.path)));
         }
     }
@@ -131,7 +131,7 @@ public class FsBlobStagger implements CobraProducer.BlobStagger {
         }
 
         @Override
-        public InputStream streaming() throws IOException {
+        public InputStream input() throws IOException {
             return new BufferedInputStream(this.compressor.decompress(Files.newInputStream(this.path)));
         }
     }

@@ -164,10 +164,13 @@ public class BlobInput implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (isFile()) asFile().close();
-        if (isSerial()) asStream().close();
-
-        throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
+        if (isFile()) {
+            asFile().close();
+        } else if (isSerial()) {
+            asStream().close();
+        } else {
+            throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
+        }
     }
 
     public Object getInput() {

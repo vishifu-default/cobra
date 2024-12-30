@@ -53,7 +53,7 @@ public class FsPublisher implements CobraProducer.BlobPublisher {
         final long startMillis = System.currentTimeMillis();
 
         try (
-                InputStream is = publishable.streaming();
+                InputStream is = publishable.input();
                 OutputStream os = Files.newOutputStream(dest);
         ) {
             byte[] buf = new byte[4096];
