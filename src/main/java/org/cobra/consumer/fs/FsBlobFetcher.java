@@ -36,7 +36,14 @@ public class FsBlobFetcher implements CobraConsumer.BlobFetcher {
             return new FsHeaderBlob(execPath, desiredVersion);
         }
 
-        CobraConsumer.HeaderBlob remoteFsBlob = fallbackBlobFetcher.fetchHeaderBlob(desiredVersion);
+        CobraConsumer.HeaderBlob remoteFsBlob = null;
+        if (fallbackBlobFetcher != null) {
+            remoteFsBlob = fallbackBlobFetcher.fetchHeaderBlob(desiredVersion);
+        }
+
+        if (remoteFsBlob == null)
+            throw new CobraException("Fallback header-blob could not be fetched.");
+
         return remoteFsBlob;
     }
 
@@ -58,7 +65,14 @@ public class FsBlobFetcher implements CobraConsumer.BlobFetcher {
             throw new CobraException(e);
         }
 
-        CobraConsumer.Blob remoteFsBlob = fallbackBlobFetcher.fetchDeltaBlob(desiredVersion);
+        CobraConsumer.Blob remoteFsBlob = null;
+        if (fallbackBlobFetcher != null) {
+            remoteFsBlob = fallbackBlobFetcher.fetchDeltaBlob(desiredVersion);
+        }
+
+        if (remoteFsBlob == null)
+            throw new CobraException("Fallback delta-blob could not be fetched.");
+
         return remoteFsBlob;
     }
 
@@ -78,7 +92,14 @@ public class FsBlobFetcher implements CobraConsumer.BlobFetcher {
             throw new RuntimeException(e);
         }
 
-        CobraConsumer.Blob remoteFsBlob = fallbackBlobFetcher.fetchReversedDeltaBlob(desiredVersion);
+        CobraConsumer.Blob remoteFsBlob = null;
+        if (fallbackBlobFetcher != null) {
+            remoteFsBlob = fallbackBlobFetcher.fetchReversedDeltaBlob(desiredVersion);
+        }
+
+        if (remoteFsBlob == null)
+            throw new CobraException("Fallback delta-blob could not be fetched.");
+
         return remoteFsBlob;
     }
 
