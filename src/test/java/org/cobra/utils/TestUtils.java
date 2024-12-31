@@ -1,6 +1,5 @@
 package org.cobra.utils;
 
-import org.cobra.networks.CobraSelector;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
@@ -26,14 +25,6 @@ public class TestUtils {
             sb.append(LETTERS_AND_DIGITS.charAt(rand.nextInt(boundRand)));
         }
         return sb.toString();
-    }
-
-    public static void waitChannelReady(final CobraSelector selector, final String channel) throws IOException {
-        int secLeft = 30;
-        while (!selector.isReadyChannel(channel) && secLeft-- > 0)
-            selector.poll(1_000L);
-
-        Assertions.assertTrue(selector.isReadyChannel(channel), String.format("channel %s is not ready", channel));
     }
 
     public static void waitForCondition(final TestCondition conditional, long timeoutMs, String detail) throws Exception {

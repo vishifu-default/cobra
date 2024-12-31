@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
     api libs.com.esotericsoftware.kryo
+    api libs.io.netty.netty.all
     api libs.org.slf4j.slf4j.api
     api libs.org.slf4j.slf4j.reload4j
     api libs.org.jetbrains.annotations

@@ -13,7 +13,7 @@ import java.nio.file.Path;
 
 public interface CobraProducer {
 
-    void bootstrap();
+    void bootstrapServer();
 
     long produce(Populator populator);
 
@@ -98,6 +98,8 @@ public interface CobraProducer {
          * @return new version
          */
         long mint();
+
+        long current();
     }
 
     @FunctionalInterface
@@ -116,6 +118,7 @@ public interface CobraProducer {
         VersionMinter versionMinter;
         Clock clock;
         Announcer announcer;
+        Path blobStagingPath;
 
         Builder withBlobPublisher(BlobPublisher blobPublisher) {
             this.blobPublisher = blobPublisher;
@@ -144,6 +147,11 @@ public interface CobraProducer {
 
         Builder withAnnouncer(Announcer announcer) {
             this.announcer = announcer;
+            return this;
+        }
+
+        Builder withStagingPath(Path path) {
+            this.blobStagingPath = path;
             return this;
         }
 

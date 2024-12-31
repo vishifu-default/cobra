@@ -3,7 +3,6 @@ package org.cobra.consumer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.pools.BytesPool;
-import org.cobra.commons.pools.MemoryAlloc;
 import org.cobra.commons.threads.CobraThreadExecutor;
 import org.cobra.consumer.internal.AnnouncementWatcherImpl;
 import org.cobra.consumer.internal.ConsumerDataPlane;
@@ -11,9 +10,7 @@ import org.cobra.consumer.internal.DataFetcher;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.consumer.read.StateReadEngine;
 import org.cobra.core.memory.MemoryMode;
-import org.cobra.networks.SocketNode;
-import org.cobra.networks.client.CobraClientFactory;
-import org.cobra.networks.client.DefaultClientConfigs;
+import org.cobra.networks.CobraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,38 +28,37 @@ public abstract class AbstractConsumer implements CobraConsumer {
 
     protected final ConsumerDataPlane consumerPlane;
 
-    protected final org.cobra.networks.client.Client networkClient;
+    protected final CobraClient client;
 
     protected AbstractConsumer(Builder builder) {
         this(
-                builder.blobFetcher,
+                builder.blobRetriever,
                 builder.memoryMode,
                 builder.bytesPool,
                 builder.refreshExecutor,
-                builder.clock);
+                builder.clock,
+                builder.client);
     }
 
     private AbstractConsumer(
-            BlobFetcher blobFetcher,
+            BlobRetriever blobRetriever,
             MemoryMode memoryMode,
             BytesPool bytesPool,
             CobraThreadExecutor refreshExecutor,
-            Clock clock) {
+            Clock clock,
+            CobraClient client) {
         ConsumerStateContext consumerStateContext = new ConsumerStateContext();
-        this.consumerPlane = new ConsumerDataPlane(
-                new DataFetcher(blobFetcher),
-                memoryMode,
-                new StateReadEngine(consumerStateContext, bytesPool));
+        this.consumerPlane = new ConsumerDataPlane(new DataFetcher(blobRetriever),
+                memoryMode, new StateReadEngine(consumerStateContext, bytesPool));
+
         this.refreshExecutor = refreshExecutor;
 
         this.clock = clock;
 
-        final SocketNode socketNode = new SocketNode("localhost", 9002);
-        this.networkClient = CobraClientFactory.createClient(clock, MemoryAlloc.NONE, socketNode,
-                DefaultClientConfigs.CONFIG_DEF);
-        this.networkClient.ready(Clock.system().milliseconds()); // immediately ready
+        this.announcementWatcher = new AnnouncementWatcherImpl(client);
 
-        this.announcementWatcher = new AnnouncementWatcherImpl(networkClient, clock);
+        this.client = client;
+        this.client.bootstrap();
     }
 
     public void triggerRefresh() {
@@ -116,9 +112,5 @@ public abstract class AbstractConsumer implements CobraConsumer {
         } catch (Throwable cause) {
             throw new CobraException(cause);
         }
-    }
-
-    public long getCurrentVersion() {
-        return consumerPlane.currentVersion();
     }
 }

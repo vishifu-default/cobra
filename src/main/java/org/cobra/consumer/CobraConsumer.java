@@ -7,6 +7,7 @@ import org.cobra.commons.threads.CobraThreadExecutor;
 import org.cobra.core.memory.MemoryMode;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.core.objects.VersioningBlob;
+import org.cobra.networks.CobraClient;
 
 import java.nio.file.Path;
 
@@ -14,6 +15,8 @@ public interface CobraConsumer {
 
     interface AnnouncementWatcher {
         long NO_ANNOUNCEMENT_AVAILABLE = CobraConstants.VERSION_NULL;
+
+        void setLatestVersion(long latestVersion);
 
         long getLatestVersion();
 
@@ -24,12 +27,12 @@ public interface CobraConsumer {
         }
     }
 
-    interface BlobFetcher {
-        HeaderBlob fetchHeaderBlob(long desiredVersion);
+    interface BlobRetriever {
+        HeaderBlob retrieveHeader(long desiredVersion);
 
-        Blob fetchDeltaBlob(long desiredVersion);
+        Blob retrieveDelta(long desiredVersion);
 
-        Blob fetchReversedDeltaBlob(long desiredVersion);
+        Blob retrieveReversedDelta(long desiredVersion);
     }
 
     abstract class HeaderBlob implements StreamingBlob {
@@ -68,15 +71,15 @@ public interface CobraConsumer {
     }
 
     class Builder {
-        BlobFetcher blobFetcher;
+        BlobRetriever blobRetriever;
         MemoryMode memoryMode;
         BytesPool bytesPool;
-        Path blobStorePath;
         CobraThreadExecutor refreshExecutor;
         Clock clock = Clock.system();
+        CobraClient client;
 
-        public Builder withBlobFetcher(BlobFetcher blobFetcher) {
-            this.blobFetcher = blobFetcher;
+        public Builder withBlobRetriever(BlobRetriever blobRetriever) {
+            this.blobRetriever = blobRetriever;
             return this;
         }
 
@@ -90,11 +93,6 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withBlobStorePath(Path blobStorePath) {
-            this.blobStorePath = blobStorePath;
-            return this;
-        }
-
         public Builder withRefreshExecutor(CobraThreadExecutor refreshExecutor) {
             this.refreshExecutor = refreshExecutor;
             return this;
@@ -102,6 +100,11 @@ public interface CobraConsumer {
 
         public Builder withClock(Clock clock) {
             this.clock = clock;
+            return this;
+        }
+
+        public Builder withNetworkClient(CobraClient client) {
+            this.client = client;
             return this;
         }
 
