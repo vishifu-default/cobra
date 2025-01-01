@@ -1,6 +1,7 @@
 package org.cobra.producer.handler;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.cobra.core.objects.BlobType;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
+@ChannelHandler.Sharable
 public class FetchBlobHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(FetchBlobHandler.class);

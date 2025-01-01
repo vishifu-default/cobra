@@ -1,10 +1,9 @@
 package org.cobra.core.memory.slab;
 
+import org.cobra.commons.CobraConstants;
 import org.cobra.commons.configs.ConfigDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 public class SlabArena {
 
@@ -18,7 +17,6 @@ public class SlabArena {
     private static final int FAILED_CLSID = -1;
     private static final int FACTOR = 2;
 
-    private final AtomicLong memAllocated = new AtomicLong(0);
     private final ConfigDef configDef;
     private final SlabMethods slabMethods;
     private final SlabClass[] slabs = new SlabClass[MAX_SLAB_NUMBER];
@@ -126,8 +124,28 @@ public class SlabArena {
         return this.largestIndex;
     }
 
+    private long collectMemory() {
+        long totalMem = 0;
+        for (SlabClass slab : this.slabs) {
+            if (slab == null) continue;
+            long slabBytes = (long) slab.getChunkSize() * slab.getTotalChunks();
+            totalMem += slabBytes;
+        }
+
+        return totalMem;
+    }
+
     @Override
     public String toString() {
-        return "SlabArena(memAllocated=%s, largestIndex=%d)".formatted(memAllocated, largestIndex);
+        long totalMem = collectMemory();
+        String unit;
+        if (totalMem > CobraConstants.GB) {
+            unit = "%f%s".formatted((float) totalMem / CobraConstants.GB, "GiB");
+        } else if (totalMem > CobraConstants.MB) {
+            unit = "%f%s".formatted((float) totalMem / CobraConstants.MB, "MiB");
+        } else {
+            unit = "%d%s".formatted(totalMem, "B");
+        }
+        return "SlabArena(memAllocated=%s, largestIndex=%d)".formatted(unit, largestIndex);
     }
 }

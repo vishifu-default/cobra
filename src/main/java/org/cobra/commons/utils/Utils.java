@@ -152,7 +152,7 @@ public class Utils {
         try {
             return ClassLoader.getSystemClassLoader().loadClass(clazzName);
         } catch (ClassNotFoundException e) {
-            throw new CobraException("Class not visible", e);
+            throw new CobraException("Class not visible "  + clazzName, e);
         }
     }
 }

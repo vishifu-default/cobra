@@ -19,6 +19,7 @@ public final class SerdeClassResolver extends DefaultClassResolver {
     public Registration register(Registration registration) {
         if (!registration.getType().isPrimitive()) {
             selfRegistration.add(registration.getId());
+            // todo: ignore Object
             log.info("register self registration {}; clazz: {}", registration.getId(),
                     registration.getType().getTypeName());
         }

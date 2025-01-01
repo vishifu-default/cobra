@@ -13,9 +13,4 @@ public class SequencedVersionMinter implements CobraProducer.VersionMinter {
     public long mint() {
         return versionCounter.incrementAndGet();
     }
-
-    @Override
-    public long current() {
-        return versionCounter.get();
-    }
 }

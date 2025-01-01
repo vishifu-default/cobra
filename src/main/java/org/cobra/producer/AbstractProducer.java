@@ -5,7 +5,6 @@ import org.cobra.commons.CobraConstants;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.core.ModelSchema;
 import org.cobra.networks.CobraServer;
-import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.handler.FetchBlobHandler;
 import org.cobra.producer.handler.FetchHeaderBlobHandler;
 import org.cobra.producer.handler.FetchVersionHandler;
@@ -54,12 +53,10 @@ public abstract class AbstractProducer implements CobraProducer {
 
         this.populationState = PopulationState.createDeltaChain(CobraConstants.VERSION_NULL);
 
-        final int port = NetworkConfig.DEFAULT_PORT; // todo: dynamic config
-
-        network = new CobraServer(new InetSocketAddress(port));
-        network.registerHandler(new FetchVersionHandler(versionMinter),
-                new FetchHeaderBlobHandler(builder.blobStagingPath),
-                new FetchBlobHandler(builder.blobStagingPath));
+        network = new CobraServer(new InetSocketAddress(builder.localPort));
+        network.registerHandler(new FetchVersionHandler(announcer),
+                new FetchHeaderBlobHandler(builder.blobStorePath),
+                new FetchBlobHandler(builder.blobStorePath));
     }
 
     @Override

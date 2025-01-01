@@ -46,7 +46,7 @@ public class FsProducerTest {
                 .withAnnouncer(new FilesystemAnnouncer(publishDirPath))
                 .withVersionMinter(new SequencedVersionMinter())
                 .withClock(Clock.system())
-                .withStagingPath(publishDirPath)
+                .withBlobStorePath(publishDirPath)
                 .buildSimple();
 
         producer.registerModel(TypeA.class);

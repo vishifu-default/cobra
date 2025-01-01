@@ -22,6 +22,7 @@ public class RecordRepository {
         final int hashKey = toHashKey(key);
 
         // todo: mutex lock re-balance
+        // todo: free slab if overwrite an existed key
         final long allocAddress = arena.allocate(hashKey, representation);
 
         lookupTable.put(hashKey, allocAddress);

@@ -2,8 +2,10 @@ package org.cobra.producer;
 
 import org.cobra.commons.Clock;
 import org.cobra.core.objects.StreamingBlob;
+import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
+import org.cobra.producer.internal.SequencedVersionMinter;
 import org.cobra.producer.state.BlobWriter;
 
 import java.io.IOException;
@@ -21,6 +23,8 @@ public interface CobraProducer {
 
     interface Announcer {
         void announce(long version);
+
+        long retrieve();
     }
 
     interface BlobPublisher {
@@ -98,8 +102,6 @@ public interface CobraProducer {
          * @return new version
          */
         long mint();
-
-        long current();
     }
 
     @FunctionalInterface
@@ -118,44 +120,59 @@ public interface CobraProducer {
         VersionMinter versionMinter;
         Clock clock;
         Announcer announcer;
-        Path blobStagingPath;
+        Path blobStorePath;
+        int localPort = 0;
 
-        Builder withBlobPublisher(BlobPublisher blobPublisher) {
+        public Builder withBlobPublisher(BlobPublisher blobPublisher) {
             this.blobPublisher = blobPublisher;
             return this;
         }
 
-        Builder withBlobStagger(BlobStagger blobStagger) {
+        public Builder withBlobStagger(BlobStagger blobStagger) {
             this.blobStagger = blobStagger;
             return this;
         }
 
-        Builder withBlobCompressor(BlobCompressor blobCompressor) {
+        public Builder withBlobCompressor(BlobCompressor blobCompressor) {
             this.blobCompressor = blobCompressor;
             return this;
         }
 
-        Builder withVersionMinter(VersionMinter versionMinter) {
+        public Builder withVersionMinter(VersionMinter versionMinter) {
             this.versionMinter = versionMinter;
             return this;
         }
 
-        Builder withClock(Clock clock) {
+        public Builder withClock(Clock clock) {
             this.clock = clock;
             return this;
         }
 
-        Builder withAnnouncer(Announcer announcer) {
+        public Builder withAnnouncer(Announcer announcer) {
             this.announcer = announcer;
             return this;
         }
 
-        Builder withStagingPath(Path path) {
-            this.blobStagingPath = path;
+        public Builder withBlobStorePath(Path path) {
+            this.blobStorePath = path;
             return this;
         }
 
-        CobraProducer buildSimple() {
+        public Builder withLocalPort(int localPort) {
+            this.localPort = localPort;
+            return this;
+        }
+
+        public CobraProducer buildSimple() {
+            if (localPort == 0)
+                localPort = NetworkConfig.DEFAULT_PORT;
+
+            if (versionMinter == null)
+                versionMinter = new SequencedVersionMinter();
+
+            if (clock == null)
+                clock = Clock.system();
+
             return new CobraSimpleProducer(this);
         }
     }

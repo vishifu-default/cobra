@@ -3,6 +3,7 @@ package org.cobra.consumer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.pools.BytesPool;
+import org.cobra.commons.threads.CobraThread;
 import org.cobra.commons.threads.CobraThreadExecutor;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.core.memory.MemoryMode;
@@ -10,6 +11,11 @@ import org.cobra.core.memory.datalocal.RecordRepository;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.core.objects.VersioningBlob;
 import org.cobra.networks.CobraClient;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public interface CobraConsumer {
 
@@ -78,8 +84,8 @@ public interface CobraConsumer {
         BlobRetriever blobRetriever;
         MemoryMode memoryMode;
         BytesPool bytesPool;
-        CobraThreadExecutor refreshExecutor;
-        Clock clock = Clock.system();
+        ExecutorService refreshExecutor;
+        Clock clock;
         CobraClient client;
 
         public Builder withBlobRetriever(BlobRetriever blobRetriever) {
@@ -97,7 +103,7 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withRefreshExecutor(CobraThreadExecutor refreshExecutor) {
+        public Builder withRefreshExecutor(ExecutorService refreshExecutor) {
             this.refreshExecutor = refreshExecutor;
             return this;
         }
@@ -113,6 +119,15 @@ public interface CobraConsumer {
         }
 
         public CobraConsumer build() {
+            if (clock == null)
+                clock = Clock.system();
+
+            if (bytesPool == null)
+                bytesPool = BytesPool.NONE;
+
+            if (refreshExecutor == null)
+                refreshExecutor = Executors.newSingleThreadExecutor(r -> CobraThread.daemon(r, "refresh-executor"));
+
             return new CobraConsumerImpl(this);
         }
     }
