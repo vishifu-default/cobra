@@ -32,48 +32,6 @@ public class FsProducerTest {
     private static final Logger log = LoggerFactory.getLogger(FsProducerTest.class);
 
     @Test
-    void produce() {
-        Path publishDirPath = Paths.get("src", "test", "resources", "publish-dir");
-        File publishDir = publishDirPath.toFile();
-
-        publishDir.mkdir();
-
-        log.info("producer publish to dir:{}", publishDir.getAbsolutePath());
-
-        CobraProducer producer = CobraProducer.fromBuilder()
-                .withBlobPublisher(new FilesystemPublisher(publishDirPath))
-                .withBlobStagger(new FilesystemBlobStagger())
-                .withVersionMinter(new SequencedVersionMinter())
-                .withClock(Clock.system())
-                .withAnnouncer(new FilesystemAnnouncer(publishDirPath))
-                .buildSimple();
-
-        producer.registerModel(TypeA.class);
-
-        producer.bootstrapServer();
-
-        producer.produce(task -> {
-            for (int i = 0; i < 5; i++) {
-                TypeA sampleA = new TypeA(i, "test-%d".formatted(i), false, new TypeB(i, i));
-                task.addObject(sampleA.name, sampleA);
-            }
-        });
-
-        // mock consumer
-        ConsumerStateContext consumerStateContext = new ConsumerStateContext();
-        ConsumerDataPlane consumerDataPlane = new ConsumerDataPlane(
-                new DataFetcher(new FilesystemBlobRetriever(publishDirPath, null)),
-                MemoryMode.ON_HEAP,
-                new StateReadEngine(consumerStateContext, BytesPool.NONE));
-
-        try {
-            consumerDataPlane.update(new CobraConsumer.VersionInformation(1));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
     void produce_and_consume() throws InterruptedException {
         Path publishDirPath = Paths.get("src", "test", "resources", "publish-dir");
         File publishDir = publishDirPath.toFile();
