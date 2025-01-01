@@ -9,9 +9,13 @@ public class SequencedVersionMinter implements CobraProducer.VersionMinter {
     private static final long INITIAL_VALUE = 0;
     private static final AtomicLong versionCounter = new AtomicLong(INITIAL_VALUE);
 
-
     @Override
     public long mint() {
         return versionCounter.incrementAndGet();
+    }
+
+    @Override
+    public long current() {
+        return versionCounter.get();
     }
 }

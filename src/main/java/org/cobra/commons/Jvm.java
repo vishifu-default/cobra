@@ -2,17 +2,14 @@ package org.cobra.commons;
 
 import org.cobra.core.encoding.Varint;
 import org.cobra.core.memory.OSMemory;
-import org.cobra.networks.auth.PrincipalBuilder;
-import org.cobra.networks.auth.PrincipalBuilderImpl;
+
+import java.nio.ByteBuffer;
 
 /**
  * Should place static members, that will give information of application in runtime config, something that will
  * never or less be changed in runtime.
  */
 public class Jvm {
-
-    /* The default PrincipalBuilder clazz */
-    public static final Class<? extends PrincipalBuilder> DEFAULT_PRINCIPAL_BUILDER = PrincipalBuilderImpl.class;
 
     /* By using this constant, we'll let OS determine socket buffer size */
     public static final int USE_DEFAULT_SOCKET_BUFFER_SIZE = -1;
@@ -47,4 +44,6 @@ public class Jvm {
     }
 
     public static final String SYSTEM_TEMPDIR = System.getProperty("java.io.tmpdir");
+
+    public static ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
 }

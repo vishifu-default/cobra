@@ -3,6 +3,7 @@
 
 [versions]
 com-esotericsoftware-kryo = "5.6.2"
+io-netty-netty-all = "4.2.0.Alpha1"
 org-jetbrains-annotations = "26.0.1"
 org-junit-jupiter-junit-jupiter-engine = "5.11.0"
 org-junit-platform-junit-platform-runner = "1.11.0"
@@ -12,6 +13,7 @@ org-slf4j-slf4j-reload4j = "2.0.16"
 
 [libraries]
 com-esotericsoftware-kryo = { module = "com.esotericsoftware:kryo", version.ref = "com-esotericsoftware-kryo" }
+io-netty-netty-all = { module = "io.netty:netty-all", version.ref = "io-netty-netty-all" }
 org-jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "org-jetbrains-annotations" }
 org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "org-junit-jupiter-junit-jupiter-engine" }
 org-junit-platform-junit-platform-runner = { module = "org.junit.platform:junit-platform-runner", version.ref = "org-junit-platform-junit-platform-runner" }

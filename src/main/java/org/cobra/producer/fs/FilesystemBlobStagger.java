@@ -48,7 +48,11 @@ public class FilesystemBlobStagger implements CobraProducer.BlobStagger {
     public static class FsHeaderBlob extends HeaderBlob {
         private final CobraProducer.BlobCompressor compressor;
 
-        protected FsHeaderBlob(long version, Path path, CobraProducer.BlobCompressor compressor) {
+        public FsHeaderBlob(long version, Path path) {
+            this(version, path, CobraProducer.BlobCompressor.EMPTY_INSTANCE);
+        }
+
+        public FsHeaderBlob(long version, Path path, CobraProducer.BlobCompressor compressor) {
             super(version, path);
             this.compressor = compressor;
         }

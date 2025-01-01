@@ -1,35 +1,34 @@
 package org.cobra.consumer.internal;
 
-import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
+import org.cobra.commons.errors.CobraException;
 import org.cobra.consumer.CobraConsumer;
-import org.cobra.networks.client.Client;
-import org.cobra.networks.client.ClientRequest;
-import org.cobra.networks.requests.FetchVersionRequest;
+import org.cobra.networks.CobraClient;
+
+import java.io.IOException;
 
 public class AnnouncementWatcherImpl implements CobraConsumer.AnnouncementWatcher {
 
-    private final Client networkClient;
-    private final Clock clock;
+    private final CobraClient client;
+    private volatile long latestVersion = CobraConstants.VERSION_NULL;
 
-    private long latestVersion = CobraConstants.VERSION_NULL;
-
-    public AnnouncementWatcherImpl(Client networkClient, Clock clock) {
-        this.networkClient = networkClient;
-        this.clock = clock;
+    public AnnouncementWatcherImpl(CobraClient client) {
+        this.client = client;
     }
 
+    @Override
     public void setLatestVersion(long latestVersion) {
         this.latestVersion = latestVersion;
     }
 
     @Override
     public long getLatestVersion() {
-        ClientRequest clientRequest = networkClient.createClientRequest(new FetchVersionRequest.Builder(),
-                clock.milliseconds(),
-                new FetchResponseCallback(this));
-
-        networkClient.send(clientRequest, clock.milliseconds());
+        try {
+            final long version = client.fetchVersion();
+            setLatestVersion(version);
+        } catch (IOException e) {
+            throw new CobraException(e);
+        }
         return latestVersion;
     }
 
@@ -37,4 +36,5 @@ public class AnnouncementWatcherImpl implements CobraConsumer.AnnouncementWatche
     public void subscribeToUpdates(CobraConsumer consumer) {
 
     }
+
 }

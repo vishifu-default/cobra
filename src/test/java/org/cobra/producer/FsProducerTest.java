@@ -4,12 +4,15 @@ import org.cobra.commons.Clock;
 import org.cobra.commons.pools.BytesPool;
 import org.cobra.consumer.CobraConsumer;
 import org.cobra.consumer.CobraConsumerImpl;
-import org.cobra.consumer.fs.FilesystemBlobFetcher;
+import org.cobra.consumer.fs.FilesystemBlobRetriever;
+import org.cobra.consumer.fs.RemoteFilesystemBlobRetriever;
 import org.cobra.consumer.internal.ConsumerDataPlane;
 import org.cobra.consumer.internal.DataFetcher;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.consumer.read.StateReadEngine;
 import org.cobra.core.memory.MemoryMode;
+import org.cobra.networks.CobraClient;
+import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.fs.FilesystemAnnouncer;
 import org.cobra.producer.fs.FilesystemBlobStagger;
 import org.cobra.producer.fs.FilesystemPublisher;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -28,49 +32,7 @@ public class FsProducerTest {
     private static final Logger log = LoggerFactory.getLogger(FsProducerTest.class);
 
     @Test
-    void produce() {
-        Path publishDirPath = Paths.get("src", "test", "resources", "publish-dir");
-        File publishDir = publishDirPath.toFile();
-
-        publishDir.mkdir();
-
-        log.info("producer publish to dir:{}", publishDir.getAbsolutePath());
-
-        CobraProducer producer = CobraProducer.fromBuilder()
-                .withBlobPublisher(new FilesystemPublisher(publishDirPath))
-                .withBlobStagger(new FilesystemBlobStagger())
-                .withVersionMinter(new SequencedVersionMinter())
-                .withClock(Clock.system())
-                .withAnnouncer(new FilesystemAnnouncer(publishDirPath))
-                .buildSimple();
-
-        producer.registerModel(TypeA.class);
-
-        producer.bootstrap();
-
-        producer.produce(task -> {
-            for (int i = 0; i < 5; i++) {
-                TypeA sampleA = new TypeA(i, "test-%d".formatted(i), false, new TypeB(i, i));
-                task.addObject(sampleA.name, sampleA);
-            }
-        });
-
-        // mock consumer
-        ConsumerStateContext consumerStateContext = new ConsumerStateContext();
-        ConsumerDataPlane consumerDataPlane = new ConsumerDataPlane(
-                new DataFetcher(new FilesystemBlobFetcher(publishDirPath, null)),
-                MemoryMode.ON_HEAP,
-                new StateReadEngine(consumerStateContext, BytesPool.NONE));
-
-        try {
-            consumerDataPlane.update(new CobraConsumer.VersionInformation(1));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    void produce_and_consume() {
+    void produce_and_consume() throws InterruptedException {
         Path publishDirPath = Paths.get("src", "test", "resources", "publish-dir");
         File publishDir = publishDirPath.toFile();
 
@@ -84,10 +46,11 @@ public class FsProducerTest {
                 .withAnnouncer(new FilesystemAnnouncer(publishDirPath))
                 .withVersionMinter(new SequencedVersionMinter())
                 .withClock(Clock.system())
+                .withStagingPath(publishDirPath)
                 .buildSimple();
 
         producer.registerModel(TypeA.class);
-        producer.bootstrap();
+        producer.bootstrapServer();
 
         // cycle 1
         producer.produce(task -> {
@@ -119,9 +82,15 @@ public class FsProducerTest {
             task.removeObject("test-2-1", TypeA.class);
         });
 
+        Path consumerStorePath = Paths.get("src", "test", "resources", "consumer-dir");;
+        CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, NetworkConfig.DEFAULT_PORT));
+        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
+                new RemoteFilesystemBlobRetriever(client, consumerStorePath));
+
         CobraConsumer consumer = CobraConsumer.fromBuilder()
-                .withBlobFetcher(new FilesystemBlobFetcher(publishDirPath, null))
+                .withBlobRetriever(blobRetriever)
                 .withMemoryMode(MemoryMode.ON_HEAP)
+                .withNetworkClient(client)
                 .build();
 
         ((CobraConsumerImpl) consumer).triggerRefresh();
