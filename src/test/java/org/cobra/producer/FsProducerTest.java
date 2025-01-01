@@ -1,15 +1,12 @@
 package org.cobra.producer;
 
+import org.cobra.RecordApi;
+import org.cobra.api.CobraRecordApi;
 import org.cobra.commons.Clock;
-import org.cobra.commons.pools.BytesPool;
 import org.cobra.consumer.CobraConsumer;
 import org.cobra.consumer.CobraConsumerImpl;
 import org.cobra.consumer.fs.FilesystemBlobRetriever;
 import org.cobra.consumer.fs.RemoteFilesystemBlobRetriever;
-import org.cobra.consumer.internal.ConsumerDataPlane;
-import org.cobra.consumer.internal.DataFetcher;
-import org.cobra.consumer.read.ConsumerStateContext;
-import org.cobra.consumer.read.StateReadEngine;
 import org.cobra.core.memory.MemoryMode;
 import org.cobra.networks.CobraClient;
 import org.cobra.networks.NetworkConfig;
@@ -22,17 +19,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class FsProducerTest {
 
     private static final Logger log = LoggerFactory.getLogger(FsProducerTest.class);
 
     @Test
-    void produce_and_consume() throws InterruptedException {
+    void produce_and_consume() {
         Path publishDirPath = Paths.get("src", "test", "resources", "publish-dir");
         File publishDir = publishDirPath.toFile();
 
@@ -82,7 +82,7 @@ public class FsProducerTest {
             task.removeObject("test-2-1", TypeA.class);
         });
 
-        Path consumerStorePath = Paths.get("src", "test", "resources", "consumer-dir");;
+        Path consumerStorePath = Paths.get("src", "test", "resources", "consumer-dir");
         CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, NetworkConfig.DEFAULT_PORT));
         CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
                 new RemoteFilesystemBlobRetriever(client, consumerStorePath));
@@ -94,5 +94,14 @@ public class FsProducerTest {
                 .build();
 
         ((CobraConsumerImpl) consumer).triggerRefresh();
+
+        RecordApi api = new CobraRecordApi(consumer);
+
+        TypeA aTest5 = api.get("test-5");
+        assertNotNull(aTest5);
+        assertEquals("test-5", aTest5.name);
+
+        assertNull(api.get("test-10"));
+        assertNull(api.get("test-0"));
     }
 }

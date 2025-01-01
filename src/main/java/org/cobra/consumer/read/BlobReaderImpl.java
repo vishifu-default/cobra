@@ -136,7 +136,10 @@ public class BlobReaderImpl implements BlobReader {
             final String typeName = blobInput.readUtf();
             final int id = blobInput.readInt();
 
-            stateReadEngine.consumerContext().registerClassRegistration(Utils.classLoader(typeName), id);
+            Class<?> clazz = Utils.classLoader(typeName);
+            stateReadEngine.consumerContext().registerClassRegistration(clazz, id);
+
+            log.debug("registered class: {}; id {}", typeName, id);
         }
     }
 

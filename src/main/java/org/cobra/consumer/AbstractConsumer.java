@@ -10,6 +10,7 @@ import org.cobra.consumer.internal.DataFetcher;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.consumer.read.StateReadEngine;
 import org.cobra.core.memory.MemoryMode;
+import org.cobra.core.memory.datalocal.RecordRepository;
 import org.cobra.networks.CobraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
     protected final Clock clock;
 
     protected final ConsumerDataPlane consumerPlane;
+    protected final ConsumerStateContext consumerStateContext;
 
     protected final CobraClient client;
 
@@ -47,7 +49,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
             CobraThreadExecutor refreshExecutor,
             Clock clock,
             CobraClient client) {
-        ConsumerStateContext consumerStateContext = new ConsumerStateContext();
+        consumerStateContext = new ConsumerStateContext();
         this.consumerPlane = new ConsumerDataPlane(new DataFetcher(blobRetriever),
                 memoryMode, new StateReadEngine(consumerStateContext, bytesPool));
 
@@ -79,6 +81,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
         triggerRefreshWithDelay(0);
     }
 
+    @Override
     public void triggerRefreshWithDelay(int ms) {
         final long targetBeginTime = System.currentTimeMillis() + ms;
 
@@ -99,7 +102,11 @@ public abstract class AbstractConsumer implements CobraConsumer {
                 throw e;
             }
         });
+    }
 
+    @Override
+    public ConsumerStateContext context() {
+        return consumerStateContext;
     }
 
     public void triggerRefreshTo(long version) {

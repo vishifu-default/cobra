@@ -6,8 +6,11 @@ target/
 ### Misc ###
 misc/
 
-# gradle
+### gradle ###
 .gradle/
+
+### Java ###
+**/test/resources/
 
 ### IntelliJ IDEA ###
 .idea/

@@ -2,6 +2,8 @@ package org.cobra.core.serialization;
 
 import com.esotericsoftware.kryo.Registration;
 import com.esotericsoftware.kryo.util.DefaultClassResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -10,12 +12,15 @@ import java.util.stream.Collectors;
 
 public final class SerdeClassResolver extends DefaultClassResolver {
 
+    private static final Logger log = LoggerFactory.getLogger(SerdeClassResolver.class);
     private final Set<Integer> selfRegistration = new HashSet<>();
 
     @Override
     public Registration register(Registration registration) {
         if (!registration.getType().isPrimitive()) {
             selfRegistration.add(registration.getId());
+            log.info("register self registration {}; clazz: {}", registration.getId(),
+                    registration.getType().getTypeName());
         }
         return super.register(registration);
     }

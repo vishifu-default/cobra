@@ -6,6 +6,8 @@ public class TypeA {
     boolean flag;
     TypeB typeB;
 
+    public TypeA() {}
+
     public TypeA(int id, String name, boolean flag, TypeB typeB) {
         this.id = id;
         this.name = name;
