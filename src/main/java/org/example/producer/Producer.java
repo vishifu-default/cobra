@@ -1,10 +1,10 @@
-package org.cobra.manual.producer;
+package org.example.producer;
 
-import org.cobra.manual.datamodel.Movie;
 import org.cobra.producer.CobraProducer;
 import org.cobra.producer.fs.FilesystemAnnouncer;
 import org.cobra.producer.fs.FilesystemBlobStagger;
 import org.cobra.producer.fs.FilesystemPublisher;
+import org.example.datamodel.Movie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

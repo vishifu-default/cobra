@@ -34,7 +34,7 @@ public class FetchBlobHandler extends ChannelInboundHandlerAdapter {
             BlobType blobType = fromVersion < toVersion ? BlobType.DELTA_BLOB : BlobType.REVERSED_DELTA_BLOB;
             Path filepath = blobStorePath.resolve("%s-%d-%d".formatted(blobType.prefix(), fromVersion, toVersion));
 
-            log.debug("transfer blob {}", filepath.toAbsolutePath());
+            log.debug("transfer blob {}; channel: {}", filepath.toAbsolutePath(), ctx.channel());
 
             ChannelContextFileTransfers.zeroCopy(filepath, ctx);
             ((ByteBuf) msg).release();

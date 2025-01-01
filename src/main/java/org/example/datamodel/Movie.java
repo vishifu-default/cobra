@@ -1,4 +1,4 @@
-package org.cobra.manual.datamodel;
+package org.example.datamodel;
 
 public class Movie {
     public int id;
