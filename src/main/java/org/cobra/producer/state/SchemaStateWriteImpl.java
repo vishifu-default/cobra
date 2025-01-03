@@ -50,7 +50,7 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
     @Override
     public void moveToWritePhase() {
         // todo: implement
-        log.info("implement me");
+//        log.info("implement me");
     }
 
     @Override

@@ -112,7 +112,7 @@ public abstract class AbstractProducer implements CobraProducer {
             throw new CobraException(e);
         } finally {
             long endMillis = clock.milliseconds();
-            log.debug("producer a version: version: {}; elapsed: {} ms", toVersion, endMillis - startMillis);
+            log.info("producer a version: version: {}; elapsed: {} ms", toVersion, endMillis - startMillis);
         }
         return lastSuccessVersion;
     }

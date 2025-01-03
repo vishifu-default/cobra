@@ -1,7 +1,6 @@
 package org.cobra.commons.utils;
 
 import org.cobra.commons.errors.CobraException;
-import org.cobra.core.ModelSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,9 +149,9 @@ public class Utils {
 
     public static Class<?> classLoader(String clazzName) {
         try {
-            return ClassLoader.getSystemClassLoader().loadClass(clazzName);
+            return ClassLoader.getPlatformClassLoader().loadClass(clazzName);
         } catch (ClassNotFoundException e) {
-            throw new CobraException("Class not visible "  + clazzName, e);
+            throw new CobraException("Class not visible " + clazzName, e);
         }
     }
 }

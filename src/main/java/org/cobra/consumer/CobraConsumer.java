@@ -76,7 +76,7 @@ public interface CobraConsumer {
         }
     }
 
-    static Builder fromBuilder() {
+    public static Builder fromBuilder() {
         return new Builder();
     }
 
