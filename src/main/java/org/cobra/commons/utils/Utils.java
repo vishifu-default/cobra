@@ -149,7 +149,7 @@ public class Utils {
 
     public static Class<?> classLoader(String clazzName) {
         try {
-            return ClassLoader.getPlatformClassLoader().loadClass(clazzName);
+            return Class.forName(clazzName);
         } catch (ClassNotFoundException e) {
             throw new CobraException("Class not visible " + clazzName, e);
         }

@@ -27,13 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class FsProducerTest {
+public class FilesystemProducerTest {
 
-    private static final Logger log = LoggerFactory.getLogger(FsProducerTest.class);
+    private static final Logger log = LoggerFactory.getLogger(FilesystemProducerTest.class);
 
     @Test
     void produce_and_consume() {
-        Path publishDirPath = Paths.get("src", "test", "resources", "publish-dir");
+        Path publishDirPath = Paths.get("src", "test", "resources", "producer-test", "producer-store");
         File publishDir = publishDirPath.toFile();
 
         publishDir.mkdir();
@@ -82,7 +82,7 @@ public class FsProducerTest {
             task.removeObject("test-2-1", TypeA.class);
         });
 
-        Path consumerStorePath = Paths.get("src", "test", "resources", "consumer-dir");
+        Path consumerStorePath = Paths.get("src", "test", "resources", "producer-test", "consumer-store");
         CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, NetworkConfig.DEFAULT_PORT));
         CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
                 new RemoteFilesystemBlobRetriever(client, consumerStorePath));

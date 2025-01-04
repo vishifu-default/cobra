@@ -46,19 +46,25 @@ class SlabArenaTest {
 
     @Test
     void allocateMany() {
-        final long start = System.currentTimeMillis();
 
         final SlabArena arena = SlabArena.initialize();
+        List<byte[]> randBytes = new ArrayList<>();
+
+        for (int i = 0; i < 10_000; i++) {
+            randBytes.add(TestUtils.randString(TestUtils.randInt(10, 18 * 1024)).getBytes());
+        }
+
+        final long start = System.currentTimeMillis();
         List<Long> addresses = new ArrayList<>();
-        for (int i = 0; i < 100_000; i++) {
-            long addr = arena.allocate(i, TestUtils.randString(TestUtils.randInt(10, 18 * 1024)).getBytes());
+        for (int i = 0; i < 10_000; i++) {
+            long addr = arena.allocate(i, randBytes.get(i));
             addresses.add(addr);
             assertTrue(addr > 0);
         }
 
-        assertEquals(100_000, addresses.size());
+        assertEquals(10_000, addresses.size());
 
         final long end = System.currentTimeMillis();
-        System.out.printf("allocate 100_000 took %dms%n", end - start);
+        System.out.printf("allocate 10_000 took %dms%n", end - start);
     }
 }

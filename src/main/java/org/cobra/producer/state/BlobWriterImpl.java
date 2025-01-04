@@ -9,6 +9,7 @@ import org.cobra.core.encoding.Varint;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -117,19 +118,36 @@ public class BlobWriterImpl implements BlobWriter {
 
     private void doWriteHeaderModifiedSchema(DataOutputStream dos) throws IOException {
         final Set<ModelSchema> modifiedSchemas = collectModifiedSchemas();
-        dos.writeInt(modifiedSchemas.size());
-        for (final ModelSchema schema : modifiedSchemas) {
+        final Set<ModelSchema> lastStateSchemas = this.stateWriteEngine.producerStateContext().lastSchemas;
+
+        final Set<ModelSchema> newSchemas = modifiedSchemas
+                .stream()
+                .filter(x -> !lastStateSchemas.contains(x))
+                .collect(Collectors.toSet());
+
+        lastStateSchemas.addAll(newSchemas);
+
+        dos.writeInt(newSchemas.size());
+        for (final ModelSchema schema : newSchemas) {
             dos.writeUTF(schema.getClazzName());
         }
     }
 
     private void doWriteHeaderClassRegistration(DataOutputStream dos) throws IOException {
-        Map<String, Integer> clazzRegistrationEntries = this.stateWriteEngine.producerStateContext()
-                .serdeClassResolver()
-                .registrationClassTypeEntries();
+        Map<Class<?>, Integer> clazzRegistration = this.stateWriteEngine.producerStateContext()
+                .serdeContext().collectRegistrations();
 
-        dos.writeInt(clazzRegistrationEntries.size());
-        for (Map.Entry<String, Integer> entry : clazzRegistrationEntries.entrySet()) {
+        Map<String, Integer> affectedRegistries = new HashMap<>();
+        Set<Class<?>> lastClazzSet = stateWriteEngine.producerStateContext().lastRegisteredClazzes;
+        for (Map.Entry<Class<?>, Integer> entry : clazzRegistration.entrySet()) {
+            if (!lastClazzSet.contains(entry.getKey())) {
+                affectedRegistries.put(entry.getKey().getName(), entry.getValue());
+                lastClazzSet.add(entry.getKey());
+            }
+        }
+
+        dos.writeInt(affectedRegistries.size());
+        for (Map.Entry<String, Integer> entry : affectedRegistries.entrySet()) {
             dos.writeUTF(entry.getKey());
             dos.writeInt(entry.getValue());
         }

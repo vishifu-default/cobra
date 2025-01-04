@@ -4,7 +4,7 @@ import org.cobra.commons.errors.CobraException;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.serialization.RecordSerde;
 import org.cobra.core.serialization.RecordSerdeImpl;
-import org.cobra.core.serialization.SerdeClassResolver;
+import org.cobra.core.serialization.SerdeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +24,12 @@ public class ProducerStateContext {
     private final RecordSerde serde = new RecordSerdeImpl();
     private final Map<String, SchemaStateWrite> schemaStateWriteMap = new ConcurrentHashMap<>();
 
-    public SerdeClassResolver serdeClassResolver() {
-        return this.serde.resolver();
+    /* last state */
+    final Set<Class<?>> lastRegisteredClazzes = ConcurrentHashMap.newKeySet();
+    final Set<ModelSchema> lastSchemas = ConcurrentHashMap.newKeySet();
+
+    public SerdeContext serdeContext() {
+        return this.serde.serdeContext();
     }
 
     public void registerModel(ModelSchema schema) {
