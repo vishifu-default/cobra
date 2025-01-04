@@ -57,6 +57,10 @@ public class ProducerService {
         });
     }
 
+    public void revert(int version) {
+        producer.pinVersion(version);
+    }
+
     private int nextPump = 0;
 
     private List<Movie> generateNewMovies(int count) {

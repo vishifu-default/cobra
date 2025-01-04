@@ -16,20 +16,27 @@ public class MovieController {
     }
 
 
-//    public MovieService movieService = new MovieService();
-//
-//    @GetMapping("/movie/{id}")
-//    public Movie getMovie(@PathVariable int id) {
-//        Movie movie = movieService.getMovie(id);
-//        return movie;
-//    }
+    public MovieService movieService = new MovieService();
 
-
-    private ProducerService producerService = new ProducerService();
-
-    @GetMapping("/dump/{count}")
-    public String produce(@PathVariable int count) {
-        producerService.produce(1, count);
-        return "success";
+    @GetMapping("/movie/{id}")
+    public Movie getMovie(@PathVariable int id) {
+        Movie movie = movieService.getMovie(id);
+        return movie;
     }
+
+
+//    private ProducerService producerService = new ProducerService();
+//
+//    @GetMapping("/dump/{count}")
+//    public String produce(@PathVariable int count) {
+//        producerService.produce(1, count);
+//        return "success";
+//    }
+//
+//    @GetMapping("/revert/{version}")
+//    public String revert(@PathVariable int version) {
+//        producerService.revert(version);
+//
+//        return "success";
+//    }
 }
