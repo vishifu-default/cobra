@@ -19,6 +19,8 @@ public interface CobraProducer {
 
     long produce(Populator populator);
 
+    boolean pinVersion(long version);
+
     void registerModel(Class<?> clazz);
 
     interface Announcer {
@@ -104,6 +106,14 @@ public interface CobraProducer {
         long mint();
     }
 
+    interface VersionState {
+        long mint();
+
+        long current();
+
+        void pin(long version);
+    }
+
     @FunctionalInterface
     interface Populator {
         void populate(StateWriter stateWriter);
@@ -117,7 +127,6 @@ public interface CobraProducer {
         BlobPublisher blobPublisher;
         BlobStagger blobStagger;
         BlobCompressor blobCompressor;
-        VersionMinter versionMinter;
         Clock clock;
         Announcer announcer;
         Path blobStorePath;
@@ -135,11 +144,6 @@ public interface CobraProducer {
 
         public Builder withBlobCompressor(BlobCompressor blobCompressor) {
             this.blobCompressor = blobCompressor;
-            return this;
-        }
-
-        public Builder withVersionMinter(VersionMinter versionMinter) {
-            this.versionMinter = versionMinter;
             return this;
         }
 
@@ -166,9 +170,6 @@ public interface CobraProducer {
         public CobraProducer buildSimple() {
             if (localPort == 0)
                 localPort = NetworkConfig.DEFAULT_PORT;
-
-            if (versionMinter == null)
-                versionMinter = new SequencedVersionMinter();
 
             if (clock == null)
                 clock = Clock.system();

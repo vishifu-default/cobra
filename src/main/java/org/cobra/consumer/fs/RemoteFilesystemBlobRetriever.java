@@ -65,12 +65,12 @@ public class RemoteFilesystemBlobRetriever implements CobraConsumer.BlobRetrieve
     @Override
     public CobraConsumer.Blob retrieveReversedDelta(long desiredVersion) {
         try {
-            Path filepath = doRetrieveBlob(desiredVersion, desiredVersion + 1);
+            Path filepath = doRetrieveBlob(desiredVersion + 1, desiredVersion);
 
             log.info("retrieve reversed-delta-blob {}", desiredVersion);
             logSavedFilepath(filepath);
 
-            return new FilesystemBlobRetriever.FilesystemBlob(filepath, desiredVersion, desiredVersion + 1);
+            return new FilesystemBlobRetriever.FilesystemBlob(filepath, desiredVersion + 1, desiredVersion);
         } catch (IOException e) {
             throw new CobraException(e);
         }

@@ -29,7 +29,7 @@ public class RecordRepository {
     }
 
     public byte[] removeObject(String key) {
-        return key.getBytes();
+        return removeObject(key.getBytes());
     }
 
     public byte[] removeObject(byte[] key) {

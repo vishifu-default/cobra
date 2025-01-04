@@ -43,7 +43,6 @@ public class FilesystemConsumerTest {
                 .withBlobPublisher(new FilesystemPublisher(publishDirPath))
                 .withBlobStagger(new FilesystemBlobStagger())
                 .withAnnouncer(new FilesystemAnnouncer(publishDirPath))
-                .withVersionMinter(new SequencedVersionMinter())
                 .withClock(Clock.system())
                 .withBlobStorePath(publishDirPath)
                 .buildSimple();

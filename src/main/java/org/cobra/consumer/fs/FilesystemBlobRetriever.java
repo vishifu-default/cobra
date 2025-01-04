@@ -94,12 +94,18 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
         ) {
             for (Path path : dirStream) {
                 String filename = path.getFileName().toString();
-                if (filename.startsWith("reversedelta-%d".formatted(desiredVersion))) {
 
-                    // todo: this is not correct now, desiredVersion is the last version in filename
+                if (filename.startsWith("reversedelta-") && filename.endsWith("%d".formatted(desiredVersion))) {
+                    int lastSplitIndex = filename.lastIndexOf("-");
+                    long fileVersion = Long.parseLong(filename.substring(lastSplitIndex + 1));
 
-                    long toVersion = Long.parseLong(filename.substring(filename.lastIndexOf('-') + 1));
-                    return fsBlob(BlobType.REVERSED_DELTA_BLOB, desiredVersion, toVersion);
+                    if (fileVersion != desiredVersion)
+                        continue;
+
+                    int firstSplitIndex = filename.indexOf("-");
+                    long fromVersion = Long.parseLong(filename.substring(firstSplitIndex + 1, lastSplitIndex));
+                    return fsBlob(BlobType.REVERSED_DELTA_BLOB, fromVersion, desiredVersion);
+
                 }
             }
         } catch (IOException e) {

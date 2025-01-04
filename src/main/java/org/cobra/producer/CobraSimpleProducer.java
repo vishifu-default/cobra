@@ -10,4 +10,9 @@ public class CobraSimpleProducer extends AbstractProducer {
     public long produce(Populator populator) {
         return runProduce(populator);
     }
+
+    @Override
+    public boolean pinVersion(long version) {
+        return moveToVersion(version);
+    }
 }

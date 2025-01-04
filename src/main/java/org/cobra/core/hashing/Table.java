@@ -23,6 +23,7 @@ public interface Table {
      */
     long get(int key);
 
+    // todo: returning previous value if not DELETED
     /**
      * Puts a pair [hash_key, pointer_data] into table
      *
