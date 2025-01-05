@@ -74,6 +74,11 @@ public abstract class AbstractProducer implements CobraProducer {
         this.producerStateContext.registerModel(modelSchema);
     }
 
+    @Override
+    public long currentVersion() {
+        return versionState.current();
+    }
+
     protected long runProduce(Populator task) {
         if (!isBootstrap)
             throw new CobraException("producer must be bootstrap before produce a cycle");

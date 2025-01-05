@@ -1,5 +1,6 @@
 package org.learn.springapi.service.producer;
 
+import lombok.Getter;
 import org.cobra.producer.CobraProducer;
 import org.cobra.producer.fs.FilesystemAnnouncer;
 import org.cobra.producer.fs.FilesystemBlobStagger;
@@ -14,12 +15,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ProducerService {
 
     private static final Logger log = LoggerFactory.getLogger(ProducerService.class);
 
     private final CobraProducer producer;
+
+    @Getter
+    private final ConcurrentHashMap<Integer, Object> mutations = new ConcurrentHashMap<>();
+
+    @Getter
+    private final ConcurrentHashMap<Integer, Movie> inMemoryMovies = new ConcurrentHashMap<>();
 
     public ProducerService() {
         String dir = System.getenv("PUBLISH_DIR");
@@ -49,10 +60,50 @@ public class ProducerService {
         producer.bootstrapServer();
     }
 
-    public void produce(int mode, int count) {
+    public long getCurrentVersion() {
+        return producer.currentVersion();
+    }
+
+    public List<Movie> getInMemoryMovies(int offset, int limit) {
+        return inMemoryMovies.values().stream()
+                .limit(limit)
+                .skip(offset)
+                .collect(Collectors.toList());
+    }
+
+    public void addMutation(Integer id, Object movie) {
+        this.mutations.put(id, movie);
+    }
+
+    public void produce() {
         producer.produce(task -> {
-            for (Movie movie : generateNewMovies(count)) {
-                task.addObject(String.valueOf(movie.id), movie);
+            for (Map.Entry<Integer, Object> entry : mutations.entrySet()) {
+                if (entry.getValue() == MutationObject.DELETED) {
+                    task.removeObject(String.valueOf(entry.getKey()), Movie.class);
+                } else {
+                    task.addObject(String.valueOf(entry.getKey()), entry.getValue());
+                }
+            }
+        });
+
+        for (Map.Entry<Integer, Object> entry : mutations.entrySet()) {
+            if (entry.getValue() == MutationObject.DELETED) {
+                continue;
+            }
+            inMemoryMovies.put(entry.getKey(), (Movie) entry.getValue());
+        }
+        mutations.clear();
+    }
+
+    /* this method use to random */
+    public void shuffle(int count) {
+        producer.produce(task -> {
+            for (Movie movie : generateMoviesWithBound(count)) {
+                task.addObject(String.valueOf(movie.getId()), movie);
+            }
+
+            for (String s : generateRandomDelete()) {
+                task.removeObject(s, Movie.class);
             }
         });
     }
@@ -71,6 +122,27 @@ public class ProducerService {
         }
 
         nextPump += count;
+        return movies;
+    }
+
+    private List<String> generateRandomDelete() {
+        Random rand = new Random();
+        List<String> delete = new ArrayList<>();
+        for (int i = 0; i < rand.nextInt(0, 100); i++) {
+            delete.add(String.valueOf(rand.nextInt(0, 2_000_000)));
+        }
+        return delete;
+    }
+
+    private static int bound = 5_000_000;
+
+    private List<Movie> generateMoviesWithBound(int count) {
+        Random rand = new Random();
+        List<Movie> movies = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            movies.add(Movie.generateRandomMovie(rand.nextInt(1, bound)));
+        }
+
         return movies;
     }
 }

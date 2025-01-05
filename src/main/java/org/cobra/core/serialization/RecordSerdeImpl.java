@@ -1,6 +1,8 @@
 package org.cobra.core.serialization;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.unsafe.UnsafeInput;
 import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
 import org.cobra.commons.errors.CobraException;
@@ -19,10 +21,7 @@ public class RecordSerdeImpl implements RecordSerde {
     private static final int LIMIT_CAPACITY_OF_OBJECT = 1 << 22; // approximate 4MiB
 
 
-    private SerdeContext serdeContext = SerdeContext.getInstance();
-
-    private UnsafeOutput unsafeOutput;
-    private UnsafeInput unsafeInput;
+    private final SerdeContext serdeContext = SerdeContext.getInstance();
 
     @Override
     public void register(ModelSchema schema) {
@@ -35,18 +34,17 @@ public class RecordSerdeImpl implements RecordSerde {
     }
 
     public RecordSerdeImpl() {
-        this.unsafeOutput = new UnsafeOutput(4_096, LIMIT_CAPACITY_OF_OBJECT);
-        this.unsafeInput = new UnsafeInput();
+
     }
 
     @Override
     public byte[] serialize(Object object) {
         // todo: if throws exception due to not register inner class, do register and serialize again
         Kryo kryo = this.serdeContext.obtain();
+        Output output = this.serdeContext.outputPool.obtain();
         try {
-            kryo.writeClassAndObject(this.unsafeOutput, object);
-            byte[] serialized = this.unsafeOutput.toBytes();
-            this.unsafeOutput.reset();
+            kryo.writeClassAndObject(output, object);
+            byte[] serialized = output.toBytes();
 
             return serialized;
         } catch (Exception e) {
@@ -54,16 +52,18 @@ public class RecordSerdeImpl implements RecordSerde {
             throw new CobraException(e);
         } finally {
             this.serdeContext.free(kryo);
+            this.serdeContext.outputPool.free(output);
         }
     }
 
     @Override
     public <T> T deserialize(byte[] bytes) {
         Kryo kryo = this.serdeContext.obtain();
+        Input input = this.serdeContext.inputPool.obtain();
         try {
-            this.unsafeInput.setBuffer(bytes);
-            Object result = kryo.readClassAndObject(this.unsafeInput);
-            this.unsafeInput.reset();
+            input.setBuffer(bytes);
+            Object result = kryo.readClassAndObject(input);
+            input.reset();
 
             return Utils.uncheckedCast(result);
         } catch (Exception e) {
@@ -71,6 +71,7 @@ public class RecordSerdeImpl implements RecordSerde {
             throw new CobraException(e);
         } finally {
             this.serdeContext.free(kryo);
+            this.serdeContext.inputPool.free(input);
         }
     }
 

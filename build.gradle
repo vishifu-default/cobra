@@ -28,7 +28,12 @@ dependencies {
     testImplementation libs.org.junit.platform.junit.platform.runner
     testImplementation libs.org.mockito.mockito.core
 
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    // https://mvnrepository.com/artifact/org.apache.poi/poi
+    implementation 'org.apache.poi:poi:5.3.0'
+    // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+    implementation 'org.apache.poi:poi-ooxml:5.3.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -36,7 +41,7 @@ dependencies {
 }
 
 group = 'org.cobra'
-version = '1.0'
+version = 'producer.1.0'
 description = 'cobra'
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -46,6 +51,13 @@ publishing {
             from(components.java)
         }
     }
+}
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
+
+bootJar {
 }
 
 test {
@@ -61,17 +73,14 @@ configurations {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-//    options.compilerArgs += "--enable-preview"
     options.compilerArgs += "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"
 }
 
 tasks.withType(Test).configureEach {
-//    jvmArgs += "--enable-preview"
     jvmArgs += "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"
 }
 
 tasks.withType(JavaExec).configureEach {
-//    jvmArgs += "--enable-preview"
     jvmArgs += "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED"
 }
 
@@ -79,14 +88,6 @@ tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
 }
 
-jar {
-    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-}
-
-bootJar {
-    enabled = false
-}
-//
 //tasks.register('jarSampleProducer', Jar) {
 //    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
 //    configurations.implementation.setCanBeResolved(true)
@@ -97,21 +98,6 @@ bootJar {
 //    manifest {
 //        attributes(
 //                'Main-Class': 'org.learn.springapi.MainProducer'
-//        )
-//    }
-//    with jar
-//}
-//
-//tasks.register('jarSpringApp', Jar) {
-//    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-//    configurations.implementation.setCanBeResolved(true)
-//    configurations.api.setCanBeResolved(true)
-//    from configurations.implementation.asFileTree.files.collect { zipTree(it) }
-//    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-//    setArchiveBaseName('spring_app')
-//    manifest {
-//        attributes(
-//                'Main-Class': 'org.learn.springapi.SpringApiApplication'
 //        )
 //    }
 //    with jar

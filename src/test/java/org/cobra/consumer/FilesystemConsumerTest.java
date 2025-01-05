@@ -12,8 +12,6 @@ import org.cobra.producer.CobraProducer;
 import org.cobra.producer.fs.FilesystemAnnouncer;
 import org.cobra.producer.fs.FilesystemBlobStagger;
 import org.cobra.producer.fs.FilesystemPublisher;
-import org.cobra.producer.internal.SequencedVersionMinter;
-import org.cobra.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -72,10 +70,25 @@ public class FilesystemConsumerTest {
 
         final RecordApi api = new CobraRecordApi(consumer);
 
-        ConsumeTypeA ret1 = api.get("test-1");
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-        Assertions.assertNotNull(ret1);
-        Assertions.assertEquals("test-1", ret1.name);
+        int threads = 5;
+        CountDownLatch latch = new CountDownLatch(threads);
+
+        for (int j = 0; j < threads; j++) {
+            int taskId = j;
+            executorService.submit(() -> {
+                System.out.println("submit task " + taskId);
+                for (int i = 0; i < 10_000; i++) {
+                    ConsumeTypeA ret = api.get("test-" + i);
+                    Assertions.assertNotNull(ret);
+                    Assertions.assertEquals("test-" + i, ret.name);
+                }
+                System.out.println("task " + taskId + " finished");
+                latch.countDown();
+            });
+        }
+
+        latch.await();
     }
-
 }

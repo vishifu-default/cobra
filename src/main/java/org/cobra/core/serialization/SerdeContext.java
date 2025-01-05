@@ -1,6 +1,8 @@
 package org.cobra.core.serialization;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.kryo.util.IntMap;
 import com.esotericsoftware.kryo.util.Pool;
@@ -21,12 +23,19 @@ public class SerdeContext {
     private final IntMap<Class<?>> idToClazz = new IntMap<>();
     private int nextRegisterId = 0;
 
-    private final Pool<Kryo> pool = new Pool<>(true, false, 64) {
+
+    private final Pool<Kryo> kryoPool = new Pool<>(true, true, 64) {
         @Override
         protected Kryo create() {
             Kryo kryo = new Kryo();
 
             kryo.setDefaultSerializer(FieldSerializer.class);
+
+            for (SerdeRegistration serdeRegistration : DefaultRegistrations.DEFAULT_SERDE_REGISTRATIONS) {
+                kryo.register(serdeRegistration.getClazz(),
+                        serdeRegistration.getSerializer(),
+                        serdeRegistration.getId());
+            }
 
             for (Map.Entry<Class<?>, Integer> entry : registries.entrySet()) {
                 kryo.register(entry.getKey(), entry.getValue());
@@ -36,17 +45,34 @@ public class SerdeContext {
         }
     };
 
+    public final Pool<Input> inputPool = new Pool<>(true, true, 64) {
+
+        @Override
+        protected Input create() {
+            return new Input();
+        }
+    };
+
+    public final Pool<Output> outputPool = new Pool<>(true, true, 64) {
+
+        @Override
+        protected Output create() {
+            return new Output(4096, -1);
+        }
+    };
+
     /* visible to test */
     SerdeContext() {
     }
 
     public Kryo obtain() {
-        return pool.obtain();
+        return kryoPool.obtain();
     }
 
     public void free(Kryo kryo) {
-        pool.free(kryo);
+        kryoPool.free(kryo);
     }
+
 
     public void register(ModelSchema schema) {
         Set<Class<?>> visitAllTypes = ReferentVisits.visits(schema.getClazz(), new HashSet<>(), 0);

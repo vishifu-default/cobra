@@ -91,6 +91,9 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         /* remove object from data repo */
         byte[] removalData = this.recordRepository.removeObject(key);
 
+        if (removalData == null)
+            return;
+
         /* a. removal record key */
         varint.writeVarInt(this.toRemovalRecordStore, keyBytes.length);
         this.toRemovalRecordStore.write(keyBytes);

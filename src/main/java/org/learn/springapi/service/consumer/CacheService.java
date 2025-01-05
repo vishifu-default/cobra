@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class CacheService {
-    private static final String host = "16.78.92.85";
+    private static final String host = "localhost";
     private static final int port = 7070;
     private static final String consumePath = "./misc/consume-dir";
 

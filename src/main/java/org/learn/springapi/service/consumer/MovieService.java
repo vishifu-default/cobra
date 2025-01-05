@@ -10,6 +10,7 @@ public class MovieService {
 
     public Movie getMovie(int id) {
         Movie movie = cacheService.api().get(String.valueOf(id));
+
         if (movie != null) {
             log.debug("Found movie with id {}", id);
         }

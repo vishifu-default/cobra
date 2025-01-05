@@ -23,6 +23,8 @@ public interface CobraProducer {
 
     void registerModel(Class<?> clazz);
 
+    long currentVersion();
+
     interface Announcer {
         void announce(long version);
 
