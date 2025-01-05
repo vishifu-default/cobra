@@ -108,7 +108,7 @@ public class ProducerService {
         });
     }
 
-    public void revert(int version) {
+    public void revert(long version) {
         producer.pinVersion(version);
     }
 

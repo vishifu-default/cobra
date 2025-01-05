@@ -4,24 +4,22 @@ import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.pools.BytesPool;
 import org.cobra.commons.threads.CobraThread;
-import org.cobra.commons.threads.CobraThreadExecutor;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.core.memory.MemoryMode;
-import org.cobra.core.memory.datalocal.RecordRepository;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.core.objects.VersioningBlob;
 import org.cobra.networks.CobraClient;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public interface CobraConsumer {
 
     void triggerRefreshWithDelay(int ms);
 
     ConsumerStateContext context();
+
+    long currentVersion();
 
     interface AnnouncementWatcher {
         long NO_ANNOUNCEMENT_AVAILABLE = CobraConstants.VERSION_NULL;

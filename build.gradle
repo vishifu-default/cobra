@@ -41,7 +41,7 @@ dependencies {
 }
 
 group = 'org.cobra'
-version = 'producer.1.0'
+version = 'consumer.1.0'
 description = 'cobra'
 java.sourceCompatibility = JavaVersion.VERSION_21
 
@@ -87,18 +87,3 @@ tasks.withType(JavaExec).configureEach {
 tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
 }
-
-//tasks.register('jarSampleProducer', Jar) {
-//    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-//    configurations.implementation.setCanBeResolved(true)
-//    configurations.api.setCanBeResolved(true)
-//    from configurations.implementation.asFileTree.files.collect { zipTree(it) }
-//    from configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-//    setArchiveBaseName('sample_producer')
-//    manifest {
-//        attributes(
-//                'Main-Class': 'org.learn.springapi.MainProducer'
-//        )
-//    }
-//    with jar
-//}

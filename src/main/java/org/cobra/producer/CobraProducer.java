@@ -1,6 +1,7 @@
 package org.cobra.producer;
 
 import org.cobra.commons.Clock;
+import org.cobra.core.hashing.Table;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.internal.Blob;
@@ -24,6 +25,8 @@ public interface CobraProducer {
     void registerModel(Class<?> clazz);
 
     long currentVersion();
+
+    Table lookupTable();
 
     interface Announcer {
         void announce(long version);

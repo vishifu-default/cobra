@@ -16,12 +16,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class CacheService {
-    private static final String host = "localhost";
+    private static final String host = "host.docker.internal";
     private static final int port = 7070;
     private static final String consumePath = "./misc/consume-dir";
 
     private CobraConsumer consumer;
     private RecordApi api;
+
     public CacheService() {
         Path cacheDir = Paths.get(consumePath);
         CobraClient client = new CobraClient(new InetSocketAddress(host, port));

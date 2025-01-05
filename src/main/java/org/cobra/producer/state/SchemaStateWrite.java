@@ -15,9 +15,9 @@ public interface SchemaStateWrite {
 
     void moveToNextCycle();
 
-    void writeObject(String key, Object object);
+    void addRecord(String key, Object object);
 
-    void removeObject(String key);
+    void removeRecord(String key);
 
     void prepareWriteDelta();
 

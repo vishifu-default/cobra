@@ -113,6 +113,11 @@ public abstract class AbstractConsumer implements CobraConsumer {
         return consumerStateContext;
     }
 
+    @Override
+    public long currentVersion() {
+        return consumerPlane.currentVersion();
+    }
+
     public void triggerRefreshTo(long version) {
         triggerRefreshTo(new VersionInformation(version));
     }

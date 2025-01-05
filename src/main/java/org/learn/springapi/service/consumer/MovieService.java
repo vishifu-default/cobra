@@ -17,4 +17,8 @@ public class MovieService {
 
         return movie;
     }
+
+    public long getCurrentVersion() {
+        return cacheService.consumer().currentVersion();
+    }
 }

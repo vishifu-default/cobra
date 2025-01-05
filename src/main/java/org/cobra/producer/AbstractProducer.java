@@ -4,6 +4,7 @@ import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.core.ModelSchema;
+import org.cobra.core.hashing.Table;
 import org.cobra.networks.CobraServer;
 import org.cobra.producer.handler.FetchBlobHandler;
 import org.cobra.producer.handler.FetchHeaderBlobHandler;
@@ -12,7 +13,7 @@ import org.cobra.producer.internal.Artifact;
 import org.cobra.producer.internal.AtomicState;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
-import org.cobra.producer.internal.ScopedProducerStateWriter;
+import org.cobra.producer.internal.StateWriteProvider;
 import org.cobra.producer.state.BlobWriter;
 import org.cobra.producer.state.BlobWriterImpl;
 import org.cobra.producer.state.ProducerStateContext;
@@ -77,6 +78,11 @@ public abstract class AbstractProducer implements CobraProducer {
     @Override
     public long currentVersion() {
         return versionState.current();
+    }
+
+    @Override
+    public Table lookupTable() {
+        return producerStateContext.getLocalData().lookupTable();
     }
 
     protected long runProduce(Populator task) {
@@ -153,7 +159,7 @@ public abstract class AbstractProducer implements CobraProducer {
 
     void populateTask(Populator task, long toVersion) {
         try (
-                final ScopedProducerStateWriter scoped = new ScopedProducerStateWriter(
+                final StateWriteProvider scoped = new StateWriteProvider(
                         this.producerStateContext,
                         toVersion,
                         this.clock
