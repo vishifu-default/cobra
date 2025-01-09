@@ -1,0 +1,201 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-top: 20px;
+}
+
+form {
+    width: 50%;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="checkbox"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    max-width: 300px;
+    min-width: 100px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* container */
+.container {
+    width: 60%;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Container for the page content */
+
+.container p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.container strong {
+    color: #555;
+}
+
+.container a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.container button:hover {
+    background-color: #45a049;
+}
+
+/* Navigation Bar */
+nav {
+    background-color: #333;
+    padding: 10px;
+}
+
+.nav-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-link {
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 1.1em;
+}
+
+.nav-link:hover {
+    background-color: #0275d8;
+    border-radius: 5px;
+}
+
+
+.details-line {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.details-line label {
+    font-weight: bold;
+    width: 150px; /* Fixed width for labels */
+    margin-right: 10px;
+    color: #555;
+}
+
+.details-line span {
+    flex: 1;
+    color: #333;
+}
+
+.movie-poster {
+    max-width: 200px; /* Limits the size of the poster */
+    height: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Table styling */
+.movie-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
+
+/* Table header */
+.movie-table thead {
+    background-color: #f8f9fa;
+}
+
+.movie-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 1.1em;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+}
+
+/* Table body */
+.movie-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 1em;
+    color: #555;
+}
+
+/* Hover effect for table rows */
+.movie-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+
+/* Make the table responsive */
+@media (max-width: 768px) {
+    .movie-table th, .movie-table td {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+}

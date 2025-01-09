@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Movie Information</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:insert="~{layout :: navbar}"></div>
+
+<div>
+    <div class="container">
+
+        <div>
+            <label>
+                Current version:
+                <span th:text="${version}"></span>
+            </label>
+        </div>
+
+    </div>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Movie submitted</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:insert="~{layout :: navbar}"></div>
+
+
+<div>
+    <div class="container">
+        <h1>Movie Submitted Successfully!</h1>
+        <div class="details-grid">
+
+            <div class="details-line">
+                <label>ID:</label>
+                <span th:text="${movie.id}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Title:</label>
+                <span th:text="${movie.title}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Director:</label>
+                <span th:text="${movie.director}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Release Year:</label>
+                <span th:text="${movie.releaseYear}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Rating:</label>
+                <span th:text="${movie.rating}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Duration:</label>
+                <span th:text="${movie.duration}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Genre:</label>
+                <span th:text="${movie.genre}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Country:</label>
+                <span th:text="${movie.country}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Available on Streaming:</label>
+                <span th:text="${movie.isAvailableOnStreaming ? 'Yes' : 'No'}"></span>
+            </div>
+
+            <div class="details-line">
+                <label>Image:</label>
+                <img th:src="${movie.imageUrl}" alt="Movie Poster" class="movie-poster">
+            </div>
+
+        </div>
+
+        <a th:href="@{/movie-submit}">
+            <button type="button">Submit another movie</button>
+        </a>
+    </div>
+</div>
+
+
+</body>
+</html>

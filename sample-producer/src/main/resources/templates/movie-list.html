@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>All movies</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:insert="~{layout :: navbar}"></div>
+
+<div class="container">
+    <h3>Movies list</h3>
+    <!-- Grid table to display movie ID and name -->
+    <table class="movie-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Movie Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Loop through the list of movies -->
+        <tr th:each="movie : ${movieList}">
+            <td th:text="${movie.id}"></td>
+            <td th:text="${movie.title}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
