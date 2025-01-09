@@ -4,25 +4,9 @@
  * This project uses @Incubating APIs which are subject to change.
  */
 
-plugins {
-    id 'java-library'
-    id 'java'
-    id 'org.springframework.boot' version '3.4.1'
-    id 'io.spring.dependency-management' version '1.1.7'
-}
-
 group = 'org.cobra'
 version = 'consumer.1.0'
 description = 'cobra'
-
-dependencies {
-    implementation libs.springframework.boot.web.starter
-    implementation libs.springframework.boot.thymeleaf
-    implementation libs.apache.poi
-    implementation libs.apache.poi.xml
-    testImplementation libs.springframework.boot.web.test
-}
-
 
 allprojects {
     apply {

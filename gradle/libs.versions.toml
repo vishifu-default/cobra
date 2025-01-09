@@ -5,6 +5,7 @@
 com-esotericsoftware-kryo = { module = "com.esotericsoftware:kryo", version = "5.6.2" }
 io-netty-netty-all = { module = "io.netty:netty-all", version = "4.2.0.Alpha1" }
 org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.16" }
+org-slf4j-log4j = { module = "ch.qos.reload4j:reload4j", version = "1.2.26" }
 org-jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.1" }
 org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "5.11.0" }
 org-junit-platform-junit-platform-runner = { module = "org.junit.platform:junit-platform-runner", version = "1.11.0" }

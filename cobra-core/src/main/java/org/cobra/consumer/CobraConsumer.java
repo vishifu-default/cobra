@@ -103,11 +103,6 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withMemoryMode(MemoryMode memoryMode) {
-            this.memoryMode = memoryMode;
-            return this;
-        }
-
         public Builder withBytesPool(BytesPool bytesPool) {
             this.bytesPool = bytesPool;
             return this;
@@ -137,6 +132,8 @@ public interface CobraConsumer {
 
             if (refreshExecutor == null)
                 refreshExecutor = Executors.newSingleThreadExecutor(r -> CobraThread.daemon(r, "refresh-executor"));
+
+            memoryMode = MemoryMode.VIRTUAL_MAPPED;
 
             return new CobraConsumerImpl(this);
         }

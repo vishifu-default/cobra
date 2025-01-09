@@ -49,11 +49,6 @@ public class DataBlobState {
     }
 
     private void applyTransition(VersionTransition transition) throws IOException {
-        if (!this.memoryMode.equals(MemoryMode.ON_HEAP)) {
-            log.warn("Skipping, apply delta-transition must be in ON_HEAP memory mode");
-            return;
-        }
-
         log.debug("Applying delta-transition {}", transition);
 
         final long start = System.nanoTime();

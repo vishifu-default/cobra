@@ -64,7 +64,6 @@ public class FilesystemConsumerTest {
 
         CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
-                .withMemoryMode(MemoryMode.ON_HEAP)
                 .withNetworkClient(client)
                 .build();
 

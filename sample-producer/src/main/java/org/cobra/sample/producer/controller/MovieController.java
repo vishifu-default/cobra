@@ -32,13 +32,13 @@ public class MovieController {
     public String movieList(Model model) {
         List<Movie> movieList = producerService.getInMemoryMovies(0, 100);
         model.addAttribute("movieList", movieList);
-        return "producer/movie-list";
+        return "movie-list";
     }
 
     @GetMapping(value = "/movie-submit")
     public String submitMovie(Model model) {
         model.addAttribute("movie", new Movie());
-        return "producer/movie-submit";
+        return "movie-submit";
     }
 
     @PostMapping(value = "/movie-submit")
@@ -46,7 +46,7 @@ public class MovieController {
         model.addAttribute("movie", movie);
         producerService.addMutation(movie.getId(), movie);
 
-        return "producer/movie-submit-success";
+        return "movie-submit-success";
     }
 
     @GetMapping("/mutations")
@@ -66,7 +66,7 @@ public class MovieController {
         model.addAttribute("addMutations", addMutations);
         model.addAttribute("deleteIds", deletedIds);
 
-        return "producer/mutations";
+        return "mutations";
     }
 
     @GetMapping("/produce-new-version")
@@ -77,7 +77,7 @@ public class MovieController {
 
     @GetMapping(value = "/upload-file")
     public String uploadFile(Model model) {
-        return "producer/upload-file";
+        return "upload-file";
     }
 
     @PostMapping(value = "/upload-file")
@@ -120,7 +120,7 @@ public class MovieController {
         final long currentVersion = producerService.getCurrentVersion();
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("form", new RollbackVersion(currentVersion));
-        return "producer/rollback-version";
+        return "rollback-version";
     }
 
     @PostMapping(value = "/rollback")
@@ -129,6 +129,6 @@ public class MovieController {
         final long currentVersion = producerService.getCurrentVersion();
         model.addAttribute("currentVersion", currentVersion);
         model.addAttribute("form", new RollbackVersion(currentVersion));
-        return "producer/rollback-version";
+        return "rollback-version";
     }
 }
