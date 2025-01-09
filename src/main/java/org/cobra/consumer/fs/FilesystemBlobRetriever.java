@@ -155,6 +155,14 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
         public File file() throws IOException {
             return path.toFile();
         }
+
+        @Override
+        public String toString() {
+            return "FilesystemHeader(" +
+                    "version=" + getVersion() + ", " +
+                    "path=" + path.getFileName().toString() +
+                    ')';
+        }
     }
 
     public static class FilesystemBlob extends CobraConsumer.Blob {
@@ -174,6 +182,16 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
         @Override
         public File file() throws IOException {
             return path.toFile();
+        }
+
+        @Override
+        public String toString() {
+            return "FilesystemBlob(" +
+                    "path=" + path.getFileName().toString() +
+                    ", fromVersion=" + fromVersion +
+                    ", toVersion=" + toVersion +
+                    ", blobType=" + blobType +
+                    ')';
         }
     }
 }

@@ -25,4 +25,13 @@ public class VersionTransition {
     public CobraConsumer.Blob getDeltaBlob() {
         return deltaBlob;
     }
+
+    @Override
+    public String toString() {
+        return "VersionTransition(" +
+                "version=" + version +
+                ", header=" + header +
+                ", deltaBlob=" + deltaBlob +
+                ')';
+    }
 }

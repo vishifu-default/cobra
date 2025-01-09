@@ -48,20 +48,16 @@ public class BlobReaderImpl implements BlobReader {
     }
 
     private void doApplyHeader(BlobInput blobInput) throws IOException {
-        ensureMemoryMode(blobInput.memoryMode());
-
-        final long startTime = System.currentTimeMillis();
+        final long start = System.nanoTime();
 
         doReadHeader(blobInput);
 
-        final long elapsed = System.currentTimeMillis() - startTime;
-        log.debug("BLOB_HEADER applied in {} ms", elapsed);
+        final long elapsed = System.nanoTime() - start;
+        log.debug("applied header took: {}", Utils.formatElapsed(elapsed));
     }
 
     private void doApplyDelta(BlobInput blobInput) throws IOException {
-        ensureMemoryMode(blobInput.memoryMode());
-
-        final long startTime = System.currentTimeMillis();
+        final long start = System.nanoTime();
 
         readAndCheckBlobRandomizedTag(blobInput);
 
@@ -70,8 +66,8 @@ public class BlobReaderImpl implements BlobReader {
             readSchemaStateDelta(blobInput);
         }
 
-        final long elapsed = System.currentTimeMillis() - startTime;
-        log.debug("BLOB_DELTA applied in {} ms", elapsed);
+        final long elapsed = System.nanoTime() - start;
+        log.debug("applied delta content took {}", Utils.formatElapsed(elapsed));
     }
 
     private void readAndCheckBlobRandomizedTag(BlobInput blobInput) throws IOException {
@@ -91,12 +87,6 @@ public class BlobReaderImpl implements BlobReader {
             schemaStateReader.applyDelta(blobInput);
         }
         log.debug("DELTA read schema: {}", modelSchema.getClazzName());
-    }
-
-    private void ensureMemoryMode(MemoryMode mode) {
-        if (!memoryMode.equals(mode))
-            throw new IllegalStateException(String.format("blob-reader is construct for %s, and blob-input memory " +
-                    "mode is %s", memoryMode, mode));
     }
 
     private void doReadHeader(BlobInput blobInput) throws IOException {

@@ -154,4 +154,15 @@ public class Utils {
             throw new CobraException("Class not visible " + clazzName, e);
         }
     }
+
+    public static String formatElapsed(long elapsed) {
+        if (elapsed < 1_000_000) {
+            // Less than 1 millisecond, return in nanoseconds
+            return elapsed + " ns";
+        } else {
+            // Convert to milliseconds
+            double elapsedTimeMs = elapsed / 1_000_000.0;
+            return String.format("%.3f ms", elapsedTimeMs);
+        }
+    }
 }

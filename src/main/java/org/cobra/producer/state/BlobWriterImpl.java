@@ -54,7 +54,7 @@ public class BlobWriterImpl implements BlobWriter {
                         PROC_DESC_WRITE_DELTA)
         ) {
             for (final SchemaStateWrite stateWrite : modifiedStateWriteSet) {
-                executor.execute(stateWrite::prepareWriteDelta);
+                executor.execute(stateWrite::prepareBeforeWriting);
             }
         }
 
@@ -75,15 +75,6 @@ public class BlobWriterImpl implements BlobWriter {
 
         Set<SchemaStateWrite> modifiedStateWriteSet = collectModifiedSchemaStateWrite();
         dos.writeInt(modifiedStateWriteSet.size());
-
-        try (
-                final CobraThreadExecutor executor = CobraThreadExecutor.ofPhysicalProcessor(getClass(),
-                        PROC_DESC_WRITE_REVERSED_DELTA)
-        ) {
-            for (final SchemaStateWrite stateWrite : modifiedStateWriteSet) {
-                executor.execute(stateWrite::prepareWriteReversedDelta);
-            }
-        }
 
         for (final SchemaStateWrite stateWrite : modifiedStateWriteSet) {
             stateWrite.writeReversedDelta(dos);

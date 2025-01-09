@@ -2,6 +2,7 @@ package org.cobra.producer.state;
 
 import org.cobra.commons.Jvm;
 import org.cobra.commons.pools.BytesPool;
+import org.cobra.commons.utils.Utils;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.bytes.Bytes;
 import org.cobra.core.bytes.OnHeapBytes;
@@ -24,16 +25,15 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
 
     protected final ModelSchema modelSchema;
     protected final RecordSerde serde;
+    protected final ProducerStateContext producerStateContext;
+    protected final Map<String, Object> mutations = new ConcurrentHashMap<>();
 
-    protected final Bytes toAdditionalRecordStore = OnHeapBytes.create(BytesPool.NONE);
-    protected final Bytes toRemovalRecordStore = OnHeapBytes.create(BytesPool.NONE);
-    protected final Bytes toReversedOfRemovalStore = OnHeapBytes.create(BytesPool.NONE);
-
-    private final ProducerStateContext producerStateContext;
+    private final Bytes toAdditionalKeyBytes = OnHeapBytes.create(BytesPool.NONE);
+    private final Bytes toAdditionalObjectBytes = OnHeapBytes.create(BytesPool.NONE);
+    private final Bytes toRemovalKeyBytes = OnHeapBytes.create(BytesPool.NONE);
+    private final Bytes toRemovalObjectForReverseBytes = OnHeapBytes.create(BytesPool.NONE);
 
     private boolean isReversedDelta = false;
-
-    private final Map<String, Object> mutations = new ConcurrentHashMap<>();
 
     public SchemaStateWriteImpl(ModelSchema modelSchema, RecordSerde serde, ProducerStateContext producerStateContext) {
         this.modelSchema = modelSchema;
@@ -48,19 +48,28 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
 
     @Override
     public boolean isModified() {
-        return true; // todo: incremental write
+        return !this.mutations.isEmpty();
+    }
+
+    @Override
+    public int mutationCount() {
+        return this.mutations.size();
     }
 
     @Override
     public void moveToWritePhase() {
         // todo: can we shrink?
-        this.toAdditionalRecordStore.rewind();
-        this.toRemovalRecordStore.rewind();
     }
 
     @Override
     public void moveToNextCycle() {
         mutations.clear();
+
+        toAdditionalKeyBytes.rewind();
+        toAdditionalObjectBytes.rewind();
+
+        toRemovalKeyBytes.rewind();
+        toRemovalObjectForReverseBytes.rewind();
     }
 
     @Override
@@ -74,78 +83,73 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
     }
 
     @Override
-    public void prepareWriteDelta() {
+    public void prepareBeforeWriting() {
+        final long start = System.nanoTime();
         for (Map.Entry<String, Object> entry : this.mutations.entrySet()) {
 
             if (entry.getValue() == DELETE_OBJECT) {
-                doWriteRemovalData();
-                return;
+                doPrepareRemovalData(entry.getKey());
+                continue; // continue process other entry
             }
 
-            byte[] serialized = serde.serialize(entry.getValue());
-
-            // todo: implement writing check, need to write?
-            boolean mustWrite = true;
-
-            if (!mustWrite)
-                return;
-
-            byte[] rawKey = entry.getKey().getBytes();
-
-            /* a. record key */
-            varint.writeVarInt(this.toAdditionalRecordStore, rawKey.length);
-            this.toAdditionalRecordStore.write(rawKey);
-
-            /* b. record bytes */
-            varint.writeVarInt(this.toAdditionalRecordStore, serialized.length);
-            this.toAdditionalRecordStore.write(serialized);
-
-            /* put object to data repo */
-            this.producerStateContext.getLocalData().putObject(rawKey, serialized);
+            doPrepareAdditionalData(entry.getKey(), entry.getValue());
         }
+
+        final long elapsed = System.nanoTime() - start;
+        log.debug("prepare before writing schema state {}; elapsed: {}", modelSchema.getClazzName(),
+                Utils.formatElapsed(elapsed));
     }
 
     @Override
     public void writeDelta(DataOutputStream dos) throws IOException {
+        final long start = System.nanoTime();
         this.isReversedDelta = false;
         writeBlobContent(dos);
-    }
 
-    @Override
-    public void prepareWriteReversedDelta() {
-        for (Map.Entry<String, Object> entry : this.mutations.entrySet()) {
-            if (entry.getValue() != DELETE_OBJECT) continue;
-
-            byte[] rawKey = entry.getKey().getBytes();
-
-            /* remove object from data repo */
-            byte[] removalData = this.producerStateContext.getLocalData().removeObject(rawKey);
-
-            if (removalData == null)
-                return;
-
-            /* a. removal record key */
-            varint.writeVarInt(this.toRemovalRecordStore, rawKey.length);
-            this.toRemovalRecordStore.write(rawKey);
-
-            /* b. removal record bytes, (used for reversed) */
-            varint.writeVarInt(this.toRemovalRecordStore, removalData.length);
-            this.toRemovalRecordStore.write(removalData);
-        }
-    }
-
-    private void doWriteAdditionalData() {
-
-    }
-
-    private void doWriteRemovalData() {
-
+        final long elapsed = System.nanoTime() - start;
+        log.debug("write delta {}; elapsed: {}", modelSchema.getClazzName(), Utils.formatElapsed(elapsed));
     }
 
     @Override
     public void writeReversedDelta(DataOutputStream dos) throws IOException {
+        final long start = System.nanoTime();
         this.isReversedDelta = true;
         writeBlobContent(dos);
+
+        final long elapsed = System.nanoTime() - start;
+        log.debug("write reversed-delta {}; elapsed: {}", modelSchema.getClazzName(), Utils.formatElapsed(elapsed));
+    }
+
+    private void doPrepareAdditionalData(String key, Object object) {
+        byte[] rawKey = key.getBytes();
+        byte[] serializedObject = serde.serialize(object);
+
+        /* a. object key */
+        writeBlock(toAdditionalKeyBytes, rawKey);
+        /* b. object bytes */
+        writeBlock(toAdditionalObjectBytes, serializedObject);
+
+        /* put object to data repo */
+        this.producerStateContext.getLocalData().putObject(rawKey, serializedObject);
+    }
+
+    private void doPrepareRemovalData(String key) {
+        byte[] rawKey = key.getBytes();
+        byte[] removalData = this.producerStateContext.getLocalData().removeObject(rawKey);
+
+        if (removalData == null || removalData.length == 0) {
+            return; // return if none
+        }
+
+        /* a. removal key */
+        writeBlock(toRemovalKeyBytes, rawKey);
+        /* setup for reversed */
+        writeBlock(toRemovalObjectForReverseBytes, removalData);
+    }
+
+    private static void writeBlock(Bytes bytes, byte[] block) {
+        varint.writeVarInt(bytes, block.length); // write var_block_length
+        bytes.write(block); // write block_bytes
     }
 
     private void writeBlobContent(DataOutputStream dos) throws IOException {
@@ -160,13 +164,21 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
     }
 
     private void doWriteDelta(DataOutputStream dos) throws IOException {
-        doWriteBlobOutputStream(dos, this.toAdditionalRecordStore);
-        doWriteBlobOutputStream(dos, this.toRemovalRecordStore);
+        varint.writeVarInt(dos, mutationCount());
+
+        doWriteBlobOutputStream(dos, toAdditionalKeyBytes);
+        doWriteBlobOutputStream(dos, toAdditionalObjectBytes);
+
+        doWriteBlobOutputStream(dos, toRemovalKeyBytes);
     }
 
     private void doWriteReversedDelta(DataOutputStream dos) throws IOException {
-        doWriteBlobOutputStream(dos, this.toRemovalRecordStore);
-        doWriteBlobOutputStream(dos, this.toAdditionalRecordStore);
+        varint.writeVarInt(dos, mutationCount());
+
+        doWriteBlobOutputStream(dos, toRemovalKeyBytes);
+        doWriteBlobOutputStream(dos, toRemovalObjectForReverseBytes);
+
+        doWriteBlobOutputStream(dos, toAdditionalKeyBytes);
     }
 
     private static void doWriteBlobOutputStream(DataOutputStream dos, Bytes bytes) throws IOException {

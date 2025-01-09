@@ -11,6 +11,8 @@ public interface SchemaStateWrite {
 
     boolean isModified();
 
+    int mutationCount();
+
     void moveToWritePhase();
 
     void moveToNextCycle();
@@ -19,11 +21,9 @@ public interface SchemaStateWrite {
 
     void removeRecord(String key);
 
-    void prepareWriteDelta();
+    void prepareBeforeWriting();
 
     void writeDelta(DataOutputStream dos) throws IOException;
-
-    void prepareWriteReversedDelta();
 
     void writeReversedDelta(DataOutputStream dos) throws IOException;
 }

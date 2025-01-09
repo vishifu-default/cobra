@@ -53,12 +53,24 @@ public interface CobraConsumer {
         public final long getVersion() {
             return version;
         }
+
+        @Override
+        public String toString() {
+            return "HeaderBlob(" +
+                    "version=" + version +
+                    ')';
+        }
     }
 
     abstract class Blob extends VersioningBlob implements StreamingBlob {
 
         protected Blob(long fromVersion, long toVersion) {
             super(fromVersion, toVersion);
+        }
+
+        @Override
+        public String toString() {
+            return super.toString();
         }
     }
 
