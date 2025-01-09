@@ -6,4 +6,6 @@
 
 rootProject.name = 'cobra'
 include 'cobra-core'
+include 'sample-producer'
+include 'sample-model'
 
