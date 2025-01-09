@@ -13,7 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class MovieController {
 
-    private final MovieService movieService = new MovieService();
+    private final MovieService movieService;
+
+    public MovieController(MovieService movieService) {
+        this.movieService = movieService;
+    }
 
     @GetMapping(value = "/find")
     public String find(Model model) {
