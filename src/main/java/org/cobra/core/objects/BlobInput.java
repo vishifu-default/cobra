@@ -78,8 +78,10 @@ public class BlobInput implements Closeable {
     }
 
     public int readNBytes(byte[] dest, int len) throws IOException {
-        if (isFile())
+        if (isFile()) {
             asFile().read(dest);
+            return dest.length;
+        }
         if (isSerial()) {
             byte[] bytes = asStream().readNBytes(len);
             System.arraycopy(bytes, 0, dest, 0, bytes.length);
@@ -147,10 +149,10 @@ public class BlobInput implements Closeable {
     public void seek(long pos) throws IOException {
         if (isFile())
             asFile().seek(pos);
-        if (isSerial())
+        else if (isSerial())
             throw new UnsupportedOperationException("Could not seek cursor on stream");
-
-        throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
+        else
+            throw new IllegalStateException(UNKNOWN_BLOB_INPUT_TYPE);
     }
 
     public long getCursor() throws IOException {

@@ -25,6 +25,10 @@ public class ConsumerStateContext {
         serde.register(clazz, id);
     }
 
+    public RecordSerde serde() {
+        return serde;
+    }
+
     public RecordRepository localData() {
         return localData;
     }

@@ -1,6 +1,7 @@
 package org.cobra.consumer.internal;
 
 import org.cobra.commons.CobraConstants;
+import org.cobra.commons.utils.Utils;
 import org.cobra.consumer.CobraConsumer;
 import org.cobra.consumer.read.BlobReader;
 import org.cobra.core.memory.MemoryMode;
@@ -9,6 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 
 public class DataBlobState {
 
@@ -50,17 +54,24 @@ public class DataBlobState {
             return;
         }
 
+        log.debug("Applying delta-transition {}", transition);
+
+        final long start = System.nanoTime();
         applyHeader(transition.getHeader());
         applyStateEngineTransition(transition.getDeltaBlob());
+
+        final long elapsed = System.nanoTime() - start;
+        log.debug("Applied delta-transition version {}; took: {}", transition.getVersion(),
+                Utils.formatElapsed(elapsed));
     }
 
     private void applyHeader(CobraConsumer.HeaderBlob headerBlob) throws IOException {
-        this.blobReader.applyHeader(headerBlob.input());
+        blobReader.applyHeader(BlobInput.randomAccessFile(headerBlob.file()));
     }
 
     private void applyStateEngineTransition(CobraConsumer.Blob deltaBlob) throws IOException {
 
-        try (BlobInput input = BlobInput.serial(deltaBlob.input())) {
+        try (BlobInput input = BlobInput.randomAccessFile(deltaBlob.file())) {
             this.blobReader.applyDelta(input);
         } catch (Throwable cause) {
             this.transitionStats.markFailTransition(deltaBlob);

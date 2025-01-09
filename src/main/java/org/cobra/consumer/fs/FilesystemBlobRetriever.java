@@ -60,8 +60,15 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
             for (Path path : dirStream) {
                 String filename = path.getFileName().toString();
                 if (filename.startsWith("delta-") && filename.endsWith("%d".formatted(desiredVersion))) {
+
+                    // MORE CHECK
+                    int lastSplitIndex = filename.lastIndexOf("-");
+                    long fileVersion = Long.parseLong(filename.substring(lastSplitIndex));
+                    if (fileVersion != desiredVersion)
+                        continue;
+
                     long fromVersion = Long.parseLong(
-                            filename.substring(filename.indexOf('-') + 1, filename.lastIndexOf('-')));
+                            filename.substring(filename.indexOf('-') + 1, lastSplitIndex));
                     return fsBlob(BlobType.DELTA_BLOB, fromVersion, desiredVersion);
                 }
             }
@@ -87,9 +94,18 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
         ) {
             for (Path path : dirStream) {
                 String filename = path.getFileName().toString();
-                if (filename.startsWith("reversedelta-%d".formatted(desiredVersion))) {
-                    long toVersion = Long.parseLong(filename.substring(filename.lastIndexOf('-') + 1));
-                    return fsBlob(BlobType.REVERSED_DELTA_BLOB, desiredVersion, toVersion);
+
+                if (filename.startsWith("reversedelta-") && filename.endsWith("%d".formatted(desiredVersion))) {
+                    int lastSplitIndex = filename.lastIndexOf("-");
+                    long fileVersion = Long.parseLong(filename.substring(lastSplitIndex + 1));
+
+                    if (fileVersion != desiredVersion)
+                        continue;
+
+                    int firstSplitIndex = filename.indexOf("-");
+                    long fromVersion = Long.parseLong(filename.substring(firstSplitIndex + 1, lastSplitIndex));
+                    return fsBlob(BlobType.REVERSED_DELTA_BLOB, fromVersion, desiredVersion);
+
                 }
             }
         } catch (IOException e) {
@@ -139,6 +155,14 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
         public File file() throws IOException {
             return path.toFile();
         }
+
+        @Override
+        public String toString() {
+            return "FilesystemHeader(" +
+                    "version=" + getVersion() + ", " +
+                    "path=" + path.getFileName().toString() +
+                    ')';
+        }
     }
 
     public static class FilesystemBlob extends CobraConsumer.Blob {
@@ -158,6 +182,16 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
         @Override
         public File file() throws IOException {
             return path.toFile();
+        }
+
+        @Override
+        public String toString() {
+            return "FilesystemBlob(" +
+                    "path=" + path.getFileName().toString() +
+                    ", fromVersion=" + fromVersion +
+                    ", toVersion=" + toVersion +
+                    ", blobType=" + blobType +
+                    ')';
         }
     }
 }

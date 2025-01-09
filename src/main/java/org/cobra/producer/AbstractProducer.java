@@ -4,62 +4,63 @@ import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.core.ModelSchema;
+import org.cobra.core.hashing.Table;
 import org.cobra.networks.CobraServer;
-import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.handler.FetchBlobHandler;
 import org.cobra.producer.handler.FetchHeaderBlobHandler;
 import org.cobra.producer.handler.FetchVersionHandler;
 import org.cobra.producer.internal.Artifact;
+import org.cobra.producer.internal.AtomicState;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
-import org.cobra.producer.internal.PopulationState;
-import org.cobra.producer.internal.ScopedProducerStateWriter;
+import org.cobra.producer.internal.StateWriteProvider;
 import org.cobra.producer.state.BlobWriter;
 import org.cobra.producer.state.BlobWriterImpl;
 import org.cobra.producer.state.ProducerStateContext;
 import org.cobra.producer.state.StateWriteEngine;
+import org.cobra.producer.state.VersionStateImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractProducer implements CobraProducer {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractProducer.class);
 
-    private final CobraProducer.VersionMinter versionMinter;
-    private final CobraProducer.BlobStagger blobStagger;
-    private final CobraProducer.BlobPublisher blobPublisher;
-    private final StateWriteEngine stateWriteEngine;
-    private final ProducerStateContext producerStateContext;
-    private final Announcer announcer;
-    private final Clock clock;
+    protected final CobraProducer.VersionState versionState;
+    protected final CobraProducer.BlobStagger blobStagger;
+    protected final CobraProducer.BlobPublisher blobPublisher;
+    protected final StateWriteEngine stateWriteEngine;
+    protected final ProducerStateContext producerStateContext;
+    protected final Announcer announcer;
+    protected final Clock clock;
 
-    private PopulationState populationState;
-    private long lastSuccessVersion = CobraConstants.VERSION_NULL;
+    protected AtomicState populationAtomic;
 
-    private final CobraServer network;
-    private boolean isBootstrap = false;
+    protected final CobraServer network;
+    protected boolean isBootstrap = false;
+
+    protected final ReentrantLock lock = new ReentrantLock();
 
     protected AbstractProducer(Builder builder) {
-        this.versionMinter = builder.versionMinter;
         this.blobStagger = builder.blobStagger;
         this.blobPublisher = builder.blobPublisher;
         this.clock = builder.clock;
         this.announcer = builder.announcer;
 
+        this.versionState = new VersionStateImpl();
         this.producerStateContext = new ProducerStateContext();
         this.stateWriteEngine = new StateWriteEngine(this.producerStateContext);
 
-        this.populationState = PopulationState.createDeltaChain(CobraConstants.VERSION_NULL);
+        this.populationAtomic = AtomicState.initChain(CobraConstants.VERSION_NULL);
 
-        final int port = NetworkConfig.DEFAULT_PORT; // todo: dynamic config
-
-        network = new CobraServer(new InetSocketAddress(port));
-        network.registerHandler(new FetchVersionHandler(versionMinter),
-                new FetchHeaderBlobHandler(builder.blobStagingPath),
-                new FetchBlobHandler(builder.blobStagingPath));
+        network = new CobraServer(new InetSocketAddress(builder.localPort));
+        network.registerHandler(new FetchVersionHandler(announcer),
+                new FetchHeaderBlobHandler(builder.blobStorePath),
+                new FetchBlobHandler(builder.blobStorePath));
     }
 
     @Override
@@ -74,11 +75,21 @@ public abstract class AbstractProducer implements CobraProducer {
         this.producerStateContext.registerModel(modelSchema);
     }
 
+    @Override
+    public long currentVersion() {
+        return versionState.current();
+    }
+
+    @Override
+    public Table lookupTable() {
+        return producerStateContext.getLocalData().lookupTable();
+    }
+
     protected long runProduce(Populator task) {
         if (!isBootstrap)
             throw new CobraException("producer must be bootstrap before produce a cycle");
 
-        long toVersion = versionMinter.mint();
+        long toVersion = this.versionState.mint();
         Artifact artifact = new Artifact();
 
         long startMillis = clock.milliseconds();
@@ -93,13 +104,14 @@ public abstract class AbstractProducer implements CobraProducer {
             /* 3. produce state */
             if (stateWriteEngine.isModified()) {
                 publish(artifact, toVersion);
-                PopulationState candidates = populationState.round(toVersion);
-                candidates = doCheckout(candidates, artifact);
 
-                announce(candidates);
-                populationState = candidates.commit();
+                AtomicState candidate = this.populationAtomic.stage(toVersion);
+                candidate = doCheckout(candidate, artifact);
 
-                lastSuccessVersion = toVersion;
+                announce(candidate);
+                populationAtomic = candidate.commit();
+
+                versionState.pin(toVersion);
             } else {
                 log.debug("state not modified, revert to last state");
                 stateWriteEngine.revertToLastState();
@@ -115,14 +127,39 @@ public abstract class AbstractProducer implements CobraProducer {
             throw new CobraException(e);
         } finally {
             long endMillis = clock.milliseconds();
-            log.debug("producer a version: version: {}; elapsed: {} ms", toVersion, endMillis - startMillis);
+            log.info("producer a version: version: {}; elapsed: {} ms", toVersion, endMillis - startMillis);
         }
-        return lastSuccessVersion;
+
+        return latestVersion();
+    }
+
+    protected boolean moveToVersion(long version) {
+        if (version > latestVersion()) {
+            log.info("Cannot move version {} to version {}", version, latestVersion());
+            return false;
+        }
+
+        lock.lock();
+        try {
+            AtomicState candidate = this.populationAtomic.stage(version);
+
+            candidate = candidate.swap();
+
+            announce(candidate);
+            populationAtomic = candidate.commit();
+
+            return true;
+        } catch (Throwable cause) {
+            log.error("error when move version {} to version {}", version, latestVersion(), cause);
+            return false;
+        } finally {
+            lock.unlock();
+        }
     }
 
     void populateTask(Populator task, long toVersion) {
         try (
-                final ScopedProducerStateWriter scoped = new ScopedProducerStateWriter(
+                final StateWriteProvider scoped = new StateWriteProvider(
                         this.producerStateContext,
                         toVersion,
                         this.clock
@@ -139,25 +176,26 @@ public abstract class AbstractProducer implements CobraProducer {
         artifact.setHeaderBlob(blobStagger.stageHeader(toVersion));
         doStageAndPublishHeaderBlob(artifact.getHeaderBlob());
 
-        if (!this.populationState.hasCurrentState()) {
+        if (!this.populationAtomic.hasCurrentState()) {
             log.debug("end if state not start");
             return;
         }
 
         artifact.setDeltaBlob(doStage(blobStagger.stageDelta(
-                populationState.getCurrent().getVersion(),
+                populationAtomic.getCurrent().getVersion(),
                 toVersion)));
         artifact.setReversedDeltaBlob(doStage(blobStagger.stageReverseDelta(
                 toVersion,
-                populationState.getCurrent().getVersion()
+                populationAtomic.getCurrent().getVersion()
         )));
 
         doPublishBlob(artifact.getDeltaBlob());
         doPublishBlob(artifact.getReversedDeltaBlob());
     }
 
-    void announce(PopulationState atomic) {
-        announcer.announce(atomic.getPending().getVersion());
+    void announce(AtomicState atomic) {
+        announcer.announce(atomic.getCurrent().getVersion());
+        versionState.pin(atomic.getCurrent().getVersion());
     }
 
     private void doStageAndPublishHeaderBlob(HeaderBlob headerBlob) throws IOException {
@@ -178,8 +216,8 @@ public abstract class AbstractProducer implements CobraProducer {
         blobPublisher.publish(blob);
     }
 
-    private PopulationState doCheckout(PopulationState atomic, Artifact artifact) {
-        PopulationState result = atomic;
+    private AtomicState doCheckout(AtomicState atomic, Artifact artifact) {
+        AtomicState result = atomic;
 
         if (result.hasCurrentState()) {
             if (artifact.hasDelta()) {
@@ -188,5 +226,9 @@ public abstract class AbstractProducer implements CobraProducer {
         }
 
         return result;
+    }
+
+    long latestVersion() {
+        return versionState.current();
     }
 }

@@ -32,27 +32,27 @@ public class FilesystemBlobStagger implements CobraProducer.BlobStagger {
 
     @Override
     public HeaderBlob stageHeader(long version) {
-        return new FsHeaderBlob(version, stagingPathDir, compressor);
+        return new FilesystemHeaderBlob(version, stagingPathDir, compressor);
     }
 
     @Override
     public Blob stageDelta(long fromVersion, long toVersion) {
-        return new FsBlob(fromVersion, toVersion, stagingPathDir, compressor);
+        return new FilesystemBlob(fromVersion, toVersion, stagingPathDir, compressor);
     }
 
     @Override
     public Blob stageReverseDelta(long fromVersion, long toVersion) {
-        return new FsBlob(fromVersion, toVersion, stagingPathDir, compressor);
+        return new FilesystemBlob(fromVersion, toVersion, stagingPathDir, compressor);
     }
 
-    public static class FsHeaderBlob extends HeaderBlob {
+    public static class FilesystemHeaderBlob extends HeaderBlob {
         private final CobraProducer.BlobCompressor compressor;
 
-        public FsHeaderBlob(long version, Path path) {
+        public FilesystemHeaderBlob(long version, Path path) {
             this(version, path, CobraProducer.BlobCompressor.EMPTY_INSTANCE);
         }
 
-        public FsHeaderBlob(long version, Path path, CobraProducer.BlobCompressor compressor) {
+        public FilesystemHeaderBlob(long version, Path path, CobraProducer.BlobCompressor compressor) {
             super(version, path);
             this.compressor = compressor;
         }
@@ -95,11 +95,11 @@ public class FilesystemBlobStagger implements CobraProducer.BlobStagger {
     }
 
 
-    public static class FsBlob extends Blob {
+    public static class FilesystemBlob extends Blob {
 
         private final CobraProducer.BlobCompressor compressor;
 
-        public FsBlob(long fromVersion, long toVersion, Path dir, CobraProducer.BlobCompressor compressor) {
+        public FilesystemBlob(long fromVersion, long toVersion, Path dir, CobraProducer.BlobCompressor compressor) {
             super(dir, fromVersion, toVersion);
             this.compressor = compressor;
         }

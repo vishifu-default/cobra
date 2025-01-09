@@ -1,6 +1,7 @@
 package org.cobra.consumer.read;
 
 import org.cobra.commons.Jvm;
+import org.cobra.commons.utils.Utils;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.encoding.Varint;
 import org.cobra.core.objects.BlobInput;
@@ -30,54 +31,71 @@ public class SchemaStateReaderImpl implements SchemaStateReader {
     @Override
     public void applyDelta(BlobInput blobInput) throws IOException {
         readDeltaContent(blobInput);
-        log.debug("DELTA applied mode:l {}", modelSchema);
     }
 
     private void readDeltaContent(BlobInput blobInput) throws IOException {
+        final long start = System.nanoTime();
+
+        final int mutationsCount = varint.readVarInt(blobInput);
+        log.debug("mutation_count: {}", mutationsCount);
+
         readDeltaAdditional(blobInput);
         readDeltaRemoval(blobInput);
+
+        final long elapsed = System.nanoTime() - start;
+        log.debug("read delta content done; took: {}", Utils.formatElapsed(elapsed));
     }
 
     private void readDeltaAdditional(BlobInput blobInput) throws IOException {
-        final int varintAdditionSize = varint.readVarInt(blobInput);
-        int pointer = 0;
+        final int lenOfKeys = varint.readVarInt(blobInput);
+        long keyOffset = blobInput.getCursor();
 
-        while (pointer < varintAdditionSize) {
+        blobInput.seek(blobInput.getCursor() + lenOfKeys);
+        final int lenOfValues = varint.readVarInt(blobInput);
+        long valueOffset = blobInput.getCursor();
 
-            /* a. record key */
-            int keyLen = varint.readVarInt(blobInput);
-            byte[] key = new byte[keyLen];
-            blobInput.readNBytes(key, keyLen);
-            pointer += varint.sizeOfVarint(keyLen) + keyLen;
+        int position = 0;
+        int count = 0; // todo: stats this
+        while (position < lenOfKeys) {
+            blobInput.seek(keyOffset);
+            byte[] key = readBlock(blobInput);
+            int skips = varint.sizeOfVarint(key.length) + key.length;
+            keyOffset += skips;
+            position += skips;
 
-            /* b. record bytes */
-            int valueLen = varint.readVarInt(blobInput);
-            byte[] value = new byte[valueLen];
-            blobInput.readNBytes(value, valueLen);
-            pointer += varint.sizeOfVarint(valueLen) + valueLen;
+            blobInput.seek(valueOffset);
+            byte[] value = readBlock(blobInput);
+            valueOffset += varint.sizeOfVarint(value.length) + value.length;
+
+            count++;
 
             stateReadEngine.addObject(key, value);
         }
+
+        log.debug("read delta add values count {}", count);
     }
 
     private void readDeltaRemoval(BlobInput blobInput) throws IOException {
-        final int varintRemovalSize = varint.readVarInt(blobInput);
-        int pointer = 0;
-        while (pointer < varintRemovalSize) {
+        final int lenOfKeys = varint.readVarInt(blobInput);
+        int position = 0;
+        int count = 0;
 
-            /* a. record key */
-            int keyLen = varint.readVarInt(blobInput);
-            byte[] key = new byte[keyLen];
-            blobInput.readNBytes(key, keyLen);
-            pointer += varint.sizeOfVarint(keyLen);
-            pointer += keyLen;
-
-            /* b. record bytes */
-            int valueLen = varint.readVarInt(blobInput);
-            blobInput.skipNBytes(valueLen);
-            pointer += varint.sizeOfVarint(valueLen) + valueLen;
+        while (position < lenOfKeys) {
+            byte[] key = readBlock(blobInput);
+            position += varint.sizeOfVarint(key.length) + key.length;
+            count++;
 
             stateReadEngine.removeObject(key);
         }
+
+        log.debug("read delta removal count {}", count);
+    }
+
+    private static byte[] readBlock(BlobInput blobInput) throws IOException {
+        int needLen = varint.readVarInt(blobInput);
+        byte[] block = new byte[needLen];
+        blobInput.readNBytes(block, needLen);
+
+        return block;
     }
 }

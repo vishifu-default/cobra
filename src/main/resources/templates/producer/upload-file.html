@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Upload Movies</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:insert="~{layout :: navbar-server}"></div>
+
+<form th:action="@{/upload-file}" method="post" enctype="multipart/form-data">
+    <label>Addition</label>
+    <input type="file" name="addition-file" id="addition-file" accept=".xlsx, .xls">
+    <br><br>
+
+    <label>Deletion</label>
+    <input type="file" name="deletion-file" id="deletion-file" accept=".xlsx, .xls">
+    <br><br>
+
+    <button type="submit">Upload</button>
+</form>
+
+</body>
+</html>

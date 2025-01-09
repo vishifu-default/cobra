@@ -36,7 +36,7 @@ public class ConsumerDataPlane {
     public synchronized boolean update(CobraConsumer.VersionInformation versionInformation) throws IOException {
         long requestVersion = versionInformation.getVersion();
         if (requestVersion == currentVersion()) {
-            log.info("no version to update");
+            log.debug("no version to update");
             if (requestVersion == CobraConstants.VERSION_NULL && dataBlobState == null) {
                 dataBlobState = new DataBlobState(new TransitionStats(), memoryMode,
                         new BlobReaderImpl(memoryMode, stateReadEngine));

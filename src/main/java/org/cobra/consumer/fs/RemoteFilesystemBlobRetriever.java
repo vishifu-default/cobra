@@ -39,6 +39,7 @@ public class RemoteFilesystemBlobRetriever implements CobraConsumer.BlobRetrieve
             raf.close();
 
             log.info("retrieve header-blob {}", desiredVersion);
+            logSavedFilepath(filepath);
 
             return new FilesystemBlobRetriever.FilesystemHeader(filepath, desiredVersion);
         } catch (IOException e) {
@@ -49,8 +50,12 @@ public class RemoteFilesystemBlobRetriever implements CobraConsumer.BlobRetrieve
     @Override
     public CobraConsumer.Blob retrieveDelta(long desiredVersion) {
         try {
+            log.debug("retrieving delta-blob for version {}", desiredVersion);
             Path filepath = doRetrieveBlob(desiredVersion - 1, desiredVersion);
-            log.info("retrieve delta-blob {}", desiredVersion);
+
+            log.info("retrieve delta-blob for version {}", desiredVersion);
+            logSavedFilepath(filepath);
+
             return new FilesystemBlobRetriever.FilesystemBlob(filepath, desiredVersion - 1, desiredVersion);
         } catch (IOException e) {
             throw new CobraException(e);
@@ -60,9 +65,12 @@ public class RemoteFilesystemBlobRetriever implements CobraConsumer.BlobRetrieve
     @Override
     public CobraConsumer.Blob retrieveReversedDelta(long desiredVersion) {
         try {
-            Path filepath = doRetrieveBlob(desiredVersion, desiredVersion + 1);
+            Path filepath = doRetrieveBlob(desiredVersion + 1, desiredVersion);
+
             log.info("retrieve reversed-delta-blob {}", desiredVersion);
-            return new FilesystemBlobRetriever.FilesystemBlob(filepath, desiredVersion, desiredVersion + 1);
+            logSavedFilepath(filepath);
+
+            return new FilesystemBlobRetriever.FilesystemBlob(filepath, desiredVersion + 1, desiredVersion);
         } catch (IOException e) {
             throw new CobraException(e);
         }
@@ -80,5 +88,9 @@ public class RemoteFilesystemBlobRetriever implements CobraConsumer.BlobRetrieve
         raf.close();
 
         return filepath;
+    }
+
+    private void logSavedFilepath(Path filepath) {
+        log.info("saved file {}", filepath.toAbsolutePath());
     }
 }

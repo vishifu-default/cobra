@@ -2,9 +2,10 @@ package org.cobra.producer.state;
 
 import org.cobra.commons.errors.CobraException;
 import org.cobra.core.ModelSchema;
+import org.cobra.core.memory.datalocal.RecordRepository;
 import org.cobra.core.serialization.RecordSerde;
 import org.cobra.core.serialization.RecordSerdeImpl;
-import org.cobra.core.serialization.SerdeClassResolver;
+import org.cobra.core.serialization.SerdeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +24,14 @@ public class ProducerStateContext {
 
     private final RecordSerde serde = new RecordSerdeImpl();
     private final Map<String, SchemaStateWrite> schemaStateWriteMap = new ConcurrentHashMap<>();
+    private final RecordRepository localData = new RecordRepository();
 
-    public SerdeClassResolver serdeClassResolver() {
-        return this.serde.resolver();
+    /* last state */
+    final Set<Class<?>> lastRegisteredClazzes = ConcurrentHashMap.newKeySet();
+    final Set<ModelSchema> lastSchemas = ConcurrentHashMap.newKeySet();
+
+    public SerdeContext serdeContext() {
+        return this.serde.serdeContext();
     }
 
     public void registerModel(ModelSchema schema) {
@@ -44,10 +50,14 @@ public class ProducerStateContext {
         return schemaStateWriteMap.values();
     }
 
+    public RecordRepository getLocalData() {
+        return localData;
+    }
+
     public void addObject(String key, Object obj) {
         SchemaStateWrite schemaStateWrite = schemaWrite(obj.getClass());
         try {
-            schemaStateWrite.writeObject(key, obj);
+            schemaStateWrite.addRecord(key, obj);
         } catch (Throwable cause) {
             log.error("error while writing object; key: {}; clazz: {}", key, obj.getClass(), cause);
             throw cause;
@@ -57,7 +67,7 @@ public class ProducerStateContext {
     public void removeObject(String key, Class<?> clazz) {
         SchemaStateWrite schemaStateWrite = schemaWrite(clazz);
         try {
-            schemaStateWrite.removeObject(key);
+            schemaStateWrite.removeRecord(key);
         } catch (Throwable cause) {
             log.error("error while removing object; key: {}; clazz: {}", key, clazz, cause);
             throw cause;
@@ -73,7 +83,7 @@ public class ProducerStateContext {
     }
 
     private void putSchemaWriteIfAbsent(ModelSchema schema) {
-        SchemaStateWrite schemaWrite = new SchemaStateWriteImpl(schema, this.serde);
+        SchemaStateWrite schemaWrite = new SchemaStateWriteImpl(schema, this.serde, this);
         schemaStateWriteMap.putIfAbsent(schema.getClazzName(), schemaWrite);
     }
 }

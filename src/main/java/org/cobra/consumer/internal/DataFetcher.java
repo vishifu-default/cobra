@@ -42,7 +42,7 @@ public class DataFetcher {
         long pending = currentVersion;
 
         while (currentVersion > toVersion) {
-            currentVersion = includeReversedDelta(plan, currentVersion);
+            currentVersion = includeReversedDelta(plan, currentVersion - 1);
             if (currentVersion != CobraConstants.VERSION_NULL)
                 pending = currentVersion;
 
@@ -67,11 +67,11 @@ public class DataFetcher {
         return deltaBlob.toVersion();
     }
 
-    private long includeReversedDelta(DataUpdatePlan plan, long currentVersion) {
-        CobraConsumer.HeaderBlob headerBlob = blobRetriever.retrieveHeader(currentVersion);
-        CobraConsumer.Blob reversedDeltaBlob = blobRetriever.retrieveReversedDelta(currentVersion);
+    private long includeReversedDelta(DataUpdatePlan plan, long toVersion) {
+        CobraConsumer.HeaderBlob headerBlob = blobRetriever.retrieveHeader(toVersion);
+        CobraConsumer.Blob reversedDeltaBlob = blobRetriever.retrieveReversedDelta(toVersion);
 
-        VersionTransition transition = new VersionTransition(currentVersion, headerBlob, reversedDeltaBlob);
+        VersionTransition transition = new VersionTransition(toVersion, headerBlob, reversedDeltaBlob);
 
         if (reversedDeltaBlob == null)
             return CobraConstants.VERSION_NULL;

@@ -1,19 +1,24 @@
 package org.cobra.core.serialization;
 
-import com.esotericsoftware.kryo.Registration;
+import com.esotericsoftware.kryo.Serializer;
+import lombok.Getter;
 
 public class SerdeRegistration {
-    private final Registration kryoRegistration;
 
-    public SerdeRegistration(Registration kryoRegistration) {
-        this.kryoRegistration = kryoRegistration;
+    @Getter
+    private final Class<?> clazz;
+    @Getter
+    private final Serializer<?> serializer;
+    @Getter
+    private final int id;
+
+    public SerdeRegistration(Class<?> clazz, Serializer<?> serializer, int id) {
+        this.clazz = clazz;
+        this.serializer = serializer;
+        this.id = id;
     }
 
-    public int getRegisteredId(){
-        return this.kryoRegistration.getId();
-    }
-
-    public Class<?> getRegisteredClazz() {
-        return this.kryoRegistration.getType();
+    public static SerdeRegistration of(Class<?> clazz, Serializer<?> serializer, int id) {
+        return new SerdeRegistration(clazz, serializer, id);
     }
 }

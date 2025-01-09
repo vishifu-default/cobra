@@ -227,7 +227,7 @@ public class HashingTable implements Table {
     }
 
     private int secondHash(int key) {
-        return (PRIME_MOD_BUCKET - (key % PRIME_MOD_BUCKET)) & 0x7fffffff;
+        return (PRIME_MOD_BUCKET - (key % PRIME_MOD_BUCKET));
     }
 
     private int doubleHash(int key, int j) {

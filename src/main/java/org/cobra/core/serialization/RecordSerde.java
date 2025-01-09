@@ -30,5 +30,5 @@ public interface RecordSerde {
      */
     <T> T deserialize(byte[] bytes);
 
-    SerdeClassResolver resolver();
+    SerdeContext serdeContext();
 }

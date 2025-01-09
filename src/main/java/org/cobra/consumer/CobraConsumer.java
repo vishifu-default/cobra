@@ -3,15 +3,23 @@ package org.cobra.consumer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.pools.BytesPool;
-import org.cobra.commons.threads.CobraThreadExecutor;
+import org.cobra.commons.threads.CobraThread;
+import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.core.memory.MemoryMode;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.core.objects.VersioningBlob;
 import org.cobra.networks.CobraClient;
 
-import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public interface CobraConsumer {
+
+    void triggerRefreshWithDelay(int ms);
+
+    ConsumerStateContext context();
+
+    long currentVersion();
 
     interface AnnouncementWatcher {
         long NO_ANNOUNCEMENT_AVAILABLE = CobraConstants.VERSION_NULL;
@@ -45,12 +53,24 @@ public interface CobraConsumer {
         public final long getVersion() {
             return version;
         }
+
+        @Override
+        public String toString() {
+            return "HeaderBlob(" +
+                    "version=" + version +
+                    ')';
+        }
     }
 
     abstract class Blob extends VersioningBlob implements StreamingBlob {
 
         protected Blob(long fromVersion, long toVersion) {
             super(fromVersion, toVersion);
+        }
+
+        @Override
+        public String toString() {
+            return super.toString();
         }
     }
 
@@ -66,7 +86,7 @@ public interface CobraConsumer {
         }
     }
 
-    static Builder fromBuilder() {
+    public static Builder fromBuilder() {
         return new Builder();
     }
 
@@ -74,8 +94,8 @@ public interface CobraConsumer {
         BlobRetriever blobRetriever;
         MemoryMode memoryMode;
         BytesPool bytesPool;
-        CobraThreadExecutor refreshExecutor;
-        Clock clock = Clock.system();
+        ExecutorService refreshExecutor;
+        Clock clock;
         CobraClient client;
 
         public Builder withBlobRetriever(BlobRetriever blobRetriever) {
@@ -93,7 +113,7 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withRefreshExecutor(CobraThreadExecutor refreshExecutor) {
+        public Builder withRefreshExecutor(ExecutorService refreshExecutor) {
             this.refreshExecutor = refreshExecutor;
             return this;
         }
@@ -109,6 +129,15 @@ public interface CobraConsumer {
         }
 
         public CobraConsumer build() {
+            if (clock == null)
+                clock = Clock.system();
+
+            if (bytesPool == null)
+                bytesPool = BytesPool.NONE;
+
+            if (refreshExecutor == null)
+                refreshExecutor = Executors.newSingleThreadExecutor(r -> CobraThread.daemon(r, "refresh-executor"));
+
             return new CobraConsumerImpl(this);
         }
     }

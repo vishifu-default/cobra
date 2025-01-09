@@ -1,7 +1,6 @@
 package org.cobra.commons.utils;
 
 import org.cobra.commons.errors.CobraException;
-import org.cobra.core.ModelSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,9 +149,20 @@ public class Utils {
 
     public static Class<?> classLoader(String clazzName) {
         try {
-            return ClassLoader.getSystemClassLoader().loadClass(clazzName);
+            return Class.forName(clazzName);
         } catch (ClassNotFoundException e) {
-            throw new CobraException("Class not visible", e);
+            throw new CobraException("Class not visible " + clazzName, e);
+        }
+    }
+
+    public static String formatElapsed(long elapsed) {
+        if (elapsed < 1_000_000) {
+            // Less than 1 millisecond, return in nanoseconds
+            return elapsed + " ns";
+        } else {
+            // Convert to milliseconds
+            double elapsedTimeMs = elapsed / 1_000_000.0;
+            return String.format("%.3f ms", elapsedTimeMs);
         }
     }
 }

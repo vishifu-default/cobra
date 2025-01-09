@@ -44,4 +44,12 @@ public abstract class VersioningBlob {
         return this.toVersion;
     }
 
+    @Override
+    public String toString() {
+        return "VersioningBlob(" +
+                "fromVersion=" + fromVersion +
+                ", toVersion=" + toVersion +
+                ", blobType=" + blobType +
+                ')';
+    }
 }

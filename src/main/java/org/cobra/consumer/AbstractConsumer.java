@@ -3,7 +3,6 @@ package org.cobra.consumer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.pools.BytesPool;
-import org.cobra.commons.threads.CobraThreadExecutor;
 import org.cobra.consumer.internal.AnnouncementWatcherImpl;
 import org.cobra.consumer.internal.ConsumerDataPlane;
 import org.cobra.consumer.internal.DataFetcher;
@@ -14,6 +13,8 @@ import org.cobra.networks.CobraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -22,11 +23,12 @@ public abstract class AbstractConsumer implements CobraConsumer {
     private static final Logger log = LoggerFactory.getLogger(AbstractConsumer.class);
 
     protected final ReadWriteLock fetchLock = new ReentrantReadWriteLock();
-    protected final CobraThreadExecutor refreshExecutor;
+    protected final ExecutorService refreshExecutor;
     protected final AnnouncementWatcher announcementWatcher;
     protected final Clock clock;
 
     protected final ConsumerDataPlane consumerPlane;
+    protected final ConsumerStateContext consumerStateContext;
 
     protected final CobraClient client;
 
@@ -44,10 +46,10 @@ public abstract class AbstractConsumer implements CobraConsumer {
             BlobRetriever blobRetriever,
             MemoryMode memoryMode,
             BytesPool bytesPool,
-            CobraThreadExecutor refreshExecutor,
+            ExecutorService refreshExecutor,
             Clock clock,
             CobraClient client) {
-        ConsumerStateContext consumerStateContext = new ConsumerStateContext();
+        consumerStateContext = new ConsumerStateContext();
         this.consumerPlane = new ConsumerDataPlane(new DataFetcher(blobRetriever),
                 memoryMode, new StateReadEngine(consumerStateContext, bytesPool));
 
@@ -79,27 +81,41 @@ public abstract class AbstractConsumer implements CobraConsumer {
         triggerRefreshWithDelay(0);
     }
 
+    @Override
     public void triggerRefreshWithDelay(int ms) {
         final long targetBeginTime = System.currentTimeMillis() + ms;
-
         refreshExecutor.execute(() -> {
-            try {
-                long delayMs = targetBeginTime - System.currentTimeMillis();
-                if (delayMs > 0)
-                    Thread.sleep(delayMs);
-            } catch (InterruptedException e) {
-                log.info("async refresh-trigger cancelled", e);
-                return;
-            }
+            long lastRefreshTime = 0;
+            while (true) {
+                try {
+                    if (System.currentTimeMillis() < lastRefreshTime + ms) {
+                        Thread.sleep(ms);
+                    }
+                } catch (InterruptedException e) {
+                    log.info("async refresh-trigger cancelled", e);
+                    return;
+                }
 
-            try {
-                triggerRefresh();
-            } catch (Exception e) {
-                log.error("error while async refresh-trigger", e);
-                throw e;
+                try {
+                    triggerRefresh();
+                    lastRefreshTime = System.currentTimeMillis();
+                } catch (Exception e) {
+                    log.error("error while async refresh-trigger", e);
+                    throw e;
+                }
             }
         });
 
+    }
+
+    @Override
+    public ConsumerStateContext context() {
+        return consumerStateContext;
+    }
+
+    @Override
+    public long currentVersion() {
+        return consumerPlane.currentVersion();
     }
 
     public void triggerRefreshTo(long version) {
