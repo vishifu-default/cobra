@@ -21,23 +21,20 @@ repositories {
 dependencies {
     implementation libs.com.esotericsoftware.kryo
     implementation libs.io.netty.netty.all
-    implementation libs.redis.client.jedis
     implementation libs.org.slf4j.slf4j.api
     implementation libs.org.jetbrains.annotations
     testImplementation libs.org.junit.jupiter.junit.jupiter.engine
     testImplementation libs.org.junit.platform.junit.platform.runner
     testImplementation libs.org.mockito.mockito.core
 
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    // https://mvnrepository.com/artifact/org.apache.poi/poi
-    implementation 'org.apache.poi:poi:5.3.0'
-    // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
-    implementation 'org.apache.poi:poi-ooxml:5.3.0'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation libs.springframework.boot.web.starter
+    implementation libs.springframework.boot.thymeleaf
+    implementation libs.apache.poi
+    implementation libs.apache.poi.xml
+    compileOnly libs.org.lombok
+    annotationProcessor libs.org.lombok
+    testImplementation libs.springframework.boot.web.test
+    testRuntimeOnly libs.org.junit.platform.junit.platform.launcher
 }
 
 group = 'org.cobra'
