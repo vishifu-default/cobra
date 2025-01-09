@@ -10,9 +10,9 @@ org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jup
 org-junit-platform-junit-platform-runner = { module = "org.junit.platform:junit-platform-runner", version = "1.11.0" }
 org-junit-platform-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 org-mockito-mockito-core = { module = "org.mockito:mockito-core", version = "5.13.0" }
-springframework-boot-web-starter = { module = "org.springframework.boot:spring-boot-starter-web" }
-springframework-boot-web-test = { module = "org.springframework.boot:spring-boot-starter-test" }
-springframework-boot-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
-org-lombok = { module = "org.projectlombok:lombok" }
+springframework-boot-web-starter = { module = "org.springframework.boot:spring-boot-starter-web", version = "3.4.1" }
+springframework-boot-web-test = { module = "org.springframework.boot:spring-boot-starter-test", version = "3.4.1" }
+springframework-boot-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf", version = "3.4.1" }
+org-lombok = { module = "org.projectlombok:lombok", version = "1.18.36" }
 apache-poi = { module = "org.apache.poi:poi", version = "5.3.0" }
 apache-poi-xml = { module = "org.apache.poi:poi-ooxml", version = "5.3.0" }

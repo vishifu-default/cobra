@@ -5,3 +5,5 @@
  */
 
 rootProject.name = 'cobra'
+include 'cobra-core'
+

@@ -1,0 +1,4 @@
+dependencies {
+    implementation libs.com.esotericsoftware.kryo
+    implementation libs.io.netty.netty.all
+}
