@@ -19,7 +19,6 @@ public class ConsumerDataPlane {
     private final MemoryMode memoryMode;
     private final StateReadEngine stateReadEngine;
 
-
     public ConsumerDataPlane(DataFetcher dataFetcher, MemoryMode memoryMode, StateReadEngine stateReadEngine) {
         this.dataFetcher = dataFetcher;
         this.memoryMode = memoryMode;
@@ -34,7 +33,7 @@ public class ConsumerDataPlane {
     }
 
     public synchronized boolean update(CobraConsumer.VersionInformation versionInformation) throws IOException {
-        long requestVersion = versionInformation.getVersion();
+        final long requestVersion = versionInformation.getVersion();
         if (requestVersion == currentVersion()) {
             log.debug("no version to update");
             if (requestVersion == CobraConstants.VERSION_NULL && dataBlobState == null) {

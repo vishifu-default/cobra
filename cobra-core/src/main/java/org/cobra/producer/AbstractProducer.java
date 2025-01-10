@@ -95,6 +95,8 @@ public abstract class AbstractProducer implements CobraProducer {
         long startMillis = clock.milliseconds();
 
         try {
+            this.lock.lock();
+
             /* 1. state to next cycle */
             stateWriteEngine.moveToNextCycle();
 
@@ -127,6 +129,7 @@ public abstract class AbstractProducer implements CobraProducer {
             throw new CobraException(e);
         } finally {
             long endMillis = clock.milliseconds();
+            this.lock.unlock();
             log.info("producer a version: version: {}; elapsed: {} ms", toVersion, endMillis - startMillis);
         }
 
@@ -147,6 +150,7 @@ public abstract class AbstractProducer implements CobraProducer {
 
             announce(candidate);
             populationAtomic = candidate.commit();
+            versionState.pin(populationAtomic.getCurrent().getVersion());
 
             return true;
         } catch (Throwable cause) {
@@ -195,7 +199,6 @@ public abstract class AbstractProducer implements CobraProducer {
 
     void announce(AtomicState atomic) {
         announcer.announce(atomic.getCurrent().getVersion());
-        versionState.pin(atomic.getCurrent().getVersion());
     }
 
     private void doStageAndPublishHeaderBlob(HeaderBlob headerBlob) throws IOException {

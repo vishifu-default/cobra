@@ -91,7 +91,7 @@ public class FilesystemProducerTest {
                 .withNetworkClient(client)
                 .build();
 
-        ((CobraConsumerImpl) consumer).triggerRefresh();
+        ((CobraConsumerImpl) consumer).poll();
 
         RecordApi api = new CobraRecordApi(consumer);
 
@@ -160,7 +160,7 @@ public class FilesystemProducerTest {
                 .withNetworkClient(client)
                 .build();
 
-        ((CobraConsumerImpl) consumer).triggerRefresh();
+        ((CobraConsumerImpl) consumer).poll();
 
 
         // pin version -> 2
@@ -169,7 +169,7 @@ public class FilesystemProducerTest {
         assertEquals(2, announcer.retrieve());
 
 
-        ((CobraConsumerImpl) consumer).triggerRefresh();
+        ((CobraConsumerImpl) consumer).poll();
 
         RecordApi api = new CobraRecordApi(consumer);
 

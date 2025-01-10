@@ -13,17 +13,19 @@ import org.cobra.networks.CobraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.CountDownLatch;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractConsumer implements CobraConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractConsumer.class);
 
-    protected final ReadWriteLock fetchLock = new ReentrantReadWriteLock();
-    protected final ExecutorService refreshExecutor;
+    protected final ReentrantLock stateLock = new ReentrantLock();
+    protected final ExecutorService executor;
     protected final AnnouncementWatcher announcementWatcher;
     protected final Clock clock;
 
@@ -46,66 +48,57 @@ public abstract class AbstractConsumer implements CobraConsumer {
             BlobRetriever blobRetriever,
             MemoryMode memoryMode,
             BytesPool bytesPool,
-            ExecutorService refreshExecutor,
+            ExecutorService executor,
             Clock clock,
             CobraClient client) {
         consumerStateContext = new ConsumerStateContext();
         this.consumerPlane = new ConsumerDataPlane(new DataFetcher(blobRetriever),
                 memoryMode, new StateReadEngine(consumerStateContext, bytesPool));
 
-        this.refreshExecutor = refreshExecutor;
+        this.executor = executor;
 
         this.clock = clock;
 
         this.announcementWatcher = new AnnouncementWatcherImpl(client);
 
         this.client = client;
-        this.client.bootstrap();
-    }
-
-    public void triggerRefresh() {
-        fetchLock.writeLock().lock();
-        try {
-            if (announcementWatcher == null)
-                throw new IllegalStateException("announcementWatcher is null");
-
-            final VersionInformation latestVersion = announcementWatcher.getLatestVersionInformation();
-            triggerRefreshTo(latestVersion);
-
-        } finally {
-            fetchLock.writeLock().unlock();
-        }
-    }
-
-    public void triggerRefreshAsync() {
-        triggerRefreshWithDelay(0);
+        executor.execute(client::bootstrap);
     }
 
     @Override
-    public void triggerRefreshWithDelay(int ms) {
-        final long targetBeginTime = System.currentTimeMillis() + ms;
-        refreshExecutor.execute(() -> {
-            long lastRefreshTime = 0;
-            while (true) {
-                try {
-                    if (System.currentTimeMillis() < lastRefreshTime + ms) {
-                        Thread.sleep(ms);
-                    }
-                } catch (InterruptedException e) {
-                    log.info("async refresh-trigger cancelled", e);
+    public void poll() {
+        poll(5_000);
+    }
+
+    @Override
+    public void poll(int timeoutMs) {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
+
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!stateLock.tryLock(timeoutMs, TimeUnit.MILLISECONDS)) {
+                    log.warn("timeout for poll operation");
                     return;
                 }
 
-                try {
-                    triggerRefresh();
-                    lastRefreshTime = System.currentTimeMillis();
-                } catch (Exception e) {
-                    log.error("error while async refresh-trigger", e);
-                    throw e;
+                if (!client.isReady()) {
+                    client.tryConnect();
+                    return;
                 }
-            }
-        });
 
+                if (announcementWatcher == null)
+                    throw new CobraException("announcement-watcher is null, must have implementation of AnnouncementWatcher");
+
+                final VersionInformation latestVersion = announcementWatcher.getLatestVersionInformation();
+                triggerRefreshTo(latestVersion);
+
+            } catch (Throwable cause) {
+                log.warn(cause.getMessage(), cause);
+                client.shutdown();
+            } finally {
+                stateLock.unlock();
+            }
+        }, 1000, 500, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -116,10 +109,6 @@ public abstract class AbstractConsumer implements CobraConsumer {
     @Override
     public long currentVersion() {
         return consumerPlane.currentVersion();
-    }
-
-    public void triggerRefreshTo(long version) {
-        triggerRefreshTo(new VersionInformation(version));
     }
 
     public void triggerRefreshTo(VersionInformation versionInformation) {
