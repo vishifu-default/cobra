@@ -3,10 +3,14 @@ package org.cobra.sample.consumer.service;
 import org.cobra.sample.models.Movie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
+@Service
+@Scope("singleton")
 public class MovieService {
     private static final Logger log = LoggerFactory.getLogger(MovieService.class);
-    private CacheService cacheService = new CacheService();
+    private final CacheService cacheService = new CacheService();
 
     public Movie getMovie(int id) {
         Movie movie = cacheService.api().get(String.valueOf(id));

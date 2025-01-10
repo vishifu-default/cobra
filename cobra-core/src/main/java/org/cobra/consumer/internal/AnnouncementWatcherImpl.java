@@ -32,9 +32,4 @@ public class AnnouncementWatcherImpl implements CobraConsumer.AnnouncementWatche
         return latestVersion;
     }
 
-    @Override
-    public void subscribeToUpdates(CobraConsumer consumer) {
-
-    }
-
 }

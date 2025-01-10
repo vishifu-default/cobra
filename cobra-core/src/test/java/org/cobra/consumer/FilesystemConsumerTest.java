@@ -67,7 +67,7 @@ public class FilesystemConsumerTest {
                 .withNetworkClient(client)
                 .build();
 
-        ((CobraConsumerImpl) consumer).triggerRefresh();
+        ((CobraConsumerImpl) consumer).poll(5000);
 
         final RecordApi api = new CobraRecordApi(consumer);
 

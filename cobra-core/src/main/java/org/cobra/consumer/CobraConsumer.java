@@ -15,11 +15,12 @@ import java.util.concurrent.Executors;
 
 public interface CobraConsumer {
 
-    void triggerRefreshWithDelay(int ms);
-
     ConsumerStateContext context();
 
     long currentVersion();
+
+    void poll();
+    void poll(int timeoutMs);
 
     interface AnnouncementWatcher {
         long NO_ANNOUNCEMENT_AVAILABLE = CobraConstants.VERSION_NULL;
@@ -27,8 +28,6 @@ public interface CobraConsumer {
         void setLatestVersion(long latestVersion);
 
         long getLatestVersion();
-
-        void subscribeToUpdates(CobraConsumer consumer);
 
         default VersionInformation getLatestVersionInformation() {
             return new VersionInformation(getLatestVersion());
@@ -86,7 +85,7 @@ public interface CobraConsumer {
         }
     }
 
-    public static Builder fromBuilder() {
+    static Builder fromBuilder() {
         return new Builder();
     }
 
@@ -131,7 +130,7 @@ public interface CobraConsumer {
                 bytesPool = BytesPool.NONE;
 
             if (refreshExecutor == null)
-                refreshExecutor = Executors.newSingleThreadExecutor(r -> CobraThread.daemon(r, "refresh-executor"));
+                refreshExecutor = Executors.newSingleThreadExecutor(r -> CobraThread.daemon(r, "consumer-executor"));
 
             memoryMode = MemoryMode.VIRTUAL_MAPPED;
 
