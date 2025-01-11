@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class DataUpdatePlan implements Iterable<VersionTransition> {
+public class TransitionPlan implements Iterable<VersionTransition> {
 
     private final List<VersionTransition> transitions = new ArrayList<>();
 
@@ -36,7 +36,14 @@ public class DataUpdatePlan implements Iterable<VersionTransition> {
         transitions.add(transition);
     }
 
-    public void add(DataUpdatePlan dataUpdatePlan) {
-        transitions.addAll(dataUpdatePlan.getTransitions());
+    public void add(TransitionPlan transitionPlan) {
+        transitions.addAll(transitionPlan.getTransitions());
+    }
+
+    @Override
+    public String toString() {
+        return "TransitionPlan(" +
+                "transitions_size=" + transitions.size() +
+                ')';
     }
 }

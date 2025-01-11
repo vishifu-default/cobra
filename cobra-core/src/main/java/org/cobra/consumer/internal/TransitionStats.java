@@ -9,7 +9,7 @@ public class TransitionStats {
     private final Set<DeltaTransition> failDelta = new HashSet<>();
     private final Set<DeltaTransition> successDelta = new HashSet<>();
 
-    public void markFailPlan(DataUpdatePlan plan) {
+    public void markFailPlan(TransitionPlan plan) {
         for (VersionTransition transition : plan.getTransitions())
             markFailTransition(transition.getDeltaBlob());
     }
@@ -18,7 +18,7 @@ public class TransitionStats {
         this.failDelta.add(deltaTransition(transition));
     }
 
-    public void markSuccessPlan(DataUpdatePlan plan) {
+    public void markSuccessPlan(TransitionPlan plan) {
         for (VersionTransition transition : plan.getTransitions())
             markSuccessTransition(transition.getDeltaBlob());
     }

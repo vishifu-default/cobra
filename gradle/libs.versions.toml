@@ -5,7 +5,7 @@
 com-esotericsoftware-kryo = { module = "com.esotericsoftware:kryo", version = "5.6.2" }
 io-netty-netty-all = { module = "io.netty:netty-all", version = "4.2.0.Alpha1" }
 org-slf4j-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.16" }
-org-slf4j-log4j = { module = "ch.qos.reload4j:reload4j", version = "1.2.26" }
+org-slf4j-log4j = { module = "org.slf4j:slf4j-reload4j", version = "2.0.16" }
 org-jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.1" }
 org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "5.11.0" }
 org-junit-platform-junit-platform-runner = { module = "org.junit.platform:junit-platform-runner", version = "1.11.0" }
@@ -17,3 +17,4 @@ springframework-boot-thymeleaf = { module = "org.springframework.boot:spring-boo
 org-lombok = { module = "org.projectlombok:lombok", version = "1.18.36" }
 apache-poi = { module = "org.apache.poi:poi", version = "5.3.0" }
 apache-poi-xml = { module = "org.apache.poi:poi-ooxml", version = "5.3.0" }
+apache-common-io = { module = "commons-io:commons-io", version = "2.18.0" }

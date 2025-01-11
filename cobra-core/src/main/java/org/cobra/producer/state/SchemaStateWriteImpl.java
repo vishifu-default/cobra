@@ -2,7 +2,7 @@ package org.cobra.producer.state;
 
 import org.cobra.commons.Jvm;
 import org.cobra.commons.pools.BytesPool;
-import org.cobra.commons.utils.Utils;
+import org.cobra.commons.utils.Elapsed;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.bytes.Bytes;
 import org.cobra.core.bytes.OnHeapBytes;
@@ -95,9 +95,8 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
             doPrepareAdditionalData(entry.getKey(), entry.getValue());
         }
 
-        final long elapsed = System.nanoTime() - start;
         log.debug("prepare before writing schema state {}; elapsed: {}", modelSchema.getClazzName(),
-                Utils.formatElapsed(elapsed));
+                Elapsed.toStr(System.nanoTime() - start));
     }
 
     @Override
@@ -106,8 +105,7 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         this.isReversedDelta = false;
         writeBlobContent(dos);
 
-        final long elapsed = System.nanoTime() - start;
-        log.debug("write delta {}; elapsed: {}", modelSchema.getClazzName(), Utils.formatElapsed(elapsed));
+        log.debug("write delta {}; elapsed: {}", modelSchema.getClazzName(), Elapsed.toStr(System.nanoTime() - start));
     }
 
     @Override
@@ -116,8 +114,8 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         this.isReversedDelta = true;
         writeBlobContent(dos);
 
-        final long elapsed = System.nanoTime() - start;
-        log.debug("write reversed-delta {}; elapsed: {}", modelSchema.getClazzName(), Utils.formatElapsed(elapsed));
+        log.debug("write reversed-delta {}; elapsed: {}", modelSchema.getClazzName(),
+                Elapsed.toStr(System.nanoTime() - start));
     }
 
     private void doPrepareAdditionalData(String key, Object object) {

@@ -11,6 +11,9 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,15 +23,9 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
     private static final Logger log = LoggerFactory.getLogger(FilesystemBlobRetriever.class);
 
     private final Path blobStorePath;
-    private final CobraConsumer.BlobRetriever fallbackBlobRetriever;
 
     public FilesystemBlobRetriever(Path blobStorePath) {
-        this(blobStorePath, null);
-    }
-
-    public FilesystemBlobRetriever(Path blobStorePath, CobraConsumer.BlobRetriever fallbackBlobRetriever) {
         this.blobStorePath = blobStorePath;
-        this.fallbackBlobRetriever = fallbackBlobRetriever;
 
         ensurePathExists(blobStorePath);
     }
@@ -40,15 +37,7 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
             return new FilesystemHeader(execPath, desiredVersion);
         }
 
-        CobraConsumer.HeaderBlob remoteFsBlob = null;
-        if (fallbackBlobRetriever != null) {
-            remoteFsBlob = fallbackBlobRetriever.retrieveHeader(desiredVersion);
-        }
-
-        if (remoteFsBlob == null)
-            throw new CobraException("Fallback header-blob could not be fetched.");
-
-        return remoteFsBlob;
+        return null;
     }
 
 
@@ -63,7 +52,7 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
 
                     // MORE CHECK
                     int lastSplitIndex = filename.lastIndexOf("-");
-                    long fileVersion = Long.parseLong(filename.substring(lastSplitIndex));
+                    long fileVersion = Long.parseLong(filename.substring(lastSplitIndex + 1));
                     if (fileVersion != desiredVersion)
                         continue;
 
@@ -76,15 +65,7 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
             throw new CobraException(e);
         }
 
-        CobraConsumer.Blob remoteFsBlob = null;
-        if (fallbackBlobRetriever != null) {
-            remoteFsBlob = fallbackBlobRetriever.retrieveDelta(desiredVersion);
-        }
-
-        if (remoteFsBlob == null)
-            throw new CobraException("Fallback delta-blob could not be fetched.");
-
-        return remoteFsBlob;
+        return null;
     }
 
     @Override
@@ -112,15 +93,23 @@ public class FilesystemBlobRetriever implements CobraConsumer.BlobRetriever {
             throw new RuntimeException(e);
         }
 
-        CobraConsumer.Blob remoteFsBlob = null;
-        if (fallbackBlobRetriever != null) {
-            remoteFsBlob = fallbackBlobRetriever.retrieveReversedDelta(desiredVersion);
-        }
+        return null;
+    }
 
-        if (remoteFsBlob == null)
-            throw new CobraException("Fallback delta-blob could not be fetched.");
+    @Override
+    public void saveBlob(ByteBuffer buffer, String filename) throws IOException {
+        final Path filepath = blobStorePath.resolve(filename);
+        final RandomAccessFile raf = new RandomAccessFile(filepath.toFile(), "rw");
 
-        return remoteFsBlob;
+        final FileChannel fc = raf.getChannel();
+        final int countWrites = fc.write(buffer);
+        if (countWrites < 0)
+            throw new CobraException("negative write bytes");
+
+        fc.close();
+        raf.close();
+
+        log.debug("saved blob {}", filepath.toAbsolutePath());
     }
 
     private void ensurePathExists(Path path) {

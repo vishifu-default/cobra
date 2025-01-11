@@ -3,23 +3,23 @@ package org.cobra.consumer.internal;
 import org.cobra.commons.CobraConstants;
 import org.cobra.consumer.CobraConsumer;
 
-public class DataFetcher {
+public class TransitionUpdater {
 
-    private final CobraConsumer.BlobRetriever blobRetriever;
+    private final BlobRetrieverFacade retrieverFacade;
 
-    public DataFetcher(CobraConsumer.BlobRetriever blobRetriever) {
-        this.blobRetriever = blobRetriever;
+    public TransitionUpdater(BlobRetrieverFacade blobRetrieverFacade) {
+        this.retrieverFacade = blobRetrieverFacade;
     }
 
-    public DataUpdatePlan plan(long fromVersion, long toVersion) {
+    public TransitionPlan plan(long fromVersion, long toVersion) {
         if (fromVersion == toVersion)
-            return new DataUpdatePlan();
+            return new TransitionPlan();
 
         return goDeltaPlan(fromVersion, toVersion);
     }
 
-    private DataUpdatePlan goDeltaPlan(long fromVersion, long toVersion) {
-        DataUpdatePlan plan = new DataUpdatePlan();
+    private TransitionPlan goDeltaPlan(long fromVersion, long toVersion) {
+        TransitionPlan plan = new TransitionPlan();
 
         if (fromVersion < toVersion) {
             applyDeltaPlan(fromVersion, toVersion, plan);
@@ -30,7 +30,7 @@ public class DataFetcher {
         return plan;
     }
 
-    private long applyDeltaPlan(long currentVersion, long toVersion, DataUpdatePlan plan) {
+    private long applyDeltaPlan(long currentVersion, long toVersion, TransitionPlan plan) {
         while (currentVersion < toVersion) {
             currentVersion = includeDelta(plan, currentVersion + 1);
         }
@@ -38,7 +38,7 @@ public class DataFetcher {
         return currentVersion;
     }
 
-    private long applyReversedDeltaPlan(long currentVersion, long toVersion, DataUpdatePlan plan) {
+    private long applyReversedDeltaPlan(long currentVersion, long toVersion, TransitionPlan plan) {
         long pending = currentVersion;
 
         while (currentVersion > toVersion) {
@@ -51,9 +51,9 @@ public class DataFetcher {
         return pending;
     }
 
-    private long includeDelta(DataUpdatePlan plan, long toVersion) {
-        CobraConsumer.HeaderBlob headerBlob = blobRetriever.retrieveHeader(toVersion);
-        CobraConsumer.Blob deltaBlob = blobRetriever.retrieveDelta(toVersion);
+    private long includeDelta(TransitionPlan plan, long toVersion) {
+        CobraConsumer.HeaderBlob headerBlob = retrieverFacade.getHeaderBlob(toVersion);
+        CobraConsumer.Blob deltaBlob = retrieverFacade.getDeltaBlob(toVersion);
 
         VersionTransition transition = new VersionTransition(toVersion, headerBlob, deltaBlob);
 
@@ -67,10 +67,9 @@ public class DataFetcher {
         return deltaBlob.toVersion();
     }
 
-    private long includeReversedDelta(DataUpdatePlan plan, long toVersion) {
-        CobraConsumer.HeaderBlob headerBlob = blobRetriever.retrieveHeader(toVersion);
-        CobraConsumer.Blob reversedDeltaBlob = blobRetriever.retrieveReversedDelta(toVersion);
-
+    private long includeReversedDelta(TransitionPlan plan, long toVersion) {
+        CobraConsumer.HeaderBlob headerBlob = retrieverFacade.getHeaderBlob(toVersion);
+        CobraConsumer.Blob reversedDeltaBlob = retrieverFacade.getReverseDeltaBlob(toVersion);
         VersionTransition transition = new VersionTransition(toVersion, headerBlob, reversedDeltaBlob);
 
         if (reversedDeltaBlob == null)

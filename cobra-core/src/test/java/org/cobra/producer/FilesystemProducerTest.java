@@ -1,13 +1,12 @@
 package org.cobra.producer;
 
+import org.apache.commons.io.FileUtils;
 import org.cobra.RecordApi;
 import org.cobra.api.CobraRecordApi;
 import org.cobra.commons.Clock;
+import org.cobra.consumer.AbstractConsumer;
 import org.cobra.consumer.CobraConsumer;
-import org.cobra.consumer.CobraConsumerImpl;
 import org.cobra.consumer.fs.FilesystemBlobRetriever;
-import org.cobra.consumer.fs.RemoteFilesystemBlobRetriever;
-import org.cobra.core.memory.MemoryMode;
 import org.cobra.networks.CobraClient;
 import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.fs.FilesystemAnnouncer;
@@ -18,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,10 +31,11 @@ public class FilesystemProducerTest {
     private static final Logger log = LoggerFactory.getLogger(FilesystemProducerTest.class);
 
     @Test
-    void produce_and_consume() {
+    void produce_and_consume() throws IOException {
         Path publishDirPath = Paths.get("src", "test", "resources", "producer-test", "producer-store");
         File publishDir = publishDirPath.toFile();
 
+        FileUtils.deleteDirectory(publishDir);
         publishDir.mkdir();
 
         log.info("producer publish to dir:{}", publishDir.getAbsolutePath());
@@ -82,16 +83,18 @@ public class FilesystemProducerTest {
         });
 
         Path consumerStorePath = Paths.get("src", "test", "resources", "producer-test", "consumer-store");
+
+        FileUtils.deleteDirectory(consumerStorePath.toFile());
+
         CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, NetworkConfig.DEFAULT_PORT));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
-                new RemoteFilesystemBlobRetriever(client, consumerStorePath));
+        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath);
 
         CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
                 .withNetworkClient(client)
                 .build();
 
-        ((CobraConsumerImpl) consumer).poll();
+        ((AbstractConsumer) consumer).triggerRefreshTo(new CobraConsumer.VersionInformation(3));
 
         RecordApi api = new CobraRecordApi(consumer);
 
@@ -104,13 +107,13 @@ public class FilesystemProducerTest {
     }
 
     @Test
-    void producer_pinVersion() {
+    void producer_pinVersion() throws InterruptedException, IOException {
         Path publishDirPath = Paths.get("src", "test", "resources", "producer-test", "producer-store");
         File publishDir = publishDirPath.toFile();
 
+        FileUtils.deleteDirectory(publishDir);
         publishDir.mkdir();
 
-        log.info("producer publish to dir:{}", publishDir.getAbsolutePath());
 
         CobraProducer.Announcer announcer = new FilesystemAnnouncer(publishDirPath);
 
@@ -151,16 +154,17 @@ public class FilesystemProducerTest {
         });
 
         Path consumerStorePath = Paths.get("src", "test", "resources", "producer-test", "consumer-store");
+
+        FileUtils.deleteDirectory(consumerStorePath.toFile());
+
         CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, 7071));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
-                new RemoteFilesystemBlobRetriever(client, consumerStorePath));
+        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath);
 
         CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
                 .withNetworkClient(client)
                 .build();
 
-        ((CobraConsumerImpl) consumer).poll();
 
 
         // pin version -> 2
@@ -169,7 +173,7 @@ public class FilesystemProducerTest {
         assertEquals(2, announcer.retrieve());
 
 
-        ((CobraConsumerImpl) consumer).poll();
+        ((AbstractConsumer) consumer).triggerRefreshTo(new CobraConsumer.VersionInformation(2));
 
         RecordApi api = new CobraRecordApi(consumer);
 

@@ -4,8 +4,6 @@ import org.cobra.RecordApi;
 import org.cobra.api.CobraRecordApi;
 import org.cobra.commons.Clock;
 import org.cobra.consumer.fs.FilesystemBlobRetriever;
-import org.cobra.consumer.fs.RemoteFilesystemBlobRetriever;
-import org.cobra.core.memory.MemoryMode;
 import org.cobra.networks.CobraClient;
 import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.CobraProducer;
@@ -59,22 +57,22 @@ public class FilesystemConsumerTest {
 
         CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET,
                 7072));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(publishDirPath,
-                new RemoteFilesystemBlobRetriever(client, publishDirPath));
+        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(publishDirPath);
 
         CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
                 .withNetworkClient(client)
                 .build();
 
-        ((CobraConsumerImpl) consumer).poll(5000);
+        consumer.poll(5000);
+        Thread.sleep(3000);
 
         final RecordApi api = new CobraRecordApi(consumer);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-        int threads = 5;
-        CountDownLatch latch = new CountDownLatch(threads);
+        final int threads = 5;
+        final CountDownLatch latch = new CountDownLatch(threads);
 
         for (int j = 0; j < threads; j++) {
             int taskId = j;
