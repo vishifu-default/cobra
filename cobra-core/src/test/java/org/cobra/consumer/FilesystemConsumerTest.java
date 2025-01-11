@@ -79,7 +79,7 @@ public class FilesystemConsumerTest {
             executorService.submit(() -> {
                 System.out.println("submit task " + taskId);
                 for (int i = 0; i < 10_000; i++) {
-                    ConsumeTypeA ret = api.get("test-" + i);
+                    ConsumeTypeA ret = api.query("test-" + i);
                     Assertions.assertNotNull(ret);
                     Assertions.assertEquals("test-" + i, ret.name);
                 }

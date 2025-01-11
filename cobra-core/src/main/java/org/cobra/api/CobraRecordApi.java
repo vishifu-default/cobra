@@ -18,7 +18,7 @@ public class CobraRecordApi implements RecordApi {
     }
 
     @Override
-    public <T> T get(String key) {
+    public <T> T query(String key) {
         byte[] raw = records().getData(key);
         if (raw == null) {
             return null;

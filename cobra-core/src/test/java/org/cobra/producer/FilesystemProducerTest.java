@@ -98,12 +98,12 @@ public class FilesystemProducerTest {
 
         RecordApi api = new CobraRecordApi(consumer);
 
-        TypeA aTest5 = api.get("test-5");
+        TypeA aTest5 = api.query("test-5");
         assertNotNull(aTest5);
         assertEquals("test-5", aTest5.name);
 
-        assertNull(api.get("test-10"));
-        assertNull(api.get("test-0"));
+        assertNull(api.query("test-10"));
+        assertNull(api.query("test-0"));
     }
 
     @Test
@@ -177,15 +177,15 @@ public class FilesystemProducerTest {
 
         RecordApi api = new CobraRecordApi(consumer);
 
-        TypeA ret1 = api.get("test-1");
+        TypeA ret1 = api.query("test-1");
         assertNotNull(ret1);
         assertEquals("test-1", ret1.name);
 
-        TypeA ret2 = api.get("test-2");
+        TypeA ret2 = api.query("test-2");
         assertNotNull(ret2);
         assertEquals("test-2", ret2.name);
 
-        TypeA ret3 = api.get("test-3");
+        TypeA ret3 = api.query("test-3");
         assertNull(ret3);
     }
 }
