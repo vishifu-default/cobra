@@ -4,7 +4,6 @@ import org.cobra.RecordApi;
 import org.cobra.api.CobraRecordApi;
 import org.cobra.consumer.CobraConsumer;
 import org.cobra.consumer.fs.FilesystemBlobRetriever;
-import org.cobra.consumer.fs.RemoteFilesystemBlobRetriever;
 import org.cobra.networks.CobraClient;
 
 import java.net.InetSocketAddress;
@@ -21,12 +20,10 @@ public class CacheService {
 
     public CacheService() {
         Path cacheDir = Paths.get(consumePath);
-        CobraClient client = new CobraClient(new InetSocketAddress(host, port));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(cacheDir,
-                new RemoteFilesystemBlobRetriever(client, cacheDir));
+        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(cacheDir);
 
         consumer = CobraConsumer.fromBuilder()
-                .withNetworkClient(client)
+                .withInetAddress(new InetSocketAddress(host, port))
                 .withBlobRetriever(blobRetriever)
                 .build();
 

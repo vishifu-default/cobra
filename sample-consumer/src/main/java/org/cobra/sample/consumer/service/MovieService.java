@@ -13,7 +13,7 @@ public class MovieService {
     private final CacheService cacheService = new CacheService();
 
     public Movie getMovie(int id) {
-        Movie movie = cacheService.api().get(String.valueOf(id));
+        Movie movie = cacheService.api().query(String.valueOf(id));
 
         if (movie != null) {
             log.debug("Found movie with id {}", id);

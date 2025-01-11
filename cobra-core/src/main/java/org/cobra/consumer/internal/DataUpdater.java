@@ -1,7 +1,7 @@
 package org.cobra.consumer.internal;
 
 import org.cobra.commons.CobraConstants;
-import org.cobra.commons.utils.Utils;
+import org.cobra.commons.utils.Elapsed;
 import org.cobra.consumer.CobraConsumer;
 import org.cobra.consumer.read.BlobReader;
 import org.cobra.core.memory.MemoryMode;
@@ -10,13 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
 
-public class DataBlobState {
+public class DataUpdater {
 
-    private static final Logger log = LoggerFactory.getLogger(DataBlobState.class);
+    private static final Logger log = LoggerFactory.getLogger(DataUpdater.class);
 
     private final TransitionStats transitionStats;
     private final MemoryMode memoryMode;
@@ -24,7 +21,7 @@ public class DataBlobState {
 
     private long currentVersion = CobraConstants.VERSION_NULL;
 
-    public DataBlobState(TransitionStats transitionStats, MemoryMode memoryMode, BlobReader blobReader) {
+    public DataUpdater(TransitionStats transitionStats, MemoryMode memoryMode, BlobReader blobReader) {
         this.transitionStats = transitionStats;
         this.memoryMode = memoryMode;
         this.blobReader = blobReader;
@@ -38,11 +35,11 @@ public class DataBlobState {
         this.currentVersion = version;
     }
 
-    public void update(DataUpdatePlan plan) throws IOException {
+    public void update(TransitionPlan plan) throws IOException {
         applyDeltaPlan(plan);
     }
 
-    private void applyDeltaPlan(DataUpdatePlan plan) throws IOException {
+    private void applyDeltaPlan(TransitionPlan plan) throws IOException {
         for (VersionTransition transition : plan.getTransitions()) {
             applyTransition(transition);
         }
@@ -56,8 +53,7 @@ public class DataBlobState {
         applyStateEngineTransition(transition.getDeltaBlob());
 
         final long elapsed = System.nanoTime() - start;
-        log.debug("Applied delta-transition version {}; took: {}", transition.getVersion(),
-                Utils.formatElapsed(elapsed));
+        log.debug("Applied delta-transition version {}; took: {}", transition.getVersion(), Elapsed.toStr(elapsed));
     }
 
     private void applyHeader(CobraConsumer.HeaderBlob headerBlob) throws IOException {

@@ -2,6 +2,7 @@ package org.cobra.consumer.read;
 
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.Jvm;
+import org.cobra.commons.utils.Elapsed;
 import org.cobra.commons.utils.Utils;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.memory.MemoryMode;
@@ -52,8 +53,7 @@ public class BlobReaderImpl implements BlobReader {
 
         doReadHeader(blobInput);
 
-        final long elapsed = System.nanoTime() - start;
-        log.debug("applied header took: {}", Utils.formatElapsed(elapsed));
+        log.debug("applied header took: {}", Elapsed.toStr(System.nanoTime() - start));
     }
 
     private void doApplyDelta(BlobInput blobInput) throws IOException {
@@ -67,7 +67,7 @@ public class BlobReaderImpl implements BlobReader {
         }
 
         final long elapsed = System.nanoTime() - start;
-        log.debug("applied delta content took {}", Utils.formatElapsed(elapsed));
+        log.debug("applied delta content took {}", Elapsed.toStr(System.nanoTime() - start));
     }
 
     private void readAndCheckBlobRandomizedTag(BlobInput blobInput) throws IOException {

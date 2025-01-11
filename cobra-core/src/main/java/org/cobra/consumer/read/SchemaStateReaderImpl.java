@@ -1,6 +1,7 @@
 package org.cobra.consumer.read;
 
 import org.cobra.commons.Jvm;
+import org.cobra.commons.utils.Elapsed;
 import org.cobra.commons.utils.Utils;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.encoding.Varint;
@@ -42,8 +43,7 @@ public class SchemaStateReaderImpl implements SchemaStateReader {
         readDeltaAdditional(blobInput);
         readDeltaRemoval(blobInput);
 
-        final long elapsed = System.nanoTime() - start;
-        log.debug("read delta content done; took: {}", Utils.formatElapsed(elapsed));
+        log.debug("read delta content done; took: {}", Elapsed.toStr(System.nanoTime() - start));
     }
 
     private void readDeltaAdditional(BlobInput blobInput) throws IOException {

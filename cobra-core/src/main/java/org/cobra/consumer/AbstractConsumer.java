@@ -4,8 +4,10 @@ import org.cobra.commons.Clock;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.pools.BytesPool;
 import org.cobra.consumer.internal.AnnouncementWatcherImpl;
+import org.cobra.consumer.internal.BlobRetrieverFacade;
 import org.cobra.consumer.internal.ConsumerDataPlane;
-import org.cobra.consumer.internal.DataFetcher;
+import org.cobra.consumer.internal.FallbackRemoteBlobRetriever;
+import org.cobra.consumer.internal.TransitionUpdater;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.consumer.read.StateReadEngine;
 import org.cobra.core.memory.MemoryMode;
@@ -13,7 +15,7 @@ import org.cobra.networks.CobraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +43,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
                 builder.bytesPool,
                 builder.refreshExecutor,
                 builder.clock,
-                builder.client);
+                builder.producerAddress);
     }
 
     private AbstractConsumer(
@@ -50,18 +52,19 @@ public abstract class AbstractConsumer implements CobraConsumer {
             BytesPool bytesPool,
             ExecutorService executor,
             Clock clock,
-            CobraClient client) {
+            InetSocketAddress producerAddress) {
         consumerStateContext = new ConsumerStateContext();
-        this.consumerPlane = new ConsumerDataPlane(new DataFetcher(blobRetriever),
+        this.client = new CobraClient(producerAddress);
+
+        final FallbackRemoteBlobRetriever fallbackRemoteBlobRetriever = new FallbackRemoteBlobRetriever(client, blobRetriever);
+        final BlobRetrieverFacade blobRetrieverFacade = new BlobRetrieverFacade(blobRetriever, fallbackRemoteBlobRetriever);
+        this.consumerPlane = new ConsumerDataPlane(new TransitionUpdater(blobRetrieverFacade),
                 memoryMode, new StateReadEngine(consumerStateContext, bytesPool));
 
         this.executor = executor;
-
         this.clock = clock;
-
         this.announcementWatcher = new AnnouncementWatcherImpl(client);
 
-        this.client = client;
         executor.execute(client::bootstrap);
     }
 
@@ -115,6 +118,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
         try {
             consumerPlane.update(versionInformation);
         } catch (Throwable cause) {
+            log.error(cause.getMessage(), cause);
             throw new CobraException(cause);
         }
     }

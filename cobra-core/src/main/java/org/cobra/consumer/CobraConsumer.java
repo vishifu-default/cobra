@@ -1,15 +1,16 @@
 package org.cobra.consumer;
 
 import org.cobra.commons.Clock;
-import org.cobra.commons.CobraConstants;
 import org.cobra.commons.pools.BytesPool;
 import org.cobra.commons.threads.CobraThread;
 import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.core.memory.MemoryMode;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.core.objects.VersioningBlob;
-import org.cobra.networks.CobraClient;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,11 +21,10 @@ public interface CobraConsumer {
     long currentVersion();
 
     void poll();
+
     void poll(int timeoutMs);
 
     interface AnnouncementWatcher {
-        long NO_ANNOUNCEMENT_AVAILABLE = CobraConstants.VERSION_NULL;
-
         void setLatestVersion(long latestVersion);
 
         long getLatestVersion();
@@ -40,6 +40,8 @@ public interface CobraConsumer {
         Blob retrieveDelta(long desiredVersion);
 
         Blob retrieveReversedDelta(long desiredVersion);
+
+        void saveBlob(ByteBuffer buffer, String filename) throws IOException;
     }
 
     abstract class HeaderBlob implements StreamingBlob {
@@ -95,7 +97,7 @@ public interface CobraConsumer {
         BytesPool bytesPool;
         ExecutorService refreshExecutor;
         Clock clock;
-        CobraClient client;
+        InetSocketAddress producerAddress;
 
         public Builder withBlobRetriever(BlobRetriever blobRetriever) {
             this.blobRetriever = blobRetriever;
@@ -117,8 +119,8 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withNetworkClient(CobraClient client) {
-            this.client = client;
+        public Builder withInetAddress(InetSocketAddress address) {
+            this.producerAddress = address;
             return this;
         }
 

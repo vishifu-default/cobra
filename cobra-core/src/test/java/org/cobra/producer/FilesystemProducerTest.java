@@ -1,23 +1,24 @@
 package org.cobra.producer;
 
+import org.apache.commons.io.FileUtils;
 import org.cobra.RecordApi;
 import org.cobra.api.CobraRecordApi;
 import org.cobra.commons.Clock;
+import org.cobra.consumer.AbstractConsumer;
 import org.cobra.consumer.CobraConsumer;
-import org.cobra.consumer.CobraConsumerImpl;
 import org.cobra.consumer.fs.FilesystemBlobRetriever;
-import org.cobra.consumer.fs.RemoteFilesystemBlobRetriever;
-import org.cobra.core.memory.MemoryMode;
-import org.cobra.networks.CobraClient;
 import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.fs.FilesystemAnnouncer;
 import org.cobra.producer.fs.FilesystemBlobStagger;
 import org.cobra.producer.fs.FilesystemPublisher;
+import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,15 +27,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FilesystemProducerTest {
 
     private static final Logger log = LoggerFactory.getLogger(FilesystemProducerTest.class);
 
     @Test
-    void produce_and_consume() {
+    void produce_and_consume() throws IOException {
         Path publishDirPath = Paths.get("src", "test", "resources", "producer-test", "producer-store");
         File publishDir = publishDirPath.toFile();
 
+        FileUtils.deleteDirectory(publishDir);
         publishDir.mkdir();
 
         log.info("producer publish to dir:{}", publishDir.getAbsolutePath());
@@ -82,35 +85,37 @@ public class FilesystemProducerTest {
         });
 
         Path consumerStorePath = Paths.get("src", "test", "resources", "producer-test", "consumer-store");
-        CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, NetworkConfig.DEFAULT_PORT));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
-                new RemoteFilesystemBlobRetriever(client, consumerStorePath));
 
-        CobraConsumer consumer = CobraConsumer.fromBuilder()
+        FileUtils.deleteDirectory(consumerStorePath.toFile());
+
+        final CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath);
+        final InetSocketAddress producerAddress = new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, NetworkConfig.DEFAULT_PORT);
+
+        final CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
-                .withNetworkClient(client)
+                .withInetAddress(producerAddress)
                 .build();
 
-        ((CobraConsumerImpl) consumer).poll();
+        ((AbstractConsumer) consumer).triggerRefreshTo(new CobraConsumer.VersionInformation(3));
 
         RecordApi api = new CobraRecordApi(consumer);
 
-        TypeA aTest5 = api.get("test-5");
+        TypeA aTest5 = api.query("test-5");
         assertNotNull(aTest5);
         assertEquals("test-5", aTest5.name);
 
-        assertNull(api.get("test-10"));
-        assertNull(api.get("test-0"));
+        assertNull(api.query("test-10"));
+        assertNull(api.query("test-0"));
     }
 
     @Test
-    void producer_pinVersion() {
+    void producer_pinVersion() throws IOException {
         Path publishDirPath = Paths.get("src", "test", "resources", "producer-test", "producer-store");
         File publishDir = publishDirPath.toFile();
 
+        FileUtils.deleteDirectory(publishDir);
         publishDir.mkdir();
 
-        log.info("producer publish to dir:{}", publishDir.getAbsolutePath());
 
         CobraProducer.Announcer announcer = new FilesystemAnnouncer(publishDirPath);
 
@@ -151,16 +156,16 @@ public class FilesystemProducerTest {
         });
 
         Path consumerStorePath = Paths.get("src", "test", "resources", "producer-test", "consumer-store");
-        CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, 7071));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath,
-                new RemoteFilesystemBlobRetriever(client, consumerStorePath));
+
+        FileUtils.deleteDirectory(consumerStorePath.toFile());
+
+        final CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(consumerStorePath);
+        final InetSocketAddress producerAddress = new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET, 7071);
 
         CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
-                .withNetworkClient(client)
+                .withInetAddress(producerAddress)
                 .build();
-
-        ((CobraConsumerImpl) consumer).poll();
 
 
         // pin version -> 2
@@ -169,19 +174,19 @@ public class FilesystemProducerTest {
         assertEquals(2, announcer.retrieve());
 
 
-        ((CobraConsumerImpl) consumer).poll();
+        ((AbstractConsumer) consumer).triggerRefreshTo(new CobraConsumer.VersionInformation(2));
 
         RecordApi api = new CobraRecordApi(consumer);
 
-        TypeA ret1 = api.get("test-1");
+        TypeA ret1 = api.query("test-1");
         assertNotNull(ret1);
         assertEquals("test-1", ret1.name);
 
-        TypeA ret2 = api.get("test-2");
+        TypeA ret2 = api.query("test-2");
         assertNotNull(ret2);
         assertEquals("test-2", ret2.name);
 
-        TypeA ret3 = api.get("test-3");
+        TypeA ret3 = api.query("test-3");
         assertNull(ret3);
     }
 }
