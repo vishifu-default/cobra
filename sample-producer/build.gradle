@@ -1,0 +1,16 @@
+plugins {
+    id('org.springframework.boot') version('3.4.1')
+    id('io.spring.dependency-management') version('1.1.7')
+}
+
+dependencies {
+    implementation(libs.springframework.boot.web.starter)
+    implementation(libs.springframework.boot.thymeleaf)
+    testImplementation(libs.springframework.boot.web.test)
+
+    implementation(libs.apache.poi)
+    implementation(libs.apache.poi.xml)
+
+    implementation(project(':sample-model'))
+    implementation(project(':cobra-core'))
+}

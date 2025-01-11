@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mutations</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:insert="~{layout :: navbar}"></div>
+
+<h1>Produce version</h1>
+
+<form th:action="@{/producer-cycle}" method="post">
+    <label>
+        Current version:
+        <span th:text="${version}"></span>
+    </label>
+
+    <br>
+
+    <!--    Display mutations-->
+    <h3 class="mb-4">Movies to produce</h3>
+
+    <!-- Grid table to display movie ID and name -->
+    <label>Addition</label>
+    <table class="movie-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Movie Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Loop through the list of movies -->
+        <tr th:each="movie : ${addMutations}">
+            <td th:text="${movie.id}"></td>
+            <td th:text="${movie.title}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <br><br><br><br>
+
+    <label>Deletion</label>
+    <table class="movie-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="movieId : ${deleteIds}">
+            <td th:text="${movieId}"></td>
+        </tr>
+        </tbody>
+
+    </table>
+
+    <br><br>
+
+    <a th:href="@{/produce-new-version}">
+        <button type="button">Apply all mutations</button>
+    </a>
+</form>
+</body>
+</html>

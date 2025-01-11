@@ -1,0 +1,24 @@
+!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie App</title>
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav th:fragment="navbar">
+    <ul class="nav-list">
+        <li><a th:href="@{/find}" class="nav-link">Home</a></li>
+        <li><a th:href="@{/find}" class="nav-link">Find movies</a></li>
+        <li><a th:href="@{/version}" class="nav-link">Check version</a></li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+<div th:fragment="${body}"></div>
+
+</body>
+</html>

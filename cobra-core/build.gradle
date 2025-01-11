@@ -1,0 +1,6 @@
+dependencies {
+    implementation(libs.com.esotericsoftware.kryo)
+    implementation(libs.io.netty.netty.all)
+    implementation(libs.apache.common.io)
+    testImplementation(libs.org.slf4j.log4j)
+}

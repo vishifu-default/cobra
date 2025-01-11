@@ -1,0 +1,26 @@
+!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie App</title>
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<nav th:fragment="navbar">
+    <ul class="nav-list">
+        <li><a th:href="@{/movie-submit}" class="nav-link">Submit movie</a></li>
+        <li><a th:href="@{/mutations}" class="nav-link">View mutations</a></li>
+        <li><a th:href="@{movie-list}" class="nav-link">List movies</a></li>
+        <li><a th:href="@{/upload-file}" class="nav-link">Upload file</a></li>
+        <li><a th:href="@{/rollback}" class="nav-link">Rollback version</a></li>
+    </ul>
+</nav>
+
+<!-- Main Content -->
+
+<div th:fragment="${body}"></div>
+
+</body>
+</html>
