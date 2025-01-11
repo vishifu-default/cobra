@@ -15,6 +15,7 @@ import org.cobra.networks.CobraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,7 +43,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
                 builder.bytesPool,
                 builder.refreshExecutor,
                 builder.clock,
-                builder.client);
+                builder.producerAddress);
     }
 
     private AbstractConsumer(
@@ -51,9 +52,9 @@ public abstract class AbstractConsumer implements CobraConsumer {
             BytesPool bytesPool,
             ExecutorService executor,
             Clock clock,
-            CobraClient client) {
+            InetSocketAddress producerAddress) {
         consumerStateContext = new ConsumerStateContext();
-        this.client = client;
+        this.client = new CobraClient(producerAddress);
 
         final FallbackRemoteBlobRetriever fallbackRemoteBlobRetriever = new FallbackRemoteBlobRetriever(client, blobRetriever);
         final BlobRetrieverFacade blobRetrieverFacade = new BlobRetrieverFacade(blobRetriever, fallbackRemoteBlobRetriever);

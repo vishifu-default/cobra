@@ -7,11 +7,9 @@ import org.cobra.consumer.read.ConsumerStateContext;
 import org.cobra.core.memory.MemoryMode;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.core.objects.VersioningBlob;
-import org.cobra.networks.CobraClient;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -99,7 +97,7 @@ public interface CobraConsumer {
         BytesPool bytesPool;
         ExecutorService refreshExecutor;
         Clock clock;
-        CobraClient client;
+        InetSocketAddress producerAddress;
 
         public Builder withBlobRetriever(BlobRetriever blobRetriever) {
             this.blobRetriever = blobRetriever;
@@ -121,8 +119,8 @@ public interface CobraConsumer {
             return this;
         }
 
-        public Builder withNetworkClient(CobraClient client) {
-            this.client = client;
+        public Builder withInetAddress(InetSocketAddress address) {
+            this.producerAddress = address;
             return this;
         }
 

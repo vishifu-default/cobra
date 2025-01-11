@@ -20,11 +20,10 @@ public class CacheService {
 
     public CacheService() {
         Path cacheDir = Paths.get(consumePath);
-        CobraClient client = new CobraClient(new InetSocketAddress(host, port));
         CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(cacheDir);
 
         consumer = CobraConsumer.fromBuilder()
-                .withNetworkClient(client)
+                .withInetAddress(new InetSocketAddress(host, port))
                 .withBlobRetriever(blobRetriever)
                 .build();
 

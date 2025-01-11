@@ -55,13 +55,13 @@ public class FilesystemConsumerTest {
             }
         });
 
-        CobraClient client = new CobraClient(new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET,
-                7072));
-        CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(publishDirPath);
+        final CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(publishDirPath);
+        final InetSocketAddress producerInetAddress = new InetSocketAddress(NetworkConfig.DEFAULT_LOCAL_NETWORK_SOCKET,
+                7072);
 
-        CobraConsumer consumer = CobraConsumer.fromBuilder()
+        final CobraConsumer consumer = CobraConsumer.fromBuilder()
                 .withBlobRetriever(blobRetriever)
-                .withNetworkClient(client)
+                .withInetAddress(producerInetAddress)
                 .build();
 
         consumer.poll(5000);
