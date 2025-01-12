@@ -19,7 +19,7 @@ public class SlabArena {
 
     private final ConfigDef configDef;
     private final SlabMethods slabMethods;
-    private final SlabClass[] slabs = new SlabClass[MAX_SLAB_NUMBER];
+    private SlabClass[] slabs = new SlabClass[MAX_SLAB_NUMBER];
 
     private int largestIndex;
 
@@ -133,6 +133,15 @@ public class SlabArena {
         }
 
         return totalMem;
+    }
+
+    public void destroy() {
+        for (SlabClass slab : this.slabs) {
+            if (slab == null) continue;
+            slab.freeAll();
+        }
+
+        this.slabs = null;
     }
 
     @Override

@@ -47,4 +47,6 @@ public interface Table {
      * @return bucket value
      */
     int findBucket(int key);
+
+    void destroy();
 }

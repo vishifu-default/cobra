@@ -148,6 +148,13 @@ public class HashingTable implements Table {
     }
 
     @Override
+    public void destroy() {
+        this.reentrantLock.writeLock().lock();
+        this.table = null;
+        this.reentrantLock.writeLock().unlock();
+    }
+
+    @Override
     public String toString() {
         return "HashingTable(loadFactor=%f, capacity=%d, size=%s)"
                 .formatted(this.loadFactor, capacity(), size);

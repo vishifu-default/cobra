@@ -7,8 +7,8 @@ public class CobraSimpleProducer extends AbstractProducer {
     }
 
     @Override
-    public long produce(Populator populator) {
-        return runProduce(populator);
+    public long populate(Populator populator) {
+        return runCycle(populator);
     }
 
     @Override

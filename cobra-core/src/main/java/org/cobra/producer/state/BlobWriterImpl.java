@@ -2,9 +2,11 @@ package org.cobra.producer.state;
 
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.Jvm;
-import org.cobra.commons.threads.CobraThreadExecutor;
+import org.cobra.commons.threads.CobraPlatformThreadExecutor;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.encoding.Varint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,13 +14,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class BlobWriterImpl implements BlobWriter {
 
-    private static final String PROC_DESC_WRITE_DELTA = "blob_writer_impl.delta";
-    private static final String PROC_DESC_WRITE_REVERSED_DELTA = "blob_writer_impl.reversed_delta";
-
+    private static final Logger log = LoggerFactory.getLogger(BlobWriterImpl.class);
     private static final Varint varint = Jvm.varint();
 
     private final StateWriteEngine stateWriteEngine;
@@ -50,12 +51,17 @@ public class BlobWriterImpl implements BlobWriter {
         dos.writeInt(modifiedStateWriteSet.size());
 
         try (
-                final CobraThreadExecutor executor = CobraThreadExecutor.ofPhysicalProcessor(getClass(),
-                        PROC_DESC_WRITE_DELTA)
+                final CobraPlatformThreadExecutor platformExecutor =
+                        CobraPlatformThreadExecutor.ofDaemon(modifiedStateWriteSet.size(), "blob-writer", "write-delta")
         ) {
-            for (final SchemaStateWrite stateWrite : modifiedStateWriteSet) {
-                executor.execute(stateWrite::prepareBeforeWriting);
+            for (final SchemaStateWrite schemaStateWrite : modifiedStateWriteSet) {
+                platformExecutor.execute(schemaStateWrite::prepareBeforeWriting);
             }
+
+            platformExecutor.await();
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("interrupt execution; {}", e.getMessage(), e);
+            throw new RuntimeException(e);
         }
 
         for (final SchemaStateWrite stateWrite : modifiedStateWriteSet) {
@@ -126,6 +132,7 @@ public class BlobWriterImpl implements BlobWriter {
 
     private void doWriteHeaderClassRegistration(DataOutputStream dos) throws IOException {
         Map<Class<?>, Integer> clazzRegistration = this.stateWriteEngine.producerStateContext()
+                .getSerde()
                 .serdeContext().collectRegistrations();
 
         Map<String, Integer> affectedRegistries = new HashMap<>();

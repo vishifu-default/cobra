@@ -1,11 +1,11 @@
 package org.cobra.producer.state;
 
 import org.cobra.commons.errors.CobraException;
+import org.cobra.core.CobraContext;
 import org.cobra.core.ModelSchema;
-import org.cobra.core.memory.datalocal.RecordRepository;
+import org.cobra.core.memory.datalocal.AssocStore;
 import org.cobra.core.serialization.RecordSerde;
 import org.cobra.core.serialization.RecordSerdeImpl;
-import org.cobra.core.serialization.SerdeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,22 +16,36 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class ProducerStateContext {
+public class ProducerStateContext implements CobraContext {
 
     private static final Logger log = LoggerFactory.getLogger(ProducerStateContext.class);
 
     private static final String EXCEPTION_NOT_FOUND_SCHEMA_WRITE = "Could not find matched registered state-write";
 
-    private final RecordSerde serde = new RecordSerdeImpl();
+    private RecordSerde serde = new RecordSerdeImpl();
+    private AssocStore assoc = new AssocStore();
     private final Map<String, SchemaStateWrite> schemaStateWriteMap = new ConcurrentHashMap<>();
-    private final RecordRepository localData = new RecordRepository();
 
     /* last state */
     final Set<Class<?>> lastRegisteredClazzes = ConcurrentHashMap.newKeySet();
     final Set<ModelSchema> lastSchemas = ConcurrentHashMap.newKeySet();
 
-    public SerdeContext serdeContext() {
-        return this.serde.serdeContext();
+
+    @Override
+    public RecordSerde getSerde() {
+        return serde;
+    }
+
+    @Override
+    public AssocStore getStore() {
+        return assoc;
+    }
+
+    @Override
+    public Set<ModelSchema> getModelSchemas() {
+        return schemaStateWriteMap.values().stream()
+                .map(SchemaStateWrite::getSchema)
+                .collect(Collectors.toSet());
     }
 
     public void registerModel(ModelSchema schema) {
@@ -39,19 +53,8 @@ public class ProducerStateContext {
         putSchemaWriteIfAbsent(schema);
     }
 
-    public Set<ModelSchema> collectRegisteredSchemas() {
-        return schemaStateWriteMap.values()
-                .stream()
-                .map(SchemaStateWrite::getSchema)
-                .collect(Collectors.toSet());
-    }
-
     public Collection<SchemaStateWrite> collectSchemaStateWrites() {
         return schemaStateWriteMap.values();
-    }
-
-    public RecordRepository getLocalData() {
-        return localData;
     }
 
     public void addObject(String key, Object obj) {
@@ -71,6 +74,22 @@ public class ProducerStateContext {
         } catch (Throwable cause) {
             log.error("error while removing object; key: {}; clazz: {}", key, clazz, cause);
             throw cause;
+        }
+    }
+
+    void restoreSerde(RecordSerde serde) {
+        this.serde = serde;
+    }
+
+    void restoreAssoc(AssocStore assoc) {
+        this.assoc.destroy();
+        this.assoc = assoc;
+    }
+
+    void restoreSchemaStateWrite(Set<ModelSchema> schemas) {
+        this.schemaStateWriteMap.clear();
+        for (final ModelSchema schema : schemas) {
+            putSchemaWriteIfAbsent(schema);
         }
     }
 

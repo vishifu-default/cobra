@@ -1,6 +1,7 @@
 package org.cobra.core.memory.slab;
 
 import org.cobra.commons.Jvm;
+import org.cobra.core.memory.OSMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +11,8 @@ import java.util.List;
 public class SlabClass {
 
     private static final Logger log = LoggerFactory.getLogger(SlabClass.class);
+    private static final OSMemory memory = Jvm.osMemory();
+
     private final int clsid;
 
     private final int chunkSize;
@@ -65,7 +68,7 @@ public class SlabClass {
         for (SlabPage page : pages) {
             if (page == null) continue;
 
-            allocated += page.getAllocatedSize();
+            allocated += page.getOccupiedCount();
         }
 
         return this.totalChunks - allocated;
@@ -79,14 +82,14 @@ public class SlabClass {
             useOffset = this.freelist.poll();
         }
 
-        page(useOffset.getPageId()).increaseAllocated();
+        page(useOffset.getPageId()).incOccupied();
 
         return useOffset;
     }
 
     private void doFreeOffset(SlabOffset offset) {
         freelist.offer(offset);
-        page(offset.getPageId()).decreaseAllocated();
+        page(offset.getPageId()).descOccupied();
     }
 
     private void doAllocatePage() {
@@ -107,6 +110,13 @@ public class SlabClass {
         log.debug("{} allocate page {} took {}ms", this, pageId, elapsedMs);
     }
 
+    public void freeAll() {
+        for (SlabPage page : pages) {
+            if (page == null) continue;
+            page.free();
+        }
+    }
+
     @Override
     public String toString() {
         return "SlabClass(clsid=%d, chunkSize=%d, chunksPerPage=%d, totalChunks=%d)"
@@ -116,40 +126,44 @@ public class SlabClass {
     final class SlabPage {
 
         private long baseAddress;
-        private int allocatedSize;
+        private int occupiedCount;
 
         public long getBaseAddress() {
             return this.baseAddress;
         }
 
-        public int getAllocatedSize() {
-            return this.allocatedSize;
+        public int getOccupiedCount() {
+            return this.occupiedCount;
         }
 
         public float getUtilized() {
-            return (float) this.allocatedSize / chunksPerPage;
+            return (float) this.occupiedCount / chunksPerPage;
         }
 
-        void increaseAllocated() {
-            this.allocatedSize++;
+        void incOccupied() {
+            this.occupiedCount++;
         }
 
-        void decreaseAllocated() {
-            this.allocatedSize--;
+        void descOccupied() {
+            this.occupiedCount--;
         }
 
         void preallocate() {
-            malloc();
-            this.allocatedSize = 0;
+            alloc();
+            this.occupiedCount = 0;
         }
 
-        private void malloc() {
-            this.baseAddress = Jvm.osMemory().allocate((long) chunkSize * chunksPerPage);
+        private void alloc() {
+            this.baseAddress = memory.allocate((long) chunkSize * chunksPerPage);
+        }
+
+        private void free() {
+            memory.freeMemory(this.baseAddress, (long) chunkSize * chunksPerPage);
         }
 
         @Override
         public String toString() {
-            return "SlabPage(baseAddress=%d, allocatedSize=%d)".formatted(baseAddress, allocatedSize);
+            return "SlabPage(baseAddress=%d, allocatedSize=%d)".formatted(baseAddress, occupiedCount);
         }
     }
 }

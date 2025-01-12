@@ -3,8 +3,6 @@ package org.cobra.core.serialization;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.unsafe.UnsafeInput;
-import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.utils.Utils;
 import org.cobra.core.ModelSchema;
@@ -13,15 +11,11 @@ import org.slf4j.LoggerFactory;
 
 public class RecordSerdeImpl implements RecordSerde {
 
-    // todo: shrink output buffer size
-    // todo: need focus on limit of record
-
     private static final Logger log = LoggerFactory.getLogger(RecordSerdeImpl.class);
 
     private static final int LIMIT_CAPACITY_OF_OBJECT = 1 << 22; // approximate 4MiB
 
-
-    private final SerdeContext serdeContext = SerdeContext.getInstance();
+    private final SerdeContext serdeContext = new SerdeContext();
 
     @Override
     public void register(ModelSchema schema) {
@@ -34,7 +28,6 @@ public class RecordSerdeImpl implements RecordSerde {
     }
 
     public RecordSerdeImpl() {
-
     }
 
     @Override

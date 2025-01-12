@@ -1,15 +1,21 @@
 package org.cobra.producer.state;
 
-import org.cobra.commons.threads.CobraThreadExecutor;
+import lombok.extern.slf4j.Slf4j;
+import org.cobra.commons.threads.CobraPlatformThreadExecutor;
 import org.cobra.commons.utils.Rands;
+import org.cobra.consumer.read.ConsumerStateContext;
+import org.cobra.core.serialization.RecordSerde;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class StateWriteEngine {
 
-    private static final String PROC_DESC_STATE_WRITE_ENGINE_WRITING = "state_write_engine.writing";
-    private static final String PROC_DESC_STATE_WRITE_ENGINE_NEXT_CYCLE = "state_write_engine.next_cycle";
+    private static final String EXECUTOR_GROUP = "engine-writer";
+    private static final String EXECUTOR_GROUP_WRITE_PHASE_DESC = "write-phase";
+    private static final String EXECUTOR_GROUP_NEXT_CYCLE_DESC = "next-cycle";
 
     private final ProducerStateContext producerStateContext;
 
@@ -37,12 +43,17 @@ public class StateWriteEngine {
         }
 
         try (
-                final CobraThreadExecutor executor = CobraThreadExecutor.ofPhysicalProcessor(getClass(),
-                        PROC_DESC_STATE_WRITE_ENGINE_WRITING)
+                final CobraPlatformThreadExecutor platformExecutor =
+                        CobraPlatformThreadExecutor.ofDaemon(8, EXECUTOR_GROUP, EXECUTOR_GROUP_WRITE_PHASE_DESC)
         ) {
-            for (final SchemaStateWrite schemaStateWrite : this.producerStateContext.collectSchemaStateWrites()) {
-                executor.execute(schemaStateWrite::moveToWritePhase);
+            for (final SchemaStateWrite stateWrite : producerStateContext.collectSchemaStateWrites()) {
+                platformExecutor.execute(stateWrite::moveToWritePhase);
             }
+
+            platformExecutor.await();
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("interrupt execution; {}", e.getMessage(), e);
+            throw new RuntimeException(e);
         }
 
         this.phase = Phasing.WRITING_PHASE;
@@ -57,11 +68,11 @@ public class StateWriteEngine {
         this.nextRandomizedTag = mintRandomizedTag();
 
         try (
-                final CobraThreadExecutor executor = CobraThreadExecutor.ofPhysicalProcessor(getClass(),
-                        PROC_DESC_STATE_WRITE_ENGINE_NEXT_CYCLE)
+                final CobraPlatformThreadExecutor platformExecutor =
+                        CobraPlatformThreadExecutor.ofDaemon(8, EXECUTOR_GROUP, EXECUTOR_GROUP_NEXT_CYCLE_DESC)
         ) {
             for (final SchemaStateWrite schemaStateWrite : this.producerStateContext.collectSchemaStateWrites()) {
-                executor.execute(schemaStateWrite::moveToNextCycle);
+                platformExecutor.execute(schemaStateWrite::moveToNextCycle);
             }
         }
 
@@ -79,6 +90,12 @@ public class StateWriteEngine {
         }
 
         return false;
+    }
+
+    public void restore(ConsumerStateContext readContext) {
+        producerStateContext.restoreSerde(readContext.getSerde());
+        producerStateContext.restoreAssoc(readContext.getStore());
+        producerStateContext.restoreSchemaStateWrite(readContext.getModelSchemas());
     }
 
     long getOriginRandomizedTag() {

@@ -52,13 +52,14 @@ public class ProducerService {
                 .withLocalPort(7070)
                 .withBlobStagger(stagger)
                 .withBlobStorePath(publishDir)
+                .withRestoreIfAvailable(true)
                 .buildSimple();
 
         producer.registerModel(Movie.class);
         producer.registerModel(Actor.class);
         producer.registerModel(Publisher.class);
 
-        producer.bootstrapServer();
+        producer.bootstrap();
     }
 
     public long getCurrentVersion() {
@@ -77,7 +78,7 @@ public class ProducerService {
     }
 
     public void produce() {
-        producer.produce(task -> {
+        producer.populate(task -> {
             for (Map.Entry<Integer, Object> entry : mutations.entrySet()) {
                 if (entry.getValue() == MutationObject.DELETED) {
                     task.removeObject(String.valueOf(entry.getKey()), Movie.class);
@@ -98,7 +99,7 @@ public class ProducerService {
 
     /* this method use to random */
     public void shuffle(int count) {
-        producer.produce(task -> {
+        producer.populate(task -> {
             for (Movie movie : generateMoviesWithBound(count)) {
                 task.addObject(String.valueOf(movie.getId()), movie);
             }

@@ -3,8 +3,13 @@ package org.cobra.producer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.CobraConstants;
 import org.cobra.commons.errors.CobraException;
+import org.cobra.commons.utils.Elapsed;
+import org.cobra.consumer.AbstractConsumer;
+import org.cobra.consumer.CobraConsumer;
+import org.cobra.consumer.fs.FilesystemBlobRetriever;
 import org.cobra.core.ModelSchema;
 import org.cobra.core.hashing.Table;
+import org.cobra.core.memory.datalocal.AssocStore;
 import org.cobra.networks.CobraServer;
 import org.cobra.producer.handler.FetchBlobHandler;
 import org.cobra.producer.handler.FetchHeaderBlobHandler;
@@ -18,19 +23,18 @@ import org.cobra.producer.state.BlobWriter;
 import org.cobra.producer.state.BlobWriterImpl;
 import org.cobra.producer.state.ProducerStateContext;
 import org.cobra.producer.state.StateWriteEngine;
-import org.cobra.producer.state.VersionStateImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractProducer implements CobraProducer {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractProducer.class);
 
-    protected final CobraProducer.VersionState versionState;
     protected final CobraProducer.BlobStagger blobStagger;
     protected final CobraProducer.BlobPublisher blobPublisher;
     protected final StateWriteEngine stateWriteEngine;
@@ -41,30 +45,40 @@ public abstract class AbstractProducer implements CobraProducer {
     protected AtomicState populationAtomic;
 
     protected final CobraServer network;
+    protected final boolean shouldRestore;
     protected boolean isBootstrap = false;
 
-    protected final ReentrantLock lock = new ReentrantLock();
+    protected final Path blobStorePath;
+    protected final ReentrantLock lock;
+
+    private long lastVersion = CobraConstants.VERSION_NULL;
 
     protected AbstractProducer(Builder builder) {
         this.blobStagger = builder.blobStagger;
         this.blobPublisher = builder.blobPublisher;
         this.clock = builder.clock;
         this.announcer = builder.announcer;
+        this.blobStorePath = builder.blobStorePath;
 
-        this.versionState = new VersionStateImpl();
         this.producerStateContext = new ProducerStateContext();
         this.stateWriteEngine = new StateWriteEngine(this.producerStateContext);
 
+        this.shouldRestore = builder.restoreIfAvailable;
         this.populationAtomic = AtomicState.initChain(CobraConstants.VERSION_NULL);
 
+        this.lock = new ReentrantLock();
+
         network = new CobraServer(new InetSocketAddress(builder.localPort));
-        network.registerHandler(new FetchVersionHandler(announcer),
+        network.registerHandler(new FetchVersionHandler(this),
                 new FetchHeaderBlobHandler(builder.blobStorePath),
                 new FetchBlobHandler(builder.blobStorePath));
     }
 
     @Override
-    public void bootstrapServer() {
+    public void bootstrap() {
+        announcer.bootstrap(shouldRestore);
+        restoreIfAvailable();
+
         network.bootstrap();
         isBootstrap = true;
     }
@@ -77,22 +91,21 @@ public abstract class AbstractProducer implements CobraProducer {
 
     @Override
     public long currentVersion() {
-        return versionState.current();
+        return lastVersion;
     }
 
-    @Override
-    public Table lookupTable() {
-        return producerStateContext.getLocalData().lookupTable();
+    public boolean isBootstrapped() {
+        return isBootstrap;
     }
 
-    protected long runProduce(Populator task) {
+    protected long runCycle(Populator task) {
         if (!isBootstrap)
             throw new CobraException("producer must be bootstrap before produce a cycle");
 
-        long toVersion = this.versionState.mint();
+        long toVersion = mintVersion(lastVersion);
         Artifact artifact = new Artifact();
 
-        long startMillis = clock.milliseconds();
+        final long start = System.nanoTime();
 
         try {
             this.lock.lock();
@@ -113,7 +126,8 @@ public abstract class AbstractProducer implements CobraProducer {
                 announce(candidate);
                 populationAtomic = candidate.commit();
 
-                versionState.pin(toVersion);
+                this.lastVersion = toVersion;
+                log.info("producer a version: version: {}; took: {} ", toVersion, Elapsed.toStr(System.nanoTime() - start));
             } else {
                 log.debug("state not modified, revert to last state");
                 stateWriteEngine.revertToLastState();
@@ -122,23 +136,21 @@ public abstract class AbstractProducer implements CobraProducer {
             try {
                 stateWriteEngine.revertToLastState();
             } catch (Throwable cause) {
-                log.error("error when revert to last state", e);
                 // swallow inner throwable
+                log.error("error when revert to last state", e);
             }
 
             throw new CobraException(e);
         } finally {
-            long endMillis = clock.milliseconds();
             this.lock.unlock();
-            log.info("producer a version: version: {}; elapsed: {} ms", toVersion, endMillis - startMillis);
         }
 
-        return latestVersion();
+        return this.lastVersion;
     }
 
     protected boolean moveToVersion(long version) {
-        if (version > latestVersion()) {
-            log.info("Cannot move version {} to version {}", version, latestVersion());
+        if (version > this.lastVersion) {
+            log.info("Cannot move version {} to version {}", version, this.lastVersion);
             return false;
         }
 
@@ -150,11 +162,11 @@ public abstract class AbstractProducer implements CobraProducer {
 
             announce(candidate);
             populationAtomic = candidate.commit();
-            versionState.pin(populationAtomic.getCurrent().getVersion());
 
+            this.lastVersion = version;
             return true;
         } catch (Throwable cause) {
-            log.error("error when move version {} to version {}", version, latestVersion(), cause);
+            log.error("error when move version {} to version {}", version, lastVersion, cause);
             return false;
         } finally {
             lock.unlock();
@@ -231,7 +243,45 @@ public abstract class AbstractProducer implements CobraProducer {
         return result;
     }
 
-    long latestVersion() {
-        return versionState.current();
+    @Override
+    public void restoreIfAvailable() {
+        final long desiredVersion = announcer.reclaimVersion();
+        if (desiredVersion == CobraConstants.VERSION_NULL)
+            return;
+
+        final CobraConsumer.BlobRetriever blobRetriever = new FilesystemBlobRetriever(blobStorePath);
+
+        log.info("restoring state to version {}", desiredVersion);
+        final long start = System.nanoTime();
+
+        try {
+            doRestore(desiredVersion, blobRetriever);
+        } catch (Throwable cause) {
+            log.error("error when restoring state to version {}", desiredVersion, cause);
+            throw new CobraException(cause);
+        }
+
+        log.info("restored producer to version {}; took: {}", desiredVersion, Elapsed.from(start));
+    }
+
+    @Override
+    public AssocStore getAssoc() {
+        return producerStateContext.getStore();
+    }
+
+    private void doRestore(long desiredVersion, CobraConsumer.BlobRetriever blobRetriever) {
+        final CobraConsumer client = CobraConsumer.fromBuilder()
+                .withBlobRetriever(blobRetriever)
+                .build();
+
+        ((AbstractConsumer) client).triggerRefreshTo(new CobraConsumer.VersionInformation(desiredVersion));
+
+        this.stateWriteEngine.restore(client.context());
+        this.lastVersion = desiredVersion;
+        this.populationAtomic = AtomicState.initChain(desiredVersion);
+    }
+
+    private long mintVersion(long version) {
+        return version + 1;
     }
 }

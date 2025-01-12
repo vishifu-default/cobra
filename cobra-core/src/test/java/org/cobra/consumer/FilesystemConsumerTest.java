@@ -4,7 +4,6 @@ import org.cobra.RecordApi;
 import org.cobra.api.CobraRecordApi;
 import org.cobra.commons.Clock;
 import org.cobra.consumer.fs.FilesystemBlobRetriever;
-import org.cobra.networks.CobraClient;
 import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.CobraProducer;
 import org.cobra.producer.fs.FilesystemAnnouncer;
@@ -45,9 +44,9 @@ public class FilesystemConsumerTest {
                 .buildSimple();
 
         producer.registerModel(ConsumeTypeA.class);
-        producer.bootstrapServer();
+        producer.bootstrap();
 
-        producer.produce(task -> {
+        producer.populate(task -> {
             for (int i = 0; i < 10_000; i++) {
                 ConsumeTypeA consumeTypeA = new ConsumeTypeA(i, "test-" + i, false,
                         new ConsumeTypeB(i, 2.2));

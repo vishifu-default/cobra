@@ -25,7 +25,7 @@ class SlabClassTest {
         SlabOffset offset0 = slab.allocate();
         SlabOffset offset1 = slab.allocate();
 
-        assertEquals(2, slab.page(0).getAllocatedSize());
+        assertEquals(2, slab.page(0).getOccupiedCount());
         assertEquals(4, slab.getTotalChunks(), "poll offset 2-time, must allocate 1 page");
 
         assertEquals(0, offset0.getClsid());
