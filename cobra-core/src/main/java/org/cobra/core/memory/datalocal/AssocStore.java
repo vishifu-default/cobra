@@ -5,12 +5,12 @@ import org.cobra.core.hashing.Table;
 import org.cobra.core.hashing.hashcodes.Murmur3Hash;
 import org.cobra.core.memory.slab.SlabArena;
 
-public class RecordRepository {
+public class AssocStore {
 
     private final Table lookupTable = new HashingTable();
     private final SlabArena arena;
 
-    public RecordRepository() {
+    public AssocStore() {
         arena = SlabArena.initialize();
     }
 
@@ -59,6 +59,11 @@ public class RecordRepository {
     }
 
     private int toHashKey(byte[] key) {
-        return Murmur3Hash.murmurhash3_x86_32(key, 0, key.length, 0);
+        return Murmur3Hash.murmur3_32(key, 0, key.length, 0);
+    }
+
+    public void destroy() {
+        this.lookupTable.destroy();
+        this.arena.destroy();
     }
 }

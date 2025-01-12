@@ -2,7 +2,7 @@ package org.cobra.api;
 
 import org.cobra.RecordApi;
 import org.cobra.consumer.CobraConsumer;
-import org.cobra.core.memory.datalocal.RecordRepository;
+import org.cobra.core.memory.datalocal.AssocStore;
 
 public class CobraRecordApi implements RecordApi {
 
@@ -23,10 +23,10 @@ public class CobraRecordApi implements RecordApi {
         if (raw == null) {
             return null;
         }
-        return consumer.context().serde().deserialize(getRaw(key));
+        return consumer.context().getSerde().deserialize(getRaw(key));
     }
 
-    private RecordRepository records() {
-        return consumer.context().localData();
+    private AssocStore records() {
+        return consumer.context().getStore();
     }
 }

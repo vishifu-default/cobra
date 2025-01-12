@@ -11,6 +11,7 @@ import org.cobra.core.objects.VersioningBlob;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -95,7 +96,7 @@ public interface CobraConsumer {
         BlobRetriever blobRetriever;
         MemoryMode memoryMode;
         BytesPool bytesPool;
-        ExecutorService refreshExecutor;
+        ExecutorService executor;
         Clock clock;
         InetSocketAddress producerAddress;
 
@@ -110,7 +111,7 @@ public interface CobraConsumer {
         }
 
         public Builder withRefreshExecutor(ExecutorService refreshExecutor) {
-            this.refreshExecutor = refreshExecutor;
+            this.executor = refreshExecutor;
             return this;
         }
 
@@ -125,14 +126,20 @@ public interface CobraConsumer {
         }
 
         public CobraConsumer build() {
-            if (clock == null)
+            Objects.requireNonNull(blobRetriever, "blob-retriever implementation is required");
+
+            if (clock == null) {
                 clock = Clock.system();
+            }
 
-            if (bytesPool == null)
+            if (bytesPool == null) {
                 bytesPool = BytesPool.NONE;
+            }
 
-            if (refreshExecutor == null)
-                refreshExecutor = Executors.newSingleThreadExecutor(r -> CobraThread.daemon(r, "consumer-executor"));
+            if (executor == null) {
+                executor = Executors.newSingleThreadExecutor(r ->
+                        CobraThread.daemon(r, "consumer", "client"));
+            }
 
             memoryMode = MemoryMode.VIRTUAL_MAPPED;
 

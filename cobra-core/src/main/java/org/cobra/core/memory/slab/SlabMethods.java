@@ -3,8 +3,11 @@ package org.cobra.core.memory.slab;
 import org.cobra.commons.Jvm;
 import org.cobra.core.encoding.Varint;
 import org.cobra.core.memory.OSMemory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class SlabMethods {
 
@@ -15,6 +18,7 @@ public class SlabMethods {
     static final int SLAB_OFFSET_FOOTPRINT = Integer.BYTES;
     static final int SLAB_HASH_KEY_FOOTPRINT = Integer.BYTES;
     static final int SLAB_META_FOOTPRINT = SLAB_CLASS_FOOTPRINT + SLAB_OFFSET_FOOTPRINT + SLAB_HASH_KEY_FOOTPRINT;
+    private static final Logger log = LoggerFactory.getLogger(SlabMethods.class);
 
     private final SlabArena arena;
 
@@ -50,7 +54,7 @@ public class SlabMethods {
 
     public SlabOffset location(long address) {
         final byte[] meta = new byte[SLAB_META_FOOTPRINT];
-        memory.copyMemory(null, address, meta, 0, SLAB_META_FOOTPRINT);
+        memory.copyMemory(null, address, meta, OSMemory.ARRAY_BYTE_BASE_OFFSET, SLAB_META_FOOTPRINT);
         final ByteBuffer buffer = ByteBuffer.wrap(meta);
 
         final int clsid = buffer.get();

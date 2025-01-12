@@ -2,23 +2,24 @@ package org.cobra.producer;
 
 import org.cobra.commons.Clock;
 import org.cobra.core.hashing.Table;
+import org.cobra.core.memory.datalocal.AssocStore;
 import org.cobra.core.objects.StreamingBlob;
 import org.cobra.networks.NetworkConfig;
 import org.cobra.producer.internal.Blob;
 import org.cobra.producer.internal.HeaderBlob;
-import org.cobra.producer.internal.SequencedVersionMinter;
 import org.cobra.producer.state.BlobWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Objects;
 
 public interface CobraProducer {
 
-    void bootstrapServer();
+    void bootstrap();
 
-    long produce(Populator populator);
+    long populate(Populator populator);
 
     boolean pinVersion(long version);
 
@@ -26,12 +27,16 @@ public interface CobraProducer {
 
     long currentVersion();
 
-    Table lookupTable();
+    void restoreIfAvailable();
+
+    AssocStore getAssoc();
 
     interface Announcer {
+        void bootstrap(boolean shouldRestore);
+
         void announce(long version);
 
-        long retrieve();
+        long reclaimVersion();
     }
 
     interface BlobPublisher {
@@ -111,14 +116,6 @@ public interface CobraProducer {
         long mint();
     }
 
-    interface VersionState {
-        long mint();
-
-        long current();
-
-        void pin(long version);
-    }
-
     @FunctionalInterface
     interface Populator {
         void populate(StateWriter stateWriter);
@@ -129,13 +126,14 @@ public interface CobraProducer {
     }
 
     class Builder {
-        BlobPublisher blobPublisher;
-        BlobStagger blobStagger;
-        BlobCompressor blobCompressor;
-        Clock clock;
-        Announcer announcer;
-        Path blobStorePath;
-        int localPort = 0;
+        BlobPublisher blobPublisher = null;
+        BlobStagger blobStagger = null;
+        BlobCompressor blobCompressor = null;
+        Clock clock = null;
+        Announcer announcer = null;
+        Path blobStorePath = null;
+        Integer localPort = null;
+        Boolean restoreIfAvailable = null;
 
         public Builder withBlobPublisher(BlobPublisher blobPublisher) {
             this.blobPublisher = blobPublisher;
@@ -172,12 +170,24 @@ public interface CobraProducer {
             return this;
         }
 
+        public Builder withRestoreIfAvailable(boolean restoreIfAvailable) {
+            this.restoreIfAvailable = restoreIfAvailable;
+            return this;
+        }
+
         public CobraProducer buildSimple() {
-            if (localPort == 0)
+            Objects.requireNonNull(blobPublisher);
+            Objects.requireNonNull(blobStagger);
+            Objects.requireNonNull(announcer);
+
+            if (localPort == null)
                 localPort = NetworkConfig.DEFAULT_PORT;
 
             if (clock == null)
                 clock = Clock.system();
+
+            if (restoreIfAvailable == null)
+                restoreIfAvailable = Boolean.FALSE;
 
             return new CobraSimpleProducer(this);
         }

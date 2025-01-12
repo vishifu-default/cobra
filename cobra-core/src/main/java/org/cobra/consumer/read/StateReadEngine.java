@@ -36,11 +36,11 @@ public class StateReadEngine {
     }
 
     public void addObject(byte[] key, byte[] representation) {
-        consumerStateContext.localData().putObject(key, representation);
+        consumerStateContext.getStore().putObject(key, representation);
     }
 
     public void removeObject(byte[] key) {
-        consumerStateContext.localData().removeObject(key);
+        consumerStateContext.getStore().removeObject(key);
     }
 
     public SchemaStateReader getSchemaStateReader(String clazzName) {

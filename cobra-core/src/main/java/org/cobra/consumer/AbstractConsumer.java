@@ -3,6 +3,7 @@ package org.cobra.consumer;
 import org.cobra.commons.Clock;
 import org.cobra.commons.errors.CobraException;
 import org.cobra.commons.pools.BytesPool;
+import org.cobra.commons.threads.CobraThread;
 import org.cobra.consumer.internal.AnnouncementWatcherImpl;
 import org.cobra.consumer.internal.BlobRetrieverFacade;
 import org.cobra.consumer.internal.ConsumerDataPlane;
@@ -41,7 +42,7 @@ public abstract class AbstractConsumer implements CobraConsumer {
                 builder.blobRetriever,
                 builder.memoryMode,
                 builder.bytesPool,
-                builder.refreshExecutor,
+                builder.executor,
                 builder.clock,
                 builder.producerAddress);
     }
@@ -75,7 +76,8 @@ public abstract class AbstractConsumer implements CobraConsumer {
 
     @Override
     public void poll(int timeoutMs) {
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(t ->
+                CobraThread.daemon(t, "consumer", "polling"));
 
         scheduler.scheduleAtFixedRate(() -> {
             try {

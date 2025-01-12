@@ -1,21 +1,21 @@
 package org.cobra.consumer.read;
 
-import org.cobra.core.memory.datalocal.RecordRepository;
+import org.cobra.core.CobraContext;
+import org.cobra.core.ModelSchema;
+import org.cobra.core.memory.datalocal.AssocStore;
 import org.cobra.core.serialization.RecordSerde;
 import org.cobra.core.serialization.RecordSerdeImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-public class ConsumerStateContext {
-
-    private static final Logger log = LoggerFactory.getLogger(ConsumerStateContext.class);
+public class ConsumerStateContext implements CobraContext {
 
     private final RecordSerde serde = new RecordSerdeImpl();
     private final Map<String, SchemaStateReader> schemaStateReaderMap = new ConcurrentHashMap<>();
-    private final RecordRepository localData = new RecordRepository();
+    private final AssocStore assoc = new AssocStore();
 
     public void register(SchemaStateReader stateReader) {
         putSchemaReadIfAbsent(stateReader);
@@ -23,14 +23,6 @@ public class ConsumerStateContext {
 
     public void registerClassRegistration(Class<?> clazz, int id) {
         serde.register(clazz, id);
-    }
-
-    public RecordSerde serde() {
-        return serde;
-    }
-
-    public RecordRepository localData() {
-        return localData;
     }
 
     public SchemaStateReader schemaRead(String typeName) {
@@ -45,5 +37,22 @@ public class ConsumerStateContext {
     private void putSchemaReadIfAbsent(SchemaStateReader schemaStateReader) {
         schemaStateReaderMap.putIfAbsent(schemaStateReader.getSchema().getClazzName(),
                 schemaStateReader);
+    }
+
+    @Override
+    public RecordSerde getSerde() {
+        return serde;
+    }
+
+    @Override
+    public AssocStore getStore() {
+        return assoc;
+    }
+
+    @Override
+    public Set<ModelSchema> getModelSchemas() {
+        return schemaStateReaderMap.values().stream()
+                .map(SchemaStateReader::getSchema)
+                .collect(Collectors.toSet());
     }
 }

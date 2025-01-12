@@ -1,6 +1,7 @@
 package org.cobra.producer.fs;
 
 import org.cobra.commons.errors.CobraException;
+import org.cobra.commons.utils.Elapsed;
 import org.cobra.commons.utils.IOx;
 import org.cobra.producer.CobraProducer;
 import org.cobra.producer.internal.Blob;
@@ -50,7 +51,7 @@ public class FilesystemPublisher implements CobraProducer.BlobPublisher {
     }
 
     private void doPublishContent(CobraProducer.PublishableArtifact publishable, Path dest) throws IOException {
-        final long startMillis = System.currentTimeMillis();
+        final long start = System.nanoTime();
 
         try (
                 InputStream is = publishable.input();
@@ -63,7 +64,7 @@ public class FilesystemPublisher implements CobraProducer.BlobPublisher {
             }
         }
 
-        final long elapsedMillis = System.currentTimeMillis() - startMillis;
-        log.info("BLOB publish; blob: {}; destination: {}; elapsed: {}", publishable, dest, elapsedMillis);
+        log.info("BLOB publish; blob: {}; destination: {}; took: {}", publishable, dest,
+                Elapsed.toStr(System.nanoTime() - start));
     }
 }

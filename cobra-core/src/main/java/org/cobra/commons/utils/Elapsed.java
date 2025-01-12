@@ -11,4 +11,8 @@ public class Elapsed {
             return String.format("%.3f ms", elapsedTimeMs);
         }
     }
+
+    public static String from(long start) {
+        return toStr(System.nanoTime() - start);
+    }
 }

@@ -95,8 +95,8 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
             doPrepareAdditionalData(entry.getKey(), entry.getValue());
         }
 
-        log.debug("prepare before writing schema state {}; elapsed: {}", modelSchema.getClazzName(),
-                Elapsed.toStr(System.nanoTime() - start));
+        log.debug("prepare before writing schema state {}; took: {}", modelSchema.getClazzName(),
+                Elapsed.from(start));
     }
 
     @Override
@@ -105,7 +105,7 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         this.isReversedDelta = false;
         writeBlobContent(dos);
 
-        log.debug("write delta {}; elapsed: {}", modelSchema.getClazzName(), Elapsed.toStr(System.nanoTime() - start));
+        log.debug("write delta {}; took: {}", modelSchema.getClazzName(), Elapsed.from(start));
     }
 
     @Override
@@ -114,8 +114,8 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         this.isReversedDelta = true;
         writeBlobContent(dos);
 
-        log.debug("write reversed-delta {}; elapsed: {}", modelSchema.getClazzName(),
-                Elapsed.toStr(System.nanoTime() - start));
+        log.debug("write reversed-delta {}; took: {}", modelSchema.getClazzName(),
+                Elapsed.from(start));
     }
 
     private void doPrepareAdditionalData(String key, Object object) {
@@ -128,12 +128,12 @@ public class SchemaStateWriteImpl implements SchemaStateWrite {
         writeBlock(toAdditionalObjectBytes, serializedObject);
 
         /* put object to data repo */
-        this.producerStateContext.getLocalData().putObject(rawKey, serializedObject);
+        this.producerStateContext.getStore().putObject(rawKey, serializedObject);
     }
 
     private void doPrepareRemovalData(String key) {
         byte[] rawKey = key.getBytes();
-        byte[] removalData = this.producerStateContext.getLocalData().removeObject(rawKey);
+        byte[] removalData = this.producerStateContext.getStore().removeObject(rawKey);
 
         if (removalData == null || removalData.length == 0) {
             return; // return if none

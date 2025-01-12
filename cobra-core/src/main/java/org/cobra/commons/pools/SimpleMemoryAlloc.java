@@ -31,7 +31,7 @@ public class SimpleMemoryAlloc implements MemoryAlloc {
         this.gcCollectedBuffers = new ReferenceQueue<>();
         this.bufferInFlights = new ConcurrentHashMap<>();
 
-        this.gcListenerThread = CobraThread.daemon(new GcCollectorListener(), "gc-collector-listener");
+        this.gcListenerThread = CobraThread.daemon(new GcCollectorListener(), "mem-alloc", "gc-collector");
         this.gcListenerThread.start();
     }
 

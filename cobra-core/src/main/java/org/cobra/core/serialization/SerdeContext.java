@@ -16,9 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SerdeContext {
 
-    @Getter
-    private static final SerdeContext instance = new SerdeContext();
-
     private final Map<Class<?>, Integer> registries = new ConcurrentHashMap<>();
     private final IntMap<Class<?>> idToClazz = new IntMap<>();
     private int nextRegisterId = 0;

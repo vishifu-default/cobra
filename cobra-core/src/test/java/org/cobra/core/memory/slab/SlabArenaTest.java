@@ -41,7 +41,7 @@ class SlabArenaTest {
             arena.free(addr);
         }
 
-        assertEquals(0, arena.slab(0).page(0).getAllocatedSize());
+        assertEquals(0, arena.slab(0).page(0).getOccupiedCount());
     }
 
     @Test
