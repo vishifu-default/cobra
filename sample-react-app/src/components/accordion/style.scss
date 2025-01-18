@@ -1,0 +1,11 @@
+@use '@carbon/colors';
+
+.accordion--grid-container {
+  max-height: calc(2  * 12rem + 1rem);
+  overflow-y: auto;
+  border-bottom: 1px solid colors.$cool-gray-10;
+}
+
+.accordion--card-img {
+  width: 100%;
+}

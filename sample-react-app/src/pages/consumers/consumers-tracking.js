@@ -1,6 +1,6 @@
 import React from 'react';
 import { Accordion, AccordionItem, Button, ButtonSet } from '@carbon/react';
-import { ContentHeading, TrackConsumerModal } from '../../components';
+import { AccordionConsumer, ContentHeading, TrackConsumerModal } from '../../components';
 import './consumers-tracking.scss';
 import { useConsumerStore } from '../../store/use-consumer-store';
 
@@ -16,6 +16,10 @@ function ConsumerTracking() {
     setTrackConsumerModal(false);
   }
 
+  function onReloadConsumer() {
+    console.log('onReloadConsumer');
+  }
+
   return (
     <>
       <ContentHeading displayName={'Consumers'} />
@@ -24,23 +28,23 @@ function ConsumerTracking() {
         <Button className={'accordion-btn'} onClick={addNewTrackingConsumer}>
           Track consumer
         </Button>
+        <Button className={'accordion-btn'} onClick={onReloadConsumer}>
+          Reload
+        </Button>
       </ButtonSet>
-
-      <Accordion align={'start'} disabled={false} isFlush={false} ordered={false} size={'lg'}>
-        {consumers &&
-          consumers.map((track) => (
-            <AccordionItem key={track.started} disabled={false} title={track.url}>
-              <p>Test {track.url}</p>
-            </AccordionItem>
-          ))}
-      </Accordion>
-
       <TrackConsumerModal
         heading={'Add a consumer domain URL'}
         label={'Consumer'}
         open={trackConsumerModal}
         onClose={closeAddTrackingConsumerModal}
       />
+
+      <Accordion align={'start'} disabled={false} isFlush={false} ordered={false} size={'lg'}>
+        {consumers &&
+          consumers.map((track) => (
+            <AccordionConsumer title={track.url} key={track.url} url={track.url} />
+          ))}
+      </Accordion>
     </>
   );
 }
