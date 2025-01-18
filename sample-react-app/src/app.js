@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import SimpleLayout from './layout/SimpleLayout';
+import SimpleLayout from './layout/simple-layout';
 import { ConsumerTracking, VersionTracking } from './pages';
 
 function App() {

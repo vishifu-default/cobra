@@ -1,3 +1,3 @@
-import SimpleSidebar from './SimpleSidebar';
+import SimpleSidebar from './simple-sidebar';
 
 export { SimpleSidebar };

@@ -1,3 +1,3 @@
-import SimpleHeader from './SimpleHeader';
+import SimpleHeader from './simple-header';
 
 export { SimpleHeader };
