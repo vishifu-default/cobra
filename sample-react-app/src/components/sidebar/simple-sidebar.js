@@ -17,6 +17,9 @@ function SimpleSidebar() {
         <SideNavItem>
           <Link to={'/version'}>Version</Link>
         </SideNavItem>
+        <SideNavItem>
+          <Link to={'/configuration'}>Configuration</Link>
+        </SideNavItem>
       </SideNavItems>
     </SideNav>
   );

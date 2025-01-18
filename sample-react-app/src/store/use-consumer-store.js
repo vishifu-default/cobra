@@ -2,8 +2,8 @@ import { create } from 'zustand/react';
 
 export const useConsumerStore = create((set) => ({
   consumers: [],
-  add: (url) =>
+  add: (conf) =>
     set((state) => ({
-      consumers: [...state.consumers, { url: url, started: new Date().getTime() }]
+      consumers: [...state.consumers, conf]
     }))
 }));

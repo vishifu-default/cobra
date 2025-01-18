@@ -8,4 +8,7 @@
 .nav-set a {
   @extend .cds--side-nav__link;
   text-decoration: none;
+  color: colors.$black;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }

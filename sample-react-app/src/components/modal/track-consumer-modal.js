@@ -1,26 +1,50 @@
 import { Modal, ModalBody, TextInput } from '@carbon/react';
 import './track-consumer-modal.scss';
-import { useState } from 'react';
-import {useConsumerStore} from '../../store/use-consumer-store'
+import React from 'react';
+import { useConsumerStore } from '../../store/use-consumer-store';
+import { ConsumerConfiguration } from '../../model/consumer';
 
 function TrackConsumerModal({ heading, label, open, onClose }) {
-  const [consumerURL, setConsumerURL] = useState('');
-  const {add} = useConsumerStore();
+  const inputUrlRef = React.useRef();
+  const inputPortRef = React.useRef();
+
+  const [consumerURL, setConsumerURL] = React.useState('');
+  const [consumerPort, setConsumerPort] = React.useState(0);
+  const { add } = useConsumerStore();
 
   function handleInputConsumerURL(event) {
     setConsumerURL(event.target.value);
   }
 
+  function handleInputConsumerPort(event) {
+    setConsumerPort(event.target.value);
+  }
+
   function submit() {
-    add(consumerURL);
+    const consumerConfiguration = new ConsumerConfiguration(consumerURL, consumerPort);
+    add(consumerConfiguration);
+    resetState();
     onClose();
+  }
+
+  function close() {
+    resetState();
+    onClose();
+  }
+
+  function resetState() {
+    setConsumerURL('');
+    setConsumerPort(0);
+
+    inputUrlRef.current.value = null;
+    inputPortRef.current.value = null;
   }
 
   return (
     <>
       <Modal
         open={open}
-        onRequestClose={onClose}
+        onRequestClose={close}
         onRequestSubmit={submit}
         modalHeading={heading}
         modalLabel={label}
@@ -31,9 +55,18 @@ function TrackConsumerModal({ heading, label, open, onClose }) {
           <TextInput
             data-modal-primary-focus
             id='domain-input'
+            ref={inputUrlRef}
             labelText='Domain name'
             placeholder='e.g. consumer1.com'
             onChange={(e) => handleInputConsumerURL(e)}
+          />
+          <br />
+          <TextInput
+            id={'port-input'}
+            ref={inputPortRef}
+            labelText={'Port'}
+            placeholder='e.g. 7070'
+            onChange={(e) => handleInputConsumerPort(e)}
           />
         </ModalBody>
       </Modal>

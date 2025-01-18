@@ -3,6 +3,7 @@ import { SimpleHeader } from '../components/header';
 import { SimpleSidebar } from '../components/sidebar';
 import { Outlet } from 'react-router-dom';
 import { Content } from '@carbon/react';
+import '../global.scss';
 
 function SimpleLayout() {
   return (

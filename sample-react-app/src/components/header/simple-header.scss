@@ -1,5 +1,9 @@
 @use '@carbon/colors';
 
-.cds--header-block {
-  background-color: colors.$gray-10;
+.header--block {
+  background: colors.$black !important;
+}
+
+.header--block * {
+  color: colors.$white;
 }

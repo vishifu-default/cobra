@@ -3,7 +3,7 @@ import { Header, HeaderName } from '@carbon/react';
 
 function SimpleHeader() {
   return (
-    <Header aria-label={'platform name'} className={'cds--header-block'}>
+    <Header aria-label={'platform name'} className={'header--block'}>
       <HeaderName href={'/'} prefix={'Cobra'} isSideNavExpanded={true}>
         [Platform]
       </HeaderName>
