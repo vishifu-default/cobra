@@ -1,4 +1,4 @@
-export class ConsumerConfiguration {
+export class Node {
   constructor(domain, port) {
     this.id = domain;
     this.domain = domain;

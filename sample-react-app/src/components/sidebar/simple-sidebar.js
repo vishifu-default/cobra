@@ -9,7 +9,8 @@ function SimpleSidebar() {
       isChildOfHeader={false}
       expanded={true}
       aria-label={'Simple sidebar navigation'}
-      className={'nav'}>
+      className={'nav'}
+    >
       <SideNavItems className={'nav-set'}>
         <SideNavItem>
           <Link to='/'>Consumer</Link>

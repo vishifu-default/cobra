@@ -1,7 +1,7 @@
 import React from 'react';
 import { Accordion, Button, ButtonSet } from '@carbon/react';
 import { AccordionConsumer, ContentHeading } from '../../components';
-import './consumers-tracking.scss';
+import './style.scss';
 import { useConsumerStore } from '../../store/use-consumer-store';
 
 function ConsumerTracking() {

@@ -2,7 +2,7 @@ import { Modal, ModalBody, TextInput } from '@carbon/react';
 import './track-consumer-modal.scss';
 import React from 'react';
 import { useConsumerStore } from '../../store/use-consumer-store';
-import { ConsumerConfiguration } from '../../model/consumer';
+import { Node } from '../../model/consumer';
 
 function TrackConsumerModal({ heading, label, open, onClose }) {
   const inputUrlRef = React.useRef();
@@ -21,7 +21,7 @@ function TrackConsumerModal({ heading, label, open, onClose }) {
   }
 
   function submit() {
-    const consumerConfiguration = new ConsumerConfiguration(consumerURL, consumerPort);
+    const consumerConfiguration = new Node(consumerURL, consumerPort);
     add(consumerConfiguration);
     resetState();
     onClose();
@@ -49,7 +49,8 @@ function TrackConsumerModal({ heading, label, open, onClose }) {
         modalHeading={heading}
         modalLabel={label}
         primaryButtonText={'Add'}
-        secondaryButtonText={'Cancel'}>
+        secondaryButtonText={'Cancel'}
+      >
         <ModalBody>
           <p className={'text-content'}>Add a consumer URL to track</p>
           <TextInput
