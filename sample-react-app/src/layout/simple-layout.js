@@ -5,16 +5,14 @@ import { Outlet } from 'react-router-dom';
 import { Content } from '@carbon/react';
 import '../global.scss';
 
-function SimpleLayout() {
-  return (
-    <React.Fragment>
-      <SimpleHeader />
-      <SimpleSidebar />
-      <Content>
-        <Outlet />
-      </Content>
-    </React.Fragment>
-  );
-}
+const SimpleLayout = () => (
+  <React.Fragment>
+    <SimpleHeader />
+    <SimpleSidebar />
+    <Content>
+      <Outlet />
+    </Content>
+  </React.Fragment>
+);
 
 export default SimpleLayout;

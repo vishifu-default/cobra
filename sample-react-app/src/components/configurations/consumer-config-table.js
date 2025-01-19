@@ -19,7 +19,7 @@ import { TrackConsumerModal } from '../index';
 import React from 'react';
 import { useConsumerStore } from '../../store/use-consumer-store';
 
-function ConsumerConfigTable() {
+const ConsumerConfigTable = () => {
   const headers = [
     { key: 'domain', header: 'Domain' },
     { key: 'port', header: 'Port' }
@@ -30,28 +30,28 @@ function ConsumerConfigTable() {
   const [configureConsumerModel, setConfigureConsumerModel] = React.useState(false);
   const [selectedDomain, setSelectedDomain] = React.useState([]);
 
-  function openConsumerConfigurationModal() {
+  const openConsumerConfigurationModal = () => {
     setConfigureConsumerModel(true);
-  }
+  };
 
-  function closeConsumerConfigurationModal() {
+  const closeConsumerConfigurationModal = () => {
     setConfigureConsumerModel(false);
-  }
+  };
 
-  function handleSelectRow(row, e) {
+  const handleSelectRow = (row, e) => {
     if (e) {
       setSelectedDomain([...selectedDomain, row.id]);
     } else {
       setSelectedDomain([...selectedDomain.filter((x) => x !== row.id)]);
     }
-  }
+  };
 
-  function handleRemoveSelectedDomain(e) {
+  const handleRemoveSelectedDomain = (e) => {
     for (let selected of selectedDomain) {
       remove(selected);
     }
     setSelectedDomain([]);
-  }
+  };
   return (
     <>
       <DataTable rows={consumers} headers={headers}>
@@ -67,8 +67,7 @@ function ConsumerConfigTable() {
           <TableContainer
             title='Consumers configuration'
             description='Consumer SpringBoot application configuration for tracking'
-            {...getTableContainerProps()}
-          >
+            {...getTableContainerProps()}>
             <TableToolbar aria-label={'Configuration toolbar'}>
               <TableToolbarContent>
                 <TableToolbarMenu>
@@ -88,8 +87,7 @@ function ConsumerConfigTable() {
                       key={i}
                       {...getHeaderProps({
                         header
-                      })}
-                    >
+                      })}>
                       {header.header}
                     </TableHeader>
                   ))}
@@ -101,8 +99,7 @@ function ConsumerConfigTable() {
                     key={i}
                     {...getRowProps({
                       row
-                    })}
-                  >
+                    })}>
                     <TableSelectRow
                       {...getSelectionProps({
                         row
@@ -128,6 +125,6 @@ function ConsumerConfigTable() {
       />
     </>
   );
-}
+};
 
 export default ConsumerConfigTable;

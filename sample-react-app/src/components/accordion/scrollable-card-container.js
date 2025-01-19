@@ -1,7 +1,7 @@
 import { Column, Grid } from '@carbon/react';
 import CardItem from './card-item';
 
-function ScrollableCardContainer() {
+const ScrollableCardContainer = () => {
   const imageUrl = 'https://my-cobra.s3.ap-southeast-1.amazonaws.com/posters/v1-poster.png';
   const sample = [
     { id: 1, name: 'test 1', imageUrl: imageUrl },
@@ -28,6 +28,6 @@ function ScrollableCardContainer() {
       </>
     </Grid>
   );
-}
+};
 
 export default ScrollableCardContainer;

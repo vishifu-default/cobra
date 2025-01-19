@@ -4,23 +4,23 @@ import './style.scss';
 import { useProducerStore } from '../../store/use-producer-store';
 import { Node } from '../../model/consumer';
 
-function ProducerConfigForm() {
+const ProducerConfigForm = () => {
   const { producerNode, updateProducerNode } = useProducerStore();
   const [producerUrl, setProducerUrl] = React.useState(producerNode.domain);
   const [producerPort, setProducerPort] = React.useState(producerNode.port);
 
-  function handleUrlChange(e) {
+  const handleUrlChange = (e) => {
     setProducerUrl(e.target.value);
-  }
+  };
 
-  function handlePortChange(e) {
+  const handlePortChange = (e) => {
     setProducerPort(e.target.value);
-  }
+  };
 
-  function handleSubmit() {
+  const handleSubmit = () => {
     const node = new Node(producerUrl, producerPort);
     updateProducerNode(node);
-  }
+  };
 
   return (
     <>
@@ -45,6 +45,6 @@ function ProducerConfigForm() {
       </FormGroup>
     </>
   );
-}
+};
 
 export default ProducerConfigForm;

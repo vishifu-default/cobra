@@ -2,12 +2,10 @@ import { AccordionItem } from '@carbon/react';
 import React from 'react';
 import ScrollableCardContainer from './scrollable-card-container';
 
-function AccordionConsumer({ title, url }) {
+const AccordionConsumer = ({ title, url }) => {
   const version = 1;
 
-  function buildTitle() {
-    return `${title}  [version: ${version}]`;
-  }
+  const buildTitle = () => `${title}  [version: ${version}]`;
 
   return (
     <>
@@ -16,6 +14,6 @@ function AccordionConsumer({ title, url }) {
       </AccordionItem>
     </>
   );
-}
+};
 
 export default AccordionConsumer;

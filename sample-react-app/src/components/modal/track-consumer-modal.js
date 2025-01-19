@@ -4,7 +4,7 @@ import React from 'react';
 import { useConsumerStore } from '../../store/use-consumer-store';
 import { Node } from '../../model/consumer';
 
-function TrackConsumerModal({ heading, label, open, onClose }) {
+const TrackConsumerModal = ({ heading, label, open, onClose }) => {
   const inputUrlRef = React.useRef();
   const inputPortRef = React.useRef();
 
@@ -12,33 +12,33 @@ function TrackConsumerModal({ heading, label, open, onClose }) {
   const [consumerPort, setConsumerPort] = React.useState(0);
   const { add } = useConsumerStore();
 
-  function handleInputConsumerURL(event) {
+  const handleInputConsumerURL = (event) => {
     setConsumerURL(event.target.value);
-  }
+  };
 
-  function handleInputConsumerPort(event) {
+  const handleInputConsumerPort = (event) => {
     setConsumerPort(event.target.value);
-  }
+  };
 
-  function submit() {
-    const consumerConfiguration = new Node(consumerURL, consumerPort);
-    add(consumerConfiguration);
-    resetState();
-    onClose();
-  }
-
-  function close() {
-    resetState();
-    onClose();
-  }
-
-  function resetState() {
+  const resetState = () => {
     setConsumerURL('');
     setConsumerPort(0);
 
     inputUrlRef.current.value = null;
     inputPortRef.current.value = null;
-  }
+  };
+
+  const submit = () => {
+    const consumerConfiguration = new Node(consumerURL, consumerPort);
+    add(consumerConfiguration);
+    resetState();
+    onClose();
+  };
+
+  const close = () => {
+    resetState();
+    onClose();
+  };
 
   return (
     <>
@@ -49,8 +49,7 @@ function TrackConsumerModal({ heading, label, open, onClose }) {
         modalHeading={heading}
         modalLabel={label}
         primaryButtonText={'Add'}
-        secondaryButtonText={'Cancel'}
-      >
+        secondaryButtonText={'Cancel'}>
         <ModalBody>
           <p className={'text-content'}>Add a consumer URL to track</p>
           <TextInput
@@ -73,6 +72,6 @@ function TrackConsumerModal({ heading, label, open, onClose }) {
       </Modal>
     </>
   );
-}
+};
 
 export default TrackConsumerModal;

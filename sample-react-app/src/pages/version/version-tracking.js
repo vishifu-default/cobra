@@ -7,9 +7,9 @@ import { useProducerStore } from '../../store/use-producer-store';
 function VersionTracking() {
   const { producerNode } = useProducerStore();
 
-  function handleGetVersion(e) {
+  const handleGetVersion = e => {
     console.log('get version', e, producerNode);
-  }
+  };
 
   return (
     <>

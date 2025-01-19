@@ -4,12 +4,12 @@ import { AccordionConsumer, ContentHeading } from '../../components';
 import './style.scss';
 import { useConsumerStore } from '../../store/use-consumer-store';
 
-function ConsumerTracking() {
+const ConsumerTracking = () => {
   const { consumers } = useConsumerStore();
 
-  function onReloadConsumer() {
+  const onReloadConsumer = () => {
     console.log('onReloadConsumer');
-  }
+  };
 
   return (
     <>
@@ -28,6 +28,6 @@ function ConsumerTracking() {
       </Accordion>
     </>
   );
-}
+};
 
 export default ConsumerTracking;
